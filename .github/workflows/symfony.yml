@@ -1,0 +1,70 @@
+name: Symfony CI/CD
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  symfony-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, intl, gd, xml, ctype, iconv
+        coverage: none
+        
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+      
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+          
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+      
+    - name: Check PHP syntax errors
+      run: find ./src -type f -name "*.php" -exec php -l {} \;
+      
+    - name: Check Symfony requirements
+      run: php bin/console about
+      
+    - name: Clear cache
+      run: php bin/console cache:clear
+      
+    # Uncomment when you have tests
+    # - name: Run tests
+    #   run: php bin/phpunit
+      
+  # Déploiement - À configurer selon votre environnement
+  # deploy:
+  #   needs: symfony-tests
+  #   if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Deploy to production
+  #     uses: appleboy/ssh-action@master
+  #     with:
+  #       host: ${{ secrets.HOST }}
+  #       username: ${{ secrets.USERNAME }}
+  #       key: ${{ secrets.SSH_PRIVATE_KEY }}
+  #       script: |
+  #         cd /path/to/your/project
+  #         git pull
+  #         composer install --no-dev --optimize-autoloader
+  #         php bin/console cache:clear --env=prod
+  #         php bin/console doctrine:migrations:migrate --no-interaction --env=prod 
