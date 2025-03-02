@@ -1,0 +1,291 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nos Services - Duo Import MDG{% endblock %}
+
+{% block body %}
+<section class="page-header bg-primary text-white py-5">
+    <div class="container">
+        <h1 class="display-4">Nos Services</h1>
+        <p class="lead">Des solutions complètes pour vos projets d'importation depuis la Chine</p>
+    </div>
+</section>
+
+<section class="services-intro py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h2>Une approche globale de l'importation</h2>
+                <p>Chez Duo Import MDG, nous proposons une gamme complète de services pour vous accompagner à chaque étape de votre projet d'importation. Notre objectif est de simplifier le processus d'importation et de vous garantir des produits de qualité, livrés dans les délais et au meilleur prix.</p>
+                <p>Que vous soyez une startup, une PME ou une grande entreprise, nous adaptons nos services à vos besoins spécifiques pour vous offrir une solution sur mesure.</p>
+            </div>
+            <div class="col-md-6">
+                <img src="{{ asset('images/services-intro.jpg') }}" alt="Nos services" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="main-services bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Nos services principaux</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="service-icon bg-primary text-white rounded-circle me-3">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h3 class="card-title h4 mb-0">Sourcing de fournisseurs</h3>
+                        </div>
+                        <p class="card-text">Nous identifions les meilleurs fabricants chinois pour vos produits en fonction de vos critères de qualité, de prix et de capacité de production. Notre réseau étendu et notre présence sur le terrain nous permettent de sélectionner des fournisseurs fiables et compétitifs.</p>
+                        <ul class="list-unstyled mt-3">
+                            <li><i class="fas fa-check text-primary me-2"></i> Recherche et sélection de fournisseurs qualifiés</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Vérification des certifications et des capacités de production</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Négociation des prix et des conditions</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Échantillonnage et validation des produits</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="service-icon bg-primary text-white rounded-circle me-3">
+                                <i class="fas fa-check-double"></i>
+                            </div>
+                            <h3 class="card-title h4 mb-0">Contrôle qualité</h3>
+                        </div>
+                        <p class="card-text">Nous mettons en place des procédures de contrôle qualité rigoureuses pour garantir que vos produits répondent à vos attentes et aux normes européennes. Nos inspecteurs qualifiés effectuent des contrôles à différentes étapes de la production.</p>
+                        <ul class="list-unstyled mt-3">
+                            <li><i class="fas fa-check text-primary me-2"></i> Inspection avant production</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Contrôle pendant la production</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Inspection finale avant expédition</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Tests de conformité aux normes européennes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="service-icon bg-primary text-white rounded-circle me-3">
+                                <i class="fas fa-shipping-fast"></i>
+                            </div>
+                            <h3 class="card-title h4 mb-0">Logistique internationale</h3>
+                        </div>
+                        <p class="card-text">Nous gérons l'ensemble de la chaîne logistique, du transport maritime ou aérien jusqu'au dédouanement et à la livraison finale. Notre expertise en logistique internationale vous garantit une livraison sécurisée et dans les délais.</p>
+                        <ul class="list-unstyled mt-3">
+                            <li><i class="fas fa-check text-primary me-2"></i> Transport maritime, aérien ou ferroviaire</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Gestion des documents d'exportation et d'importation</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Dédouanement et conformité réglementaire</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Livraison jusqu'à votre entrepôt</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="service-icon bg-primary text-white rounded-circle me-3">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <h3 class="card-title h4 mb-0">Gestion de projet</h3>
+                        </div>
+                        <p class="card-text">Nous assurons la coordination complète de votre projet d'importation, de la conception à la livraison. Notre équipe de chefs de projet expérimentés supervise chaque étape pour garantir le respect des délais et des budgets.</p>
+                        <ul class="list-unstyled mt-3">
+                            <li><i class="fas fa-check text-primary me-2"></i> Planification et suivi du projet</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Communication régulière et transparente</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Gestion des risques et résolution des problèmes</li>
+                            <li><i class="fas fa-check text-primary me-2"></i> Reporting détaillé et suivi des KPIs</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="specialized-services py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Services spécialisés</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="service-icon-sm bg-primary text-white rounded-circle mb-3 mx-auto">
+                            <i class="fas fa-trademark"></i>
+                        </div>
+                        <h3 class="card-title h5">Développement de produits</h3>
+                        <p class="card-text">Nous vous accompagnons dans le développement de vos produits sur mesure, de la conception à la production, en collaboration avec des fabricants chinois spécialisés.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="service-icon-sm bg-primary text-white rounded-circle mb-3 mx-auto">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <h3 class="card-title h5">Packaging personnalisé</h3>
+                        <p class="card-text">Nous créons des solutions de packaging sur mesure pour vos produits, en respectant votre identité de marque et les exigences réglementaires.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="service-icon-sm bg-primary text-white rounded-circle mb-3 mx-auto">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <h3 class="card-title h5">Certification et conformité</h3>
+                        <p class="card-text">Nous vous aidons à obtenir les certifications nécessaires pour vos produits (CE, REACH, RoHS, etc.) et à assurer leur conformité aux normes européennes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="products-categories bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Catégories de produits</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="{{ asset('images/category-electronics.jpg') }}" class="card-img-top" alt="Électronique">
+                    <div class="card-body text-center">
+                        <h3 class="card-title h5">Électronique</h3>
+                        <p class="card-text small">Composants électroniques, appareils connectés, accessoires...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="{{ asset('images/category-textile.jpg') }}" class="card-img-top" alt="Textile">
+                    <div class="card-body text-center">
+                        <h3 class="card-title h5">Textile</h3>
+                        <p class="card-text small">Vêtements, accessoires de mode, textiles d'ameublement...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="{{ asset('images/category-furniture.jpg') }}" class="card-img-top" alt="Mobilier">
+                    <div class="card-body text-center">
+                        <h3 class="card-title h5">Mobilier</h3>
+                        <p class="card-text small">Meubles, décoration, articles de maison...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="{{ asset('images/category-beauty.jpg') }}" class="card-img-top" alt="Beauté">
+                    <div class="card-body text-center">
+                        <h3 class="card-title h5">Beauté & Bien-être</h3>
+                        <p class="card-text small">Cosmétiques, produits de soins, accessoires de beauté...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <p>Et bien d'autres catégories de produits : jouets, articles de sport, outils, matériel industriel...</p>
+            <a href="{{ path('app_contact') }}" class="btn btn-outline-primary">Contactez-nous pour discuter de vos besoins spécifiques</a>
+        </div>
+    </div>
+</section>
+
+<section class="why-choose-us py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Pourquoi choisir Duo Import MDG ?</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="advantage-icon text-primary me-3">
+                                <i class="fas fa-globe-asia fa-2x"></i>
+                            </div>
+                            <h3 class="card-title h5 mb-0">Présence locale en Chine</h3>
+                        </div>
+                        <p class="card-text">Notre équipe sur place en Chine nous permet d'établir des relations directes avec les fournisseurs et d'assurer un suivi rigoureux de vos projets.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="advantage-icon text-primary me-3">
+                                <i class="fas fa-language fa-2x"></i>
+                            </div>
+                            <h3 class="card-title h5 mb-0">Équipe bilingue</h3>
+                        </div>
+                        <p class="card-text">Notre équipe maîtrise parfaitement le français, l'anglais et le chinois, éliminant ainsi les barrières linguistiques et culturelles.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="advantage-icon text-primary me-3">
+                                <i class="fas fa-shield-alt fa-2x"></i>
+                            </div>
+                            <h3 class="card-title h5 mb-0">Sécurité et transparence</h3>
+                        </div>
+                        <p class="card-text">Nous sécurisons vos transactions et vous offrons une transparence totale sur les coûts, les délais et les processus.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta bg-primary text-white py-5">
+    <div class="container text-center">
+        <h2 class="mb-3">Prêt à démarrer votre projet d'importation ?</h2>
+        <p class="lead mb-4">Contactez-nous dès aujourd'hui pour discuter de vos besoins et obtenir un devis personnalisé.</p>
+        <div>
+            <a href="{{ path('app_quote') }}" class="btn btn-light btn-lg me-2">Demander un devis</a>
+            <a href="{{ path('app_contact') }}" class="btn btn-outline-light btn-lg">Nous contacter</a>
+        </div>
+    </div>
+</section>
+
+<style>
+.service-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.service-icon-sm {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+{% endblock %} 

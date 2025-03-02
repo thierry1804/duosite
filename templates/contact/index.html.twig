@@ -1,0 +1,230 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contact - Duo Import MDG{% endblock %}
+
+{% block body %}
+<section class="page-header bg-primary text-white py-5">
+    <div class="container">
+        <h1 class="display-4">Contactez-nous</h1>
+        <p class="lead">Nous sommes à votre écoute pour répondre à toutes vos questions</p>
+    </div>
+</section>
+
+<section class="contact-info py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 mb-4 mb-md-0">
+                <h2 class="mb-4">Nos coordonnées</h2>
+                
+                <div class="contact-item d-flex mb-4">
+                    <div class="contact-icon bg-primary text-white rounded-circle me-3">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div>
+                        <h3 class="h5">Adresse</h3>
+                        <p class="mb-0">Ankadindravola<br>Ivato<br>Antananarivo - Madagascar</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item d-flex mb-4">
+                    <div class="contact-icon bg-primary text-white rounded-circle me-3">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div>
+                        <h3 class="h5">Téléphone</h3>
+                        <p class="mb-0">+261 38 42 711 68</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item d-flex mb-4">
+                    <div class="contact-icon bg-primary text-white rounded-circle me-3">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div>
+                        <h3 class="h5">Email</h3>
+                        <p class="mb-0">contact@duoimport.mg</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item d-flex">
+                    <div class="contact-icon bg-primary text-white rounded-circle me-3">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <h3 class="h5">Horaires d'ouverture</h3>
+                        <p class="mb-0">Lundi - Vendredi: 8h00 - 17h00<br>Samedi: Fermé<br>Dimanche: Fermé</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h3 class="h5">Suivez-nous</h3>
+                    <div class="social-icons">
+                        <a href="#" class="text-primary me-3"><i class="fab fa-facebook-f fa-2x"></i></a>
+                        <a href="#" class="text-primary me-3"><i class="fab fa-twitter fa-2x"></i></a>
+                        <a href="#" class="text-primary me-3"><i class="fab fa-linkedin-in fa-2x"></i></a>
+                        <a href="#" class="text-primary"><i class="fab fa-instagram fa-2x"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h2 class="card-title mb-4">Envoyez-nous un message</h2>
+                        
+                        <form id="contactForm">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nom complet *</label>
+                                <input type="text" class="form-control" id="name" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="phone">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">Sujet *</label>
+                                <input type="text" class="form-control" id="subject" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Message *</label>
+                                <textarea class="form-control" id="message" rows="5" required></textarea>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="privacy" required>
+                                <label class="form-check-label" for="privacy">J'accepte que mes données soient traitées conformément à la politique de confidentialité *</label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Envoyer le message</button>
+                        </form>
+                        
+                        <div class="alert alert-success mt-4 d-none" id="formSuccess">
+                            Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="map-section">
+    <div class="container-fluid p-0">
+        <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.9963686037193!2d47.4784363!3d-19.0471698!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x21f07de34f0b4b67%3A0xd3bfb76c93055f1!2sAnkadindravola%2C%20Madagascar!5e0!3m2!1sfr!2smg!4v1647874587200!5m2!1sfr!2smg" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </div>
+</section>
+
+<section class="faq bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Questions fréquemment posées</h2>
+        
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item border-0 mb-3 shadow-sm">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Comment puis-je commencer à importer des produits depuis la Chine ?
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Pour commencer à importer des produits depuis la Chine, contactez-nous pour une consultation initiale. Nous discuterons de vos besoins, de votre budget et de vos délais. Ensuite, nous vous proposerons une solution adaptée à votre projet et vous accompagnerons à chaque étape du processus d'importation.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 mb-3 shadow-sm">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Quels types de produits pouvez-vous importer ?
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Nous importons une large gamme de produits, notamment l'électronique, le textile, le mobilier, les produits de beauté, les jouets, les articles de sport, les outils et le matériel industriel. Si vous avez besoin d'importer un produit spécifique, n'hésitez pas à nous contacter pour discuter de vos besoins.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 mb-3 shadow-sm">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                Quels sont les délais d'importation depuis la Chine ?
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Les délais d'importation varient en fonction de plusieurs facteurs, notamment le type de produit, la quantité, le mode de transport et la saison. En général, le transport maritime prend entre 30 et 45 jours, tandis que le transport aérien peut prendre entre 7 et 14 jours. Nous vous fournirons un calendrier détaillé lors de notre consultation initiale.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 shadow-sm">
+                        <h2 class="accordion-header" id="headingFour">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                Comment garantissez-vous la qualité des produits importés ?
+                            </button>
+                        </h2>
+                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Nous mettons en place des procédures de contrôle qualité rigoureuses à différentes étapes du processus d'importation. Cela inclut la sélection minutieuse des fournisseurs, l'inspection avant production, le contrôle pendant la production et l'inspection finale avant expédition. Nous veillons également à ce que les produits soient conformes aux normes européennes et disposent des certifications nécessaires.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.contact-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-container {
+    position: relative;
+    overflow: hidden;
+}
+</style>
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactForm = document.getElementById('contactForm');
+        const formSuccess = document.getElementById('formSuccess');
+        
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Simuler l'envoi du formulaire (à remplacer par l'appel API réel)
+                setTimeout(function() {
+                    contactForm.reset();
+                    formSuccess.classList.remove('d-none');
+                    
+                    setTimeout(function() {
+                        formSuccess.classList.add('d-none');
+                    }, 5000);
+                }, 1000);
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %} 

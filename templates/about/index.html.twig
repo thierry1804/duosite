@@ -1,0 +1,209 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Qui sommes-nous - Duo Import MDG{% endblock %}
+
+{% block body %}
+<section class="page-header bg-primary text-white py-5">
+    <div class="container">
+        <h1 class="display-4">Qui sommes-nous</h1>
+        <p class="lead">Découvrez notre histoire, notre mission et nos valeurs</p>
+    </div>
+</section>
+
+<section class="about-intro py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h2>Notre histoire</h2>
+                <p>Fondée en 2015, Duo Import MDG est née de la passion de ses fondateurs pour le commerce international et de leur expertise du marché chinois. Après plusieurs années d'expérience dans l'importation de produits depuis l'Asie, ils ont décidé de mettre leur savoir-faire au service des entreprises françaises et européennes.</p>
+                <p>Au fil des années, notre entreprise s'est développée pour devenir un acteur de référence dans le domaine de l'importation depuis la Chine, en se spécialisant dans l'accompagnement personnalisé et la gestion complète des projets d'importation.</p>
+            </div>
+            <div class="col-md-6">
+                <img src="{{ asset('images/about-history.jpg') }}" alt="Notre histoire" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mission-values bg-light py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-md-6 order-md-2">
+                <h2>Notre mission</h2>
+                <p>Chez Duo Import MDG, notre mission est de simplifier et de sécuriser le processus d'importation depuis la Chine pour nos clients. Nous nous engageons à :</p>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check-circle text-primary me-2"></i> Fournir un service d'importation transparent et fiable</li>
+                    <li><i class="fas fa-check-circle text-primary me-2"></i> Garantir la qualité des produits importés</li>
+                    <li><i class="fas fa-check-circle text-primary me-2"></i> Optimiser les coûts et les délais d'importation</li>
+                    <li><i class="fas fa-check-circle text-primary me-2"></i> Accompagner nos clients à chaque étape de leur projet</li>
+                </ul>
+            </div>
+            <div class="col-md-6 order-md-1">
+                <img src="{{ asset('images/about-mission.jpg') }}" alt="Notre mission" class="img-fluid rounded shadow">
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Nos valeurs</h2>
+                <p>Nos valeurs sont au cœur de notre approche et guident toutes nos actions :</p>
+                <div class="row g-4 mt-2">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h3 class="card-title h5"><i class="fas fa-handshake text-primary me-2"></i> Confiance</h3>
+                                <p class="card-text">Nous construisons des relations durables basées sur la confiance et la transparence.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h3 class="card-title h5"><i class="fas fa-award text-primary me-2"></i> Excellence</h3>
+                                <p class="card-text">Nous visons l'excellence dans tous nos services et nous nous améliorons constamment.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h3 class="card-title h5"><i class="fas fa-users text-primary me-2"></i> Collaboration</h3>
+                                <p class="card-text">Nous travaillons en étroite collaboration avec nos clients et partenaires.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h3 class="card-title h5"><i class="fas fa-leaf text-primary me-2"></i> Responsabilité</h3>
+                                <p class="card-text">Nous agissons de manière éthique et responsable envers la société et l'environnement.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <img src="{{ asset('images/about-values.jpg') }}" alt="Nos valeurs" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="team py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Notre équipe</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="{{ asset('images/team-1.jpg') }}" class="card-img-top" alt="Membre de l'équipe">
+                    <div class="card-body text-center">
+                        <h3 class="card-title h5">Jean Dupont</h3>
+                        <p class="text-muted">Fondateur & CEO</p>
+                        <p class="card-text">Fort de 15 ans d'expérience dans le commerce international, Jean a fondé Duo Import MDG avec la vision de simplifier l'importation pour les entreprises françaises.</p>
+                        <div class="social-icons mt-3">
+                            <a href="#" class="text-primary me-2"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#" class="text-primary"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="{{ asset('images/team-2.jpg') }}" class="card-img-top" alt="Membre de l'équipe">
+                    <div class="card-body text-center">
+                        <h3 class="card-title h5">Marie Chen</h3>
+                        <p class="text-muted">Directrice des Opérations</p>
+                        <p class="card-text">D'origine chinoise, Marie apporte sa connaissance approfondie du marché chinois et sa maîtrise des relations avec les fournisseurs locaux.</p>
+                        <div class="social-icons mt-3">
+                            <a href="#" class="text-primary me-2"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#" class="text-primary"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <img src="{{ asset('images/team-3.jpg') }}" class="card-img-top" alt="Membre de l'équipe">
+                    <div class="card-body text-center">
+                        <h3 class="card-title h5">Pierre Moreau</h3>
+                        <p class="text-muted">Responsable Logistique</p>
+                        <p class="card-text">Expert en logistique internationale, Pierre supervise toutes les opérations de transport et de dédouanement pour garantir des livraisons efficaces.</p>
+                        <div class="social-icons mt-3">
+                            <a href="#" class="text-primary me-2"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#" class="text-primary"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="testimonials bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Témoignages de nos clients</h2>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex mb-3">
+                            <img src="{{ asset('images/testimonial-4.jpg') }}" alt="Client" class="rounded-circle me-3" width="60">
+                            <div>
+                                <h3 class="h5 mb-0">Alexandre Petit</h3>
+                                <p class="text-muted">PDG, FurniturePlus</p>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"Travailler avec Duo Import MDG a transformé notre chaîne d'approvisionnement. Leur expertise nous a permis de réduire nos coûts de 30% tout en améliorant la qualité de nos produits. Un partenaire de confiance que je recommande vivement."</p>
+                        <div class="text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex mb-3">
+                            <img src="{{ asset('images/testimonial-5.jpg') }}" alt="Client" class="rounded-circle me-3" width="60">
+                            <div>
+                                <h3 class="h5 mb-0">Émilie Rousseau</h3>
+                                <p class="text-muted">Fondatrice, BeautyBox</p>
+                            </div>
+                        </div>
+                        <p class="testimonial-text">"En tant que startup, nous avions besoin d'un partenaire fiable pour nous guider dans l'importation de nos produits cosmétiques. Duo Import MDG a été bien plus qu'un simple prestataire - ils sont devenus un véritable allié stratégique pour notre croissance."</p>
+                        <div class="text-warning">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta bg-primary text-white py-5">
+    <div class="container text-center">
+        <h2 class="mb-3">Prêt à collaborer avec notre équipe ?</h2>
+        <p class="lead mb-4">Contactez-nous dès aujourd'hui pour discuter de votre projet d'importation.</p>
+        <div>
+            <a href="{{ path('app_quote') }}" class="btn btn-light btn-lg me-2">Demander un devis</a>
+            <a href="{{ path('app_contact') }}" class="btn btn-outline-light btn-lg">Nous contacter</a>
+        </div>
+    </div>
+</section>
+
+<style>
+.testimonial-text {
+    font-style: italic;
+    margin-bottom: 15px;
+}
+</style>
+{% endblock %} 
