@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle demande de devis #{{ quote.quoteNumber }}</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #2c3e50;">Nouvelle demande de devis</h1>
+        <p style="color: #666; font-size: 1.1em; text-align: center; background: #e9ecef; padding: 10px; border-radius: 5px;">
+            Numéro de devis : <strong>{{ quote.quoteNumber }}</strong>
+        </p>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h2 style="color: #2c3e50; margin-top: 0;">Informations du client</h2>
+            <p><strong>Nom complet :</strong> {{ quote.firstName }} {{ quote.lastName }}</p>
+            <p><strong>Email :</strong> {{ quote.email }}</p>
+            <p><strong>Téléphone :</strong> {{ quote.phone }}</p>
+            {% if quote.company %}
+            <p><strong>Entreprise :</strong> {{ quote.company }}</p>
+            {% endif %}
+        </div>
+
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h2 style="color: #2c3e50; margin-top: 0;">Détails du projet</h2>
+            <p>
+                <strong>Type de produit :</strong> 
+                {% if quote.productType == 'electronics' %}Électronique
+                {% elseif quote.productType == 'textile' %}Textile et mode
+                {% elseif quote.productType == 'furniture' %}Mobilier et décoration
+                {% elseif quote.productType == 'beauty' %}Beauté et bien-être
+                {% elseif quote.productType == 'toys' %}Jouets et jeux
+                {% elseif quote.productType == 'sports' %}Articles de sport
+                {% elseif quote.productType == 'tools' %}Outils et matériel
+                {% elseif quote.productType == 'other' %}Autre : {{ quote.otherProductType }}
+                {% endif %}
+            </p>
+            <p><strong>Description du produit :</strong></p>
+            <p style="white-space: pre-wrap; background: #fff; padding: 10px; border-radius: 3px;">{{ quote.productDescription }}</p>
+            <p><strong>Quantité estimée :</strong> {{ quote.quantity }}</p>
+            {% if quote.budget %}
+            <p><strong>Budget approximatif :</strong> {{ quote.budget }}€</p>
+            {% endif %}
+            <p>
+                <strong>Délai souhaité :</strong> 
+                {% if quote.timeline == 'urgent' %}Urgent (moins d'un mois)
+                {% elseif quote.timeline == '1-2months' %}1-2 mois
+                {% elseif quote.timeline == '3-6months' %}3-6 mois
+                {% elseif quote.timeline == '6+months' %}Plus de 6 mois
+                {% elseif quote.timeline == 'flexible' %}Flexible
+                {% endif %}
+            </p>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h2 style="color: #2c3e50; margin-top: 0;">Services requis</h2>
+            <ul style="list-style-type: none; padding-left: 0;">
+                {% for service in quote.services %}
+                    <li style="margin-bottom: 5px;">✓ 
+                        {% if service == 'sourcing' %}Sourcing de fournisseurs
+                        {% elseif service == 'qualityControl' %}Contrôle qualité
+                        {% elseif service == 'logistics' %}Logistique et transport
+                        {% elseif service == 'customs' %}Dédouanement
+                        {% elseif service == 'productDevelopment' %}Développement de produit
+                        {% elseif service == 'fullService' %}Service complet (de la recherche à la livraison)
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {% if quote.additionalInfo %}
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h2 style="color: #2c3e50; margin-top: 0;">Informations complémentaires</h2>
+            <p style="white-space: pre-wrap;">{{ quote.additionalInfo }}</p>
+        </div>
+        {% endif %}
+
+        {% if quote.referralSource %}
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h2 style="color: #2c3e50; margin-top: 0;">Source</h2>
+            <p>
+                <strong>Comment nous a-t-il connu :</strong> 
+                {% if quote.referralSource == 'search' %}Moteur de recherche
+                {% elseif quote.referralSource == 'socialMedia' %}Réseaux sociaux
+                {% elseif quote.referralSource == 'recommendation' %}Recommandation
+                {% elseif quote.referralSource == 'other' %}Autre
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+
+        <p style="color: #666; font-size: 0.9em; margin-top: 20px; text-align: center;">
+            Cette demande a été envoyée le {{ quote.createdAt|date('d/m/Y à H:i') }}
+        </p>
+    </div>
+</body>
+</html> 

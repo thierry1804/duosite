@@ -3,287 +3,114 @@
 {% block title %}Demande de devis - Duo Import MDG{% endblock %}
 
 {% block body %}
-<section class="page-header bg-primary text-white py-5">
-    <div class="container">
-        <h1 class="display-4">Demande de devis</h1>
-        <p class="lead">Obtenez un devis personnalisé pour votre projet d'importation</p>
-    </div>
-</section>
+<div class="container py-5">
+    <h1 class="text-center mb-4">Formulaire de demande de devis</h1>
+    
+    <p class="text-center mb-4">
+        Veuillez remplir ce formulaire avec les détails de votre projet. Notre équipe vous contactera dans les 24 heures avec un devis personnalisé.
+    </p>
 
-<section class="quote-form py-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <h2 class="card-title mb-4 text-center">Formulaire de demande de devis</h2>
-                        <p class="text-center mb-4">Veuillez remplir ce formulaire avec les détails de votre projet. Notre équipe vous contactera dans les 24 heures avec un devis personnalisé.</p>
-                        
-                        <form id="quoteForm">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="firstName" class="form-label">Prénom *</label>
-                                    <input type="text" class="form-control" id="firstName" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="lastName" class="form-label">Nom *</label>
-                                    <input type="text" class="form-control" id="lastName" required>
-                                </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="email" class="form-label">Email *</label>
-                                    <input type="email" class="form-control" id="email" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="phone" class="form-label">Téléphone *</label>
-                                    <input type="tel" class="form-control" id="phone" required>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="company" class="form-label">Entreprise</label>
-                                <input type="text" class="form-control" id="company">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="productType" class="form-label">Type de produit *</label>
-                                <select class="form-select" id="productType" required>
-                                    <option value="" selected disabled>Sélectionnez une catégorie</option>
-                                    <option value="electronics">Électronique</option>
-                                    <option value="textile">Textile et mode</option>
-                                    <option value="furniture">Mobilier et décoration</option>
-                                    <option value="beauty">Beauté et bien-être</option>
-                                    <option value="toys">Jouets et jeux</option>
-                                    <option value="sports">Articles de sport</option>
-                                    <option value="tools">Outils et matériel</option>
-                                    <option value="other">Autre (précisez)</option>
-                                </select>
-                            </div>
-                            
-                            <div class="mb-3" id="otherProductTypeContainer" style="display: none;">
-                                <label for="otherProductType" class="form-label">Précisez le type de produit *</label>
-                                <input type="text" class="form-control" id="otherProductType">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="productDescription" class="form-label">Description détaillée du produit *</label>
-                                <textarea class="form-control" id="productDescription" rows="4" required placeholder="Veuillez décrire le produit que vous souhaitez importer (caractéristiques, spécifications, etc.)"></textarea>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="quantity" class="form-label">Quantité estimée *</label>
-                                    <input type="number" class="form-control" id="quantity" required min="1">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="budget" class="form-label">Budget approximatif (€)</label>
-                                    <input type="number" class="form-control" id="budget" min="0">
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="timeline" class="form-label">Délai souhaité *</label>
-                                <select class="form-select" id="timeline" required>
-                                    <option value="" selected disabled>Sélectionnez un délai</option>
-                                    <option value="urgent">Urgent (moins d'un mois)</option>
-                                    <option value="1-2months">1-2 mois</option>
-                                    <option value="3-6months">3-6 mois</option>
-                                    <option value="6+months">Plus de 6 mois</option>
-                                    <option value="flexible">Flexible</option>
-                                </select>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="services" class="form-label">Services requis *</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="sourcing" id="serviceSourcing">
-                                    <label class="form-check-label" for="serviceSourcing">Sourcing de fournisseurs</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="qualityControl" id="serviceQualityControl">
-                                    <label class="form-check-label" for="serviceQualityControl">Contrôle qualité</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="logistics" id="serviceLogistics">
-                                    <label class="form-check-label" for="serviceLogistics">Logistique et transport</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="customs" id="serviceCustoms">
-                                    <label class="form-check-label" for="serviceCustoms">Dédouanement</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="productDevelopment" id="serviceProductDevelopment">
-                                    <label class="form-check-label" for="serviceProductDevelopment">Développement de produit</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="fullService" id="serviceFullService">
-                                    <label class="form-check-label" for="serviceFullService">Service complet (de la recherche à la livraison)</label>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="additionalInfo" class="form-label">Informations complémentaires</label>
-                                <textarea class="form-control" id="additionalInfo" rows="3" placeholder="Toute information supplémentaire qui pourrait nous aider à mieux comprendre votre projet"></textarea>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">Comment avez-vous connu nos services ?</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="referralSource" id="referralSearch" value="search">
-                                    <label class="form-check-label" for="referralSearch">Moteur de recherche</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="referralSource" id="referralSocialMedia" value="socialMedia">
-                                    <label class="form-check-label" for="referralSocialMedia">Réseaux sociaux</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="referralSource" id="referralRecommendation" value="recommendation">
-                                    <label class="form-check-label" for="referralRecommendation">Recommandation</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="referralSource" id="referralOther" value="other">
-                                    <label class="form-check-label" for="referralOther">Autre</label>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" id="privacy" required>
-                                <label class="form-check-label" for="privacy">J'accepte que mes données soient traitées conformément à la politique de confidentialité *</label>
-                            </div>
-                            
-                            <div class="text-center">
-                                <button type="submit" class="btn btn-primary btn-lg">Soumettre ma demande de devis</button>
-                            </div>
-                        </form>
-                        
-                        <div class="alert alert-success mt-4 d-none" id="formSuccess">
-                            Votre demande de devis a été envoyée avec succès. Notre équipe vous contactera dans les 24 heures avec un devis personnalisé. Vous pouvez suivre l'état de votre demande dans votre <a href="{{ path('app_quote_dashboard') }}" class="alert-link">espace client</a>.
-                        </div>
-                    </div>
-                </div>
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                {{ form_row(form.firstName) }}
+            </div>
+            <div class="col-md-6">
+                {{ form_row(form.lastName) }}
             </div>
         </div>
-    </div>
-</section>
 
-<section class="quote-process bg-light py-5">
-    <div class="container">
-        <h2 class="text-center mb-5">Notre processus de devis</h2>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                {{ form_row(form.email) }}
+            </div>
+            <div class="col-md-6">
+                {{ form_row(form.phone) }}
+            </div>
+        </div>
+
+        {{ form_row(form.company) }}
         
-        <div class="row g-4">
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="process-icon bg-primary text-white rounded-circle mb-3 mx-auto">
-                            <span class="h4 mb-0">1</span>
-                        </div>
-                        <h3 class="card-title h5">Soumission du formulaire</h3>
-                        <p class="card-text">Remplissez notre formulaire de demande de devis avec les détails de votre projet.</p>
-                    </div>
-                </div>
+        {{ form_row(form.productType) }}
+        
+        <div id="otherProductTypeContainer" style="display: none;">
+            {{ form_row(form.otherProductType) }}
+        </div>
+
+        {{ form_row(form.productDescription) }}
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                {{ form_row(form.quantity) }}
             </div>
-            
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="process-icon bg-primary text-white rounded-circle mb-3 mx-auto">
-                            <span class="h4 mb-0">2</span>
-                        </div>
-                        <h3 class="card-title h5">Analyse de votre projet</h3>
-                        <p class="card-text">Notre équipe analyse votre demande et évalue la faisabilité de votre projet.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="process-icon bg-primary text-white rounded-circle mb-3 mx-auto">
-                            <span class="h4 mb-0">3</span>
-                        </div>
-                        <h3 class="card-title h5">Préparation du devis</h3>
-                        <p class="card-text">Nous préparons un devis détaillé et personnalisé en fonction de vos besoins.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="process-icon bg-primary text-white rounded-circle mb-3 mx-auto">
-                            <span class="h4 mb-0">4</span>
-                        </div>
-                        <h3 class="card-title h5">Présentation du devis</h3>
-                        <p class="card-text">Nous vous contactons pour vous présenter notre devis et discuter des prochaines étapes.</p>
-                    </div>
-                </div>
+            <div class="col-md-6">
+                {{ form_row(form.budget) }}
             </div>
         </div>
-    </div>
-</section>
 
-<section class="cta bg-primary text-white py-5">
-    <div class="container text-center">
-        <h2 class="mb-3">Vous avez des questions ?</h2>
-        <p class="lead mb-4">N'hésitez pas à nous contacter pour toute question concernant nos services ou le processus de demande de devis.</p>
-        <a href="{{ path('app_contact') }}" class="btn btn-light btn-lg">Contactez-nous</a>
-    </div>
-</section>
+        {{ form_row(form.timeline) }}
 
-<style>
-.process-icon {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-}
-</style>
+        <div class="mb-3">
+            {{ form_label(form.services) }}
+            <div class="services-checkboxes">
+                {% for service in form.services %}
+                    <div class="form-check">
+                        {{ form_widget(service) }}
+                        {{ form_label(service) }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {{ form_row(form.additionalInfo) }}
+
+        <div class="mb-3">
+            {{ form_label(form.referralSource) }}
+            <div class="referral-radio">
+                {% for choice in form.referralSource %}
+                    <div class="form-check">
+                        {{ form_widget(choice) }}
+                        {{ form_label(choice) }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mb-3 form-check">
+            {{ form_widget(form.privacyPolicy) }}
+            {{ form_label(form.privacyPolicy) }}
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Soumettre ma demande de devis</button>
+        </div>
+    {{ form_end(form) }}
+</div>
 
 {% block javascripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const quoteForm = document.getElementById('quoteForm');
-        const formSuccess = document.getElementById('formSuccess');
-        const productTypeSelect = document.getElementById('productType');
-        const otherProductTypeContainer = document.getElementById('otherProductTypeContainer');
-        const otherProductTypeInput = document.getElementById('otherProductType');
-        
-        // Afficher/masquer le champ "Autre type de produit"
-        if (productTypeSelect) {
-            productTypeSelect.addEventListener('change', function() {
-                if (this.value === 'other') {
-                    otherProductTypeContainer.style.display = 'block';
-                    otherProductTypeInput.setAttribute('required', 'required');
-                } else {
-                    otherProductTypeContainer.style.display = 'none';
-                    otherProductTypeInput.removeAttribute('required');
-                }
-            });
-        }
-        
-        // Gestion de la soumission du formulaire
-        if (quoteForm) {
-            quoteForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Simuler l'envoi du formulaire (à remplacer par l'appel API réel)
-                setTimeout(function() {
-                    quoteForm.reset();
-                    otherProductTypeContainer.style.display = 'none';
-                    formSuccess.classList.remove('d-none');
-                    
-                    // Redirection vers le tableau de bord après 3 secondes
-                    setTimeout(function() {
-                        window.location.href = "{{ path('app_quote_dashboard') }}";
-                    }, 3000);
-                }, 1000);
-            });
-        }
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    const productTypeSelect = document.querySelector('#quote_productType');
+    const otherProductTypeContainer = document.querySelector('#otherProductTypeContainer');
+    
+    if (productTypeSelect && otherProductTypeContainer) {
+        productTypeSelect.addEventListener('change', function() {
+            if (this.value === 'other') {
+                otherProductTypeContainer.style.display = 'block';
+                otherProductTypeContainer.querySelector('input').required = true;
+            } else {
+                otherProductTypeContainer.style.display = 'none';
+                otherProductTypeContainer.querySelector('input').required = false;
+            }
+        });
+    }
+});
 </script>
 {% endblock %}
 {% endblock %} 
