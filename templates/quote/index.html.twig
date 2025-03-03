@@ -16,7 +16,13 @@
         </div>
     {% endfor %}
 
-    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+    <!-- Loader -->
+    <div id="loader" class="loader-container" style="display: none;">
+        <div class="loader"></div>
+        <p class="loader-text">Envoi de votre demande en cours...</p>
+    </div>
+
+    {{ form_start(form, {'attr': {'class': 'needs-validation', 'id': 'quoteForm'}}) }}
         <div class="row mb-3">
             <div class="col-md-6">
                 {{ form_row(form.firstName) }}
@@ -88,17 +94,56 @@
         </div>
 
         <div class="text-center">
-            <button type="submit" class="btn btn-primary">Soumettre ma demande de devis</button>
+            <button type="submit" class="btn btn-primary" id="submitButton">Soumettre ma demande de devis</button>
         </div>
     {{ form_end(form) }}
 </div>
+
+<style>
+.loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 5px solid #3498db;
+    animation: spin 1s linear infinite;
+}
+
+.loader-text {
+    margin-top: 20px;
+    font-size: 1.1em;
+    color: #333;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
 
 {% block javascripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const productTypeSelect = document.querySelector('#quote_productType');
     const otherProductTypeContainer = document.querySelector('#otherProductTypeContainer');
+    const form = document.querySelector('#quoteForm');
+    const loader = document.querySelector('#loader');
     
+    // Gestion du champ "Autre type de produit"
     if (productTypeSelect && otherProductTypeContainer) {
         productTypeSelect.addEventListener('change', function() {
             if (this.value === 'other') {
@@ -107,6 +152,22 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 otherProductTypeContainer.style.display = 'none';
                 otherProductTypeContainer.querySelector('input').required = false;
+            }
+        });
+    }
+
+    // Gestion du loader pendant la soumission
+    if (form) {
+        form.addEventListener('submit', function() {
+            // Désactiver le bouton de soumission
+            const submitButton = document.querySelector('#submitButton');
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+            
+            // Afficher le loader
+            if (loader) {
+                loader.style.display = 'flex';
             }
         });
     }
