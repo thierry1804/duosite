@@ -3,102 +3,139 @@
 {% block title %}Accueil - Duo Import MDG{% endblock %}
 
 {% block body %}
-<section class="hero bg-primary text-white py-5">
+<!-- Hero Section -->
+<section class="hero-section">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-md-6">
-                <h1 class="display-4 fw-bold">Importez vos produits depuis la Chine en toute simplicité</h1>
-                <p class="lead">Nous vous accompagnons dans toutes les étapes de votre projet d'importation, de la recherche de fournisseurs jusqu'à la livraison finale.</p>
-                <div class="mt-4">
-                    <a href="{{ path('app_quote') }}" class="btn btn-light btn-lg me-2">Demander un devis</a>
-                    <a href="{{ path('app_services') }}" class="btn btn-outline-light btn-lg">Nos services</a>
+            <div class="col-lg-6 fade-up">
+                <h1 class="display-4 fw-bold text-white mb-4">Importez vos produits depuis la Chine en toute simplicité</h1>
+                <p class="lead text-white mb-4">Nous vous accompagnons dans toutes les étapes de votre projet d'importation, de la recherche de fournisseurs jusqu'à la livraison finale.</p>
+                <div class="hero-buttons">
+                    <a href="{{ path('app_quote') }}" class="btn btn-light btn-lg me-3">Demander un devis</a>
+                    <a href="{{ path('app_services') }}" class="btn btn-outline-light btn-lg">Découvrir nos services</a>
                 </div>
             </div>
-            <div class="col-md-6">
-                <img src="{{ asset('images/hero-image.jpg') }}" alt="Duo Import MDG" class="img-fluid rounded shadow">
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="features py-5">
-    <div class="container">
-        <h2 class="text-center mb-5">Pourquoi choisir nos services ?</h2>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="feature-icon bg-primary text-white rounded-circle mb-3 mx-auto">
-                            <i class="fas fa-search fa-2x"></i>
-                        </div>
-                        <h3 class="card-title h5">Recherche de fournisseurs</h3>
-                        <p class="card-text">Nous identifions les meilleurs fournisseurs chinois pour vos produits, en tenant compte de vos exigences de qualité et de prix.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="feature-icon bg-primary text-white rounded-circle mb-3 mx-auto">
-                            <i class="fas fa-check-double fa-2x"></i>
-                        </div>
-                        <h3 class="card-title h5">Contrôle qualité</h3>
-                        <p class="card-text">Nous effectuons des contrôles rigoureux pour garantir que vos produits répondent à vos attentes et aux normes européennes.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="feature-icon bg-primary text-white rounded-circle mb-3 mx-auto">
-                            <i class="fas fa-shipping-fast fa-2x"></i>
-                        </div>
-                        <h3 class="card-title h5">Logistique complète</h3>
-                        <p class="card-text">Nous gérons toute la chaîne logistique, du transport maritime ou aérien jusqu'au dédouanement et à la livraison finale.</p>
-                    </div>
+            <div class="col-lg-6 mt-5 mt-lg-0 fade-up" data-delay="200">
+                <div class="hero-image">
+                    <img src="{{ asset('images/hero-image.jpg') }}" alt="Duo Import MDG" class="img-fluid rounded-lg shadow-lg">
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="process bg-light py-5">
+<!-- Features Section -->
+<section class="section-padding">
     <div class="container">
-        <h2 class="text-center mb-5">Notre processus d'importation</h2>
+        <div class="section-title text-center fade-up">
+            <h2>Pourquoi choisir nos services ?</h2>
+            <p class="lead">Des solutions d'importation sur mesure pour votre entreprise</p>
+        </div>
+        <div class="row g-4 equal-height-cards">
+            <div class="col-md-4 fade-up" data-delay="100">
+                <div class="feature-card text-center h-100">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Recherche de fournisseurs</h3>
+                    <p>Nous identifions les meilleurs fournisseurs chinois pour vos produits, en tenant compte de vos exigences de qualité et de prix.</p>
+                </div>
+            </div>
+            <div class="col-md-4 fade-up" data-delay="200">
+                <div class="feature-card text-center h-100">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <h3>Contrôle qualité</h3>
+                    <p>Nous effectuons des contrôles rigoureux pour garantir que vos produits répondent à vos attentes et aux normes européennes.</p>
+                </div>
+            </div>
+            <div class="col-md-4 fade-up" data-delay="300">
+                <div class="feature-card text-center h-100">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <h3>Logistique complète</h3>
+                    <p>Nous gérons toute la chaîne logistique, du transport maritime ou aérien jusqu'au dédouanement et à la livraison finale.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Counter Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 fade-up">
+                <div class="counter-box">
+                    <div class="counter-number">500+</div>
+                    <div class="counter-text">Projets réalisés</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 fade-up" data-delay="100">
+                <div class="counter-box">
+                    <div class="counter-number">300+</div>
+                    <div class="counter-text">Clients satisfaits</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 fade-up" data-delay="200">
+                <div class="counter-box">
+                    <div class="counter-number">5+</div>
+                    <div class="counter-text">Années d'expérience</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 fade-up" data-delay="300">
+                <div class="counter-box">
+                    <div class="counter-number">50+</div>
+                    <div class="counter-text">Fournisseurs partenaires</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Process Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title text-center fade-up">
+            <h2>Notre processus d'importation</h2>
+            <p class="lead">Une approche structurée pour garantir le succès de votre projet</p>
+        </div>
         <div class="row">
             <div class="col-lg-10 mx-auto">
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-number bg-primary text-white">1</div>
-                        <div class="timeline-content">
+                <div class="process-steps">
+                    <div class="process-step fade-up" data-delay="100">
+                        <div class="process-number">01</div>
+                        <div class="process-content">
                             <h3>Consultation initiale</h3>
                             <p>Nous discutons de vos besoins, de votre budget et de vos délais pour comprendre parfaitement votre projet.</p>
                         </div>
                     </div>
-                    <div class="timeline-item">
-                        <div class="timeline-number bg-primary text-white">2</div>
-                        <div class="timeline-content">
+                    <div class="process-step fade-up" data-delay="200">
+                        <div class="process-number">02</div>
+                        <div class="process-content">
                             <h3>Recherche de fournisseurs</h3>
                             <p>Nous identifions et contactons les meilleurs fabricants chinois pour votre produit.</p>
                         </div>
                     </div>
-                    <div class="timeline-item">
-                        <div class="timeline-number bg-primary text-white">3</div>
-                        <div class="timeline-content">
+                    <div class="process-step fade-up" data-delay="300">
+                        <div class="process-number">03</div>
+                        <div class="process-content">
                             <h3>Négociation et échantillonnage</h3>
                             <p>Nous négocions les prix et conditions, puis obtenons des échantillons pour validation.</p>
                         </div>
                     </div>
-                    <div class="timeline-item">
-                        <div class="timeline-number bg-primary text-white">4</div>
-                        <div class="timeline-content">
+                    <div class="process-step fade-up" data-delay="400">
+                        <div class="process-number">04</div>
+                        <div class="process-content">
                             <h3>Production et contrôle qualité</h3>
                             <p>Nous supervisons la production et effectuons des contrôles qualité rigoureux.</p>
                         </div>
                     </div>
-                    <div class="timeline-item">
-                        <div class="timeline-number bg-primary text-white">5</div>
-                        <div class="timeline-content">
+                    <div class="process-step fade-up" data-delay="500">
+                        <div class="process-number">05</div>
+                        <div class="process-content">
                             <h3>Logistique et livraison</h3>
                             <p>Nous organisons le transport, gérons les formalités douanières et assurons la livraison finale.</p>
                         </div>
@@ -109,106 +146,255 @@
     </div>
 </section>
 
-<section class="testimonials py-5">
+<!-- Testimonials Section -->
+<section class="section-padding bg-light">
     <div class="container">
-        <h2 class="text-center mb-5">Ce que disent nos clients</h2>
-        <div class="row">
-            <div class="col-lg-8 mx-auto">
-                <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                        <div class="carousel-item active">
-                            <div class="testimonial-item text-center">
-                                <img src="{{ asset('images/testimonial-1.jpg') }}" alt="Client" class="rounded-circle mb-3" width="80">
-                                <p class="testimonial-text">"Grâce à Duo Import MDG, j'ai pu lancer ma boutique en ligne avec des produits de qualité à des prix compétitifs. Leur accompagnement a été précieux à chaque étape."</p>
-                                <h5 class="testimonial-name">Sophie Martin</h5>
-                                <p class="testimonial-position">Fondatrice, EcoStyle</p>
-                            </div>
+        <div class="section-title text-center fade-up">
+            <h2>Ce que disent nos clients</h2>
+            <p class="lead">Des témoignages qui reflètent notre engagement envers la satisfaction client</p>
+        </div>
+        <div class="row equal-height-cards">
+            <div class="col-lg-4 fade-up" data-delay="100">
+                <div class="testimonial-card h-100">
+                    <div class="testimonial-content">
+                        <p>"Grâce à Duo Import MDG, j'ai pu lancer ma boutique en ligne avec des produits de qualité à des prix compétitifs. Leur accompagnement a été précieux à chaque étape."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar" data-initials="SM">
+                            <img src="{{ asset('images/testimonial-1.jpg') }}" alt="Sophie Martin" onerror="this.style.display='none'; this.parentNode.setAttribute('data-show-initials', 'true');">
                         </div>
-                        <div class="carousel-item">
-                            <div class="testimonial-item text-center">
-                                <img src="{{ asset('images/testimonial-2.jpg') }}" alt="Client" class="rounded-circle mb-3" width="80">
-                                <p class="testimonial-text">"Je recommande vivement Duo Import MDG pour leur professionnalisme et leur expertise. Ils ont su résoudre tous les problèmes logistiques que nous rencontrions auparavant."</p>
-                                <h5 class="testimonial-name">Thomas Dubois</h5>
-                                <p class="testimonial-position">Directeur des achats, TechStore</p>
-                            </div>
-                        </div>
-                        <div class="carousel-item">
-                            <div class="testimonial-item text-center">
-                                <img src="{{ asset('images/testimonial-3.jpg') }}" alt="Client" class="rounded-circle mb-3" width="80">
-                                <p class="testimonial-text">"Un service client exceptionnel et une connaissance approfondie du marché chinois. Duo Import MDG a dépassé toutes nos attentes."</p>
-                                <h5 class="testimonial-name">Julie Leroy</h5>
-                                <p class="testimonial-position">CEO, MaisonDeco</p>
-                            </div>
+                        <div>
+                            <h4>Sophie Martin</h4>
+                            <p>Fondatrice, EcoStyle</p>
                         </div>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Précédent</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Suivant</span>
-                    </button>
+                </div>
+            </div>
+            <div class="col-lg-4 fade-up" data-delay="200">
+                <div class="testimonial-card h-100">
+                    <div class="testimonial-content">
+                        <p>"Je recommande vivement Duo Import MDG pour leur professionnalisme et leur expertise. Ils ont su résoudre tous les problèmes logistiques que nous rencontrions auparavant."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar" data-initials="TD">
+                            <img src="{{ asset('images/testimonial-2.jpg') }}" alt="Thomas Dubois" onerror="this.style.display='none'; this.parentNode.setAttribute('data-show-initials', 'true');">
+                        </div>
+                        <div>
+                            <h4>Thomas Dubois</h4>
+                            <p>Directeur des achats, TechStore</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 fade-up" data-delay="300">
+                <div class="testimonial-card h-100">
+                    <div class="testimonial-content">
+                        <p>"Un service client exceptionnel et une connaissance approfondie du marché chinois. Duo Import MDG a dépassé toutes nos attentes."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar" data-initials="JL">
+                            <img src="{{ asset('images/testimonial-3.jpg') }}" alt="Julie Leroy" onerror="this.style.display='none'; this.parentNode.setAttribute('data-show-initials', 'true');">
+                        </div>
+                        <div>
+                            <h4>Julie Leroy</h4>
+                            <p>CEO, MaisonDeco</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="cta bg-primary text-white py-5">
+<!-- CTA Section -->
+<section class="section-padding hero-section">
     <div class="container text-center">
-        <h2 class="mb-3">Prêt à démarrer votre projet d'importation ?</h2>
-        <p class="lead mb-4">Contactez-nous dès aujourd'hui pour discuter de vos besoins et obtenir un devis personnalisé.</p>
-        <div>
-            <a href="{{ path('app_quote') }}" class="btn btn-light btn-lg me-2">Demander un devis</a>
-            <a href="{{ path('app_contact') }}" class="btn btn-outline-light btn-lg">Nous contacter</a>
+        <div class="row">
+            <div class="col-lg-8 mx-auto fade-up">
+                <h2 class="text-white mb-4">Prêt à démarrer votre projet d'importation ?</h2>
+                <p class="lead text-white mb-4">Contactez-nous dès aujourd'hui pour discuter de vos besoins et obtenir un devis personnalisé.</p>
+                <div class="cta-buttons">
+                    <a href="{{ path('app_quote') }}" class="btn btn-light btn-lg me-3">Demander un devis</a>
+                    <a href="{{ path('app_contact') }}" class="btn btn-outline-light btn-lg">Nous contacter</a>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
+{% block stylesheets %}
 <style>
-.feature-icon {
-    width: 70px;
-    height: 70px;
+/* Process Steps */
+.process-steps {
+    position: relative;
+    padding: 30px 0;
+}
+
+.process-step {
     display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.timeline {
+    margin-bottom: 50px;
     position: relative;
-    padding-left: 50px;
 }
 
-.timeline-item {
-    position: relative;
-    margin-bottom: 30px;
-    padding-bottom: 30px;
-    border-left: 2px solid #dee2e6;
-    padding-left: 30px;
-}
-
-.timeline-item:last-child {
+.process-step:last-child {
     margin-bottom: 0;
-    padding-bottom: 0;
 }
 
-.timeline-number {
+.process-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    opacity: 0.2;
+    margin-right: 30px;
+    line-height: 1;
+}
+
+.process-content {
+    flex: 1;
+}
+
+.process-content h3 {
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+/* Hero Section Enhancements */
+.hero-section {
+    padding: 120px 0;
+}
+
+.hero-image img {
+    transform: perspective(1000px) rotateY(-15deg);
+    transition: transform 0.5s ease;
+}
+
+.hero-image:hover img {
+    transform: perspective(1000px) rotateY(0deg);
+}
+
+/* Counter Animations */
+.counter-number {
+    display: inline-block;
+    position: relative;
+}
+
+.counter-number::after {
+    content: '+';
     position: absolute;
-    left: -20px;
-    width: 40px;
-    height: 40px;
+    top: 0;
+    right: -20px;
+    color: var(--primary-color);
+}
+
+/* Testimonial Enhancements */
+.testimonial-card {
+    height: 100%;
+    transition: var(--transition);
+    padding: 30px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.testimonial-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.testimonial-content {
+    position: relative;
+    padding-top: 30px;
+    margin-bottom: 25px;
+}
+
+.testimonial-content::before {
+    content: '"';
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 4rem;
+    line-height: 1;
+    color: var(--primary-color);
+    opacity: 0.2;
+}
+
+.testimonial-author {
+    display: flex;
+    align-items: center;
+}
+
+.testimonial-avatar {
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
+    margin-right: 15px;
+    overflow: hidden;
+    background-color: var(--primary-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+    position: relative;
 }
 
-.testimonial-text {
-    font-style: italic;
+.testimonial-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.testimonial-avatar[data-show-initials="true"]::before {
+    content: attr(data-initials);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.testimonial-author h4 {
+    margin-bottom: 0;
     font-size: 1.1rem;
-    margin-bottom: 20px;
+}
+
+.testimonial-author p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+}
+
+/* Animation Delays */
+[data-delay="100"] { animation-delay: 0.1s; }
+[data-delay="200"] { animation-delay: 0.2s; }
+[data-delay="300"] { animation-delay: 0.3s; }
+[data-delay="400"] { animation-delay: 0.4s; }
+[data-delay="500"] { animation-delay: 0.5s; }
+
+/* Equal Height Cards */
+.equal-height-cards {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.equal-height-cards > [class*='col-'] {
+    display: flex;
+    flex-direction: column;
+}
+
+.equal-height-cards .feature-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.equal-height-cards .feature-card p {
+    flex-grow: 1;
 }
 </style>
+{% endblock %}
 {% endblock %} 

@@ -2,6 +2,136 @@
 
 {% block title %}Contact - Duo Import MDG{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .page-header {
+        background: linear-gradient(45deg, #2b4eff,rgb(170, 163, 211));
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAAXNSR0IArs4c6QAAAB5JREFUGFdjZMACGGFi7969+y8kJATmwwWRNRAvCAAm1wQG3KGoPAAAAABJRU5ErkJggg==') repeat;
+        opacity: 0.1;
+    }
+
+    .contact-card {
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        padding: 2rem;
+    }
+
+    .contact-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+
+    .contact-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(43, 78, 255, 0.1);
+        color: #2b4eff;
+        font-size: 24px;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .contact-card:hover .contact-icon {
+        background: #2b4eff;
+        color: #fff;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        padding: 0.8rem 1.2rem;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #2b4eff;
+        box-shadow: 0 0 0 0.2rem rgba(43, 78, 255, 0.25);
+    }
+
+    .btn-primary {
+        background: #2b4eff;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: #1a3dff;
+        transform: translateY(-2px);
+    }
+
+    .social-icons a {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-right: 10px;
+        transition: all 0.3s ease;
+        background: rgba(43, 78, 255, 0.1);
+        color: #2b4eff;
+    }
+
+    .social-icons a:hover {
+        background: #2b4eff;
+        color: #fff;
+        transform: translateY(-3px);
+    }
+
+    .map-container {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .accordion-item {
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .accordion-button {
+        padding: 1.2rem;
+        font-weight: 600;
+        background: #fff;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background: #2b4eff;
+        color: #fff;
+    }
+
+    .loader-container {
+        background: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    .spinner-border {
+        color: #2b4eff !important;
+    }
+</style>
+{% endblock %}
+
 {% block body %}
 <section class="page-header bg-primary text-white py-5">
     <div class="container">
@@ -189,16 +319,28 @@
 </style>
 
 {% block javascripts %}
+{{ parent() }}
 <script>
-// Désactiver le gestionnaire par défaut dans scripts.js
-window.addEventListener('load', function() {
-    // Supprimer tous les gestionnaires d'événements existants du formulaire
-    const oldForm = document.getElementById('contactForm');
-    if (oldForm) {
-        const newForm = oldForm.cloneNode(true);
-        oldForm.parentNode.replaceChild(newForm, oldForm);
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des cartes de contact
+    const cards = document.querySelectorAll('.contact-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 200);
+    });
+
+    // Gestion du formulaire et loader
+    const form = document.getElementById('contactForm');
+    const loader = document.getElementById('contact-loader');
+    if (form) {
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
         
-        const loader = document.getElementById('contact-loader');
         const submitButton = newForm.querySelector('button[type="submit"]');
         
         newForm.addEventListener('submit', function(e) {

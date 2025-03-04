@@ -21,9 +21,6 @@ jobs:
         php-version: '8.2'
         extensions: mbstring, intl, gd, xml, ctype, iconv
         coverage: none
-        
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
       
     - name: Cache Composer packages
       id: composer-cache

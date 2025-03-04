@@ -105,7 +105,15 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
+            
+            // Si c'est le bouton back-to-top ou simplement href="#"
+            if (targetId === '#' || this.classList.contains('back-to-top')) {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+                return;
+            }
             
             const targetElement = document.querySelector(targetId);
             if (targetElement) {
