@@ -1,0 +1,10 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Vérifie si la requête cible un fichier ou un dossier existant
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Redirige toutes les requêtes vers public/index.php
+    RewriteRule ^(.*)$ public/index.php [QSA,L]
+</IfModule>
