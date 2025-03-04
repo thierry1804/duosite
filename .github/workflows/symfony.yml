@@ -12,6 +12,7 @@ permissions:
 jobs:
   symfony-tests:
     runs-on: ubuntu-latest
+    environment: production
     steps:
     - uses: actions/checkout@v3
     
@@ -47,21 +48,11 @@ jobs:
     # - name: Run tests
     #   run: php bin/phpunit
       
-  # Déploiement - À configurer selon votre environnement
-  # deploy:
-  #   needs: symfony-tests
-  #   if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Deploy to production
-  #     uses: appleboy/ssh-action@master
-  #     with:
-  #       host: ${{ secrets.HOST }}
-  #       username: ${{ secrets.USERNAME }}
-  #       key: ${{ secrets.SSH_PRIVATE_KEY }}
-  #       script: |
-  #         cd /path/to/your/project
-  #         git pull
-  #         composer install --no-dev --optimize-autoloader
-  #         php bin/console cache:clear --env=prod
-  #         php bin/console doctrine:migrations:migrate --no-interaction --env=prod 
+    - name: Déploiement sur le serveur FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./  # Répertoire de build
+        server-dir: /  # Répertoire distant
