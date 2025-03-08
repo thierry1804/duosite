@@ -4,39 +4,123 @@
 
 {% block stylesheets %}
 <style>
-.loader-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
+    .loader-container {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    
+    .loader {
+        border: 5px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 5px solid #0d6efd;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .loader-text {
+        margin-top: 20px;
+        font-size: 1.2em;
+        color: #0d6efd;
+    }
+    
+    .quote-item {
+        position: relative;
+        background-color: #f8f9fa;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .remove-item {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+        color: #dc3545;
+        font-size: 1.2em;
+    }
+    
+    .product-image {
+        max-width: 100%;
+        height: auto;
+        max-height: 200px;
+        object-fit: contain;
+    }
 
-.loader {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-radius: 50%;
-    border-top: 5px solid #3498db;
-    animation: spin 1s linear infinite;
-}
+    /* Required field indicator */
+    label.required::after {
+        content: " *";
+        color: #dc3545;
+    }
 
-.loader-text {
-    margin-top: 20px;
-    font-size: 1.1em;
-    color: #333;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+    /* Make validation errors visible */
+    .invalid-feedback {
+        display: block;
+    }
+    
+    .add-item-btn {
+        margin-bottom: 20px;
+    }
+    
+    .photo-container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .photo-upload-container {
+        border: 2px dashed #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        text-align: center;
+        height: 100%;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .photo-upload-container label {
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+    
+    .photo-upload-container input[type="file"] {
+        display: none;
+    }
+    
+    .photo-upload-icon {
+        font-size: 40px;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+    
+    .product-photo-preview {
+        max-width: 100%;
+        max-height: 250px;
+        margin-top: 10px;
+        border-radius: 4px;
+        display: none;
+        object-fit: contain;
+    }
 </style>
 {% endblock %}
 
@@ -57,77 +141,132 @@
             {% endfor %}
         {% endif %}
     {% endfor %}
-
+    
+    {% if form.vars.submitted and not form.vars.valid %}
+    <div class="alert alert-warning mb-4">
+        <p class="mb-2"><strong>Champs obligatoires pour chaque produit :</strong></p>
+        <ul class="mb-0">
+            <li>Le type de produit</li>
+            <li>La description du produit</li>
+            <li>La quantité</li>
+        </ul>
+    </div>
+    {% endif %}
+    
     <!-- Loader -->
     <div id="loader" class="loader-container" style="display: none;">
         <div class="loader"></div>
         <p class="loader-text">Envoi de votre demande en cours...</p>
     </div>
-
+    
     {{ form_start(form, {'attr': {'class': 'needs-validation', 'id': 'quoteForm', 'novalidate': 'novalidate'}}) }}
         {{ form_errors(form) }}
         
         <div class="row mb-3">
             <div class="col-md-6">
-                {{ form_row(form.firstName) }}
+                {{ form_row(form.firstName, {'attr': {'class': 'form-control'}}) }}
             </div>
             <div class="col-md-6">
-                {{ form_row(form.lastName) }}
+                {{ form_row(form.lastName, {'attr': {'class': 'form-control'}}) }}
             </div>
         </div>
 
         <div class="row mb-3">
             <div class="col-md-6">
-                {{ form_row(form.email) }}
+                {{ form_row(form.email, {'attr': {'class': 'form-control'}}) }}
             </div>
             <div class="col-md-6">
-                {{ form_row(form.phone) }}
+                {{ form_row(form.phone, {'attr': {'class': 'form-control'}}) }}
             </div>
         </div>
-
-        {{ form_row(form.company) }}
         
-        {{ form_row(form.productType) }}
+        {{ form_row(form.company, {'attr': {'class': 'form-control'}}) }}
         
-        <div id="otherProductTypeContainer" style="display: none;">
-            {{ form_row(form.otherProductType) }}
+        <h4 class="mt-4 mb-3">Produits</h4>
+        
+        <div class="quote-items-wrapper" 
+             data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
+             data-index="{{ form.items|length > 0 ? form.items|last.vars.name + 1 : 0 }}">
+            
+            {% for itemForm in form.items %}
+                <div class="quote-item">
+                    <span class="remove-item"><i class="fas fa-times-circle"></i></span>
+                    <div class="row">
+                        <!-- Photo à gauche (1/3) -->
+                        <div class="col-md-4 mb-3">
+                            <div class="photo-container">
+                                <div class="photo-upload-container">
+                                    <label for="{{ itemForm.photoFile.vars.id }}" class="upload-label">
+                                        <div class="photo-upload-icon">
+                                            <i class="fas fa-camera"></i>
+                                        </div>
+                                        <span>Cliquez pour ajouter une photo</span>
+                                    </label>
+                                    {{ form_widget(itemForm.photoFile, {'attr': {'class': 'form-control-file d-none'}}) }}
+                                    <img src="#" class="product-photo-preview" alt="Aperçu de la photo">
+                                </div>
+                                {{ form_errors(itemForm.photoFile) }}
+                            </div>
+                        </div>
+                        
+                        <!-- Informations à droite (2/3) -->
+                        <div class="col-md-8">
+                            <div class="row">
+                                <!-- Type, quantité et budget sur la même ligne -->
+                                <div class="col-md-4 mb-3">
+                                    {{ form_row(itemForm.productType, {'attr': {'class': 'form-select product-type-select'}}) }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ form_row(itemForm.quantity, {'attr': {'class': 'form-control', 'min': 1}}) }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ form_row(itemForm.budget, {'attr': {'class': 'form-control', 'min': 0}}) }}
+                                </div>
+                                
+                                <!-- Champ "Autre type de produit" qui apparaît conditionnellement -->
+                                <div class="col-12 mb-3 other-product-type-container" style="{{ itemForm.productType.vars.value == 'Autre' ? '' : 'display: none;' }}">
+                                    {{ form_row(itemForm.otherProductType, {'attr': {'class': 'form-control other-product-type'}}) }}
+                                </div>
+                                
+                                <!-- Description en dessous -->
+                                <div class="col-12 mb-3">
+                                    {{ form_row(itemForm.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-
-        {{ form_row(form.productDescription) }}
-
-        <div class="row mb-3">
-            <div class="col-md-6">
-                {{ form_row(form.quantity) }}
-            </div>
-            <div class="col-md-6">
-                {{ form_row(form.budget) }}
-            </div>
-        </div>
-
-        {{ form_row(form.timeline) }}
+        
+        <button type="button" class="btn btn-outline-primary add-item-btn">
+            <i class="fas fa-plus-circle me-2"></i> Ajouter un produit
+        </button>
+        
+        {{ form_row(form.timeline, {'attr': {'class': 'form-select'}}) }}
 
         <div class="mb-3">
             {{ form_label(form.services) }}
             <div class="services-checkboxes">
                 {% for service in form.services %}
                     <div class="form-check">
-                        {{ form_widget(service) }}
-                        {{ form_label(service) }}
+                        {{ form_widget(service, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(service, null, {'label_attr': {'class': 'form-check-label'}}) }}
                     </div>
                 {% endfor %}
             </div>
             {{ form_errors(form.services) }}
         </div>
-
-        {{ form_row(form.additionalInfo) }}
+        
+        {{ form_row(form.additionalInfo, {'attr': {'class': 'form-control', 'rows': 3}}) }}
 
         <div class="mb-3">
             {{ form_label(form.referralSource) }}
             <div class="referral-radio">
                 {% for choice in form.referralSource %}
                     <div class="form-check">
-                        {{ form_widget(choice) }}
-                        {{ form_label(choice) }}
+                        {{ form_widget(choice, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(choice, null, {'label_attr': {'class': 'form-check-label'}}) }}
                     </div>
                 {% endfor %}
             </div>
@@ -135,8 +274,8 @@
         </div>
 
         <div class="mb-3 form-check">
-            {{ form_widget(form.privacyPolicy) }}
-            {{ form_label(form.privacyPolicy) }}
+            {{ form_widget(form.privacyPolicy, {'attr': {'class': 'form-check-input'}}) }}
+            {{ form_label(form.privacyPolicy, null, {'label_attr': {'class': 'form-check-label'}}) }}
             {{ form_errors(form.privacyPolicy) }}
         </div>
 
@@ -148,5 +287,243 @@
 {% endblock %}
 
 {% block javascripts %}
-<script src="{{ asset('js/quote.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Afficher le loader lors de la soumission du formulaire
+    const form = document.getElementById('quoteForm');
+    const loader = document.getElementById('loader');
+    
+    if (form) {
+        form.addEventListener('submit', function() {
+            loader.style.display = 'flex';
+        });
+    }
+    
+    // Gestion de l'ajout/suppression des items
+    const itemsWrapper = document.querySelector('.quote-items-wrapper');
+    const addItemBtn = document.querySelector('.add-item-btn');
+    
+    // Fonction pour ajouter un nouvel item
+    function addItem() {
+        const prototype = itemsWrapper.dataset.prototype;
+        const index = parseInt(itemsWrapper.dataset.index);
+        
+        // Créer un nouvel élément avec le prototype et l'index actuel
+        const newItem = document.createElement('div');
+        newItem.className = 'quote-item';
+        newItem.innerHTML = prototype.replace(/__name__/g, index) + 
+                            '<span class="remove-item"><i class="fas fa-times-circle"></i></span>';
+        
+        // Ajouter le nouvel élément au wrapper
+        itemsWrapper.appendChild(newItem);
+        
+        // Incrémenter l'index
+        itemsWrapper.dataset.index = index + 1;
+        
+        // Restructurer le nouvel élément
+        restructureItem(newItem, index);
+        
+        // Ajouter les écouteurs d'événements pour le nouvel item
+        addItemEventListeners(newItem);
+    }
+    
+    // Fonction pour restructurer un élément
+    function restructureItem(item, index) {
+        // Récupérer les éléments
+        const photoFileInput = item.querySelector('input[type="file"]');
+        const productTypeSelect = item.querySelector('select[name$="[productType]"]');
+        const otherProductTypeInput = item.querySelector('input[name$="[otherProductType]"]');
+        const descriptionTextarea = item.querySelector('textarea[name$="[description]"]');
+        const quantityInput = item.querySelector('input[name$="[quantity]"]');
+        const budgetInput = item.querySelector('input[name$="[budget]"]');
+        
+        // Créer la structure
+        const row = document.createElement('div');
+        row.className = 'row';
+        
+        // Colonne de gauche pour la photo (1/3)
+        const leftCol = document.createElement('div');
+        leftCol.className = 'col-md-4 mb-3';
+        
+        const photoContainer = document.createElement('div');
+        photoContainer.className = 'photo-container';
+        
+        const uploadContainer = document.createElement('div');
+        uploadContainer.className = 'photo-upload-container';
+        
+        const uploadLabel = document.createElement('label');
+        uploadLabel.htmlFor = photoFileInput.id;
+        uploadLabel.className = 'upload-label';
+        
+        const uploadIcon = document.createElement('div');
+        uploadIcon.className = 'photo-upload-icon';
+        uploadIcon.innerHTML = '<i class="fas fa-camera"></i>';
+        
+        const uploadText = document.createElement('span');
+        uploadText.textContent = 'Cliquez pour ajouter une photo';
+        
+        const preview = document.createElement('img');
+        preview.src = '#';
+        preview.className = 'product-photo-preview';
+        preview.alt = 'Aperçu de la photo';
+        
+        // Assembler la colonne de gauche
+        uploadLabel.appendChild(uploadIcon);
+        uploadLabel.appendChild(uploadText);
+        uploadContainer.appendChild(uploadLabel);
+        uploadContainer.appendChild(photoFileInput);
+        uploadContainer.appendChild(preview);
+        photoContainer.appendChild(uploadContainer);
+        leftCol.appendChild(photoContainer);
+        
+        // Colonne de droite pour les informations (2/3)
+        const rightCol = document.createElement('div');
+        rightCol.className = 'col-md-8';
+        
+        const rightRow = document.createElement('div');
+        rightRow.className = 'row';
+        
+        // Ajouter les classes Bootstrap
+        productTypeSelect.className = 'form-select product-type-select';
+        otherProductTypeInput.className = 'form-control other-product-type';
+        descriptionTextarea.className = 'form-control';
+        descriptionTextarea.rows = 4;
+        quantityInput.className = 'form-control';
+        quantityInput.min = 1;
+        budgetInput.className = 'form-control';
+        budgetInput.min = 0;
+        photoFileInput.className = 'form-control-file d-none';
+        
+        // Récupérer les labels et les erreurs
+        const productTypeLabel = item.querySelector('label[for="' + productTypeSelect.id + '"]');
+        const otherProductTypeLabel = item.querySelector('label[for="' + otherProductTypeInput.id + '"]');
+        const descriptionLabel = item.querySelector('label[for="' + descriptionTextarea.id + '"]');
+        const quantityLabel = item.querySelector('label[for="' + quantityInput.id + '"]');
+        const budgetLabel = item.querySelector('label[for="' + budgetInput.id + '"]');
+        
+        // Créer les conteneurs pour les champs
+        const productTypeContainer = document.createElement('div');
+        productTypeContainer.className = 'col-md-4 mb-3';
+        productTypeContainer.appendChild(productTypeLabel);
+        productTypeContainer.appendChild(productTypeSelect);
+        
+        const quantityContainer = document.createElement('div');
+        quantityContainer.className = 'col-md-4 mb-3';
+        quantityContainer.appendChild(quantityLabel);
+        quantityContainer.appendChild(quantityInput);
+        
+        const budgetContainer = document.createElement('div');
+        budgetContainer.className = 'col-md-4 mb-3';
+        budgetContainer.appendChild(budgetLabel);
+        budgetContainer.appendChild(budgetInput);
+        
+        const otherProductTypeContainer = document.createElement('div');
+        otherProductTypeContainer.className = 'col-12 mb-3 other-product-type-container';
+        otherProductTypeContainer.style.display = 'none';
+        otherProductTypeContainer.appendChild(otherProductTypeLabel);
+        otherProductTypeContainer.appendChild(otherProductTypeInput);
+        
+        const descriptionContainer = document.createElement('div');
+        descriptionContainer.className = 'col-12 mb-3';
+        descriptionContainer.appendChild(descriptionLabel);
+        descriptionContainer.appendChild(descriptionTextarea);
+        
+        // Assembler la colonne de droite
+        rightRow.appendChild(productTypeContainer);
+        rightRow.appendChild(quantityContainer);
+        rightRow.appendChild(budgetContainer);
+        rightRow.appendChild(otherProductTypeContainer);
+        rightRow.appendChild(descriptionContainer);
+        rightCol.appendChild(rightRow);
+        
+        // Assembler la ligne
+        row.appendChild(leftCol);
+        row.appendChild(rightCol);
+        
+        // Remplacer le contenu de l'item
+        item.innerHTML = '';
+        item.appendChild(document.createElement('span')).outerHTML = '<span class="remove-item"><i class="fas fa-times-circle"></i></span>';
+        item.appendChild(row);
+    }
+    
+    // Fonction pour supprimer un item
+    function removeItem(event) {
+        const item = event.target.closest('.quote-item');
+        if (item && document.querySelectorAll('.quote-item').length > 1) {
+            item.remove();
+        } else {
+            alert('Vous devez avoir au moins un produit dans votre demande de devis.');
+        }
+    }
+    
+    // Fonction pour gérer l'affichage du champ "otherProductType"
+    function handleProductTypeChange(event) {
+        const select = event.target;
+        const item = select.closest('.quote-item');
+        const otherContainer = item.querySelector('.other-product-type-container');
+        
+        if (select.value === 'Autre') {
+            otherContainer.style.display = 'block';
+        } else {
+            otherContainer.style.display = 'none';
+        }
+    }
+    
+    // Fonction pour prévisualiser l'image
+    function handlePhotoPreview(event) {
+        const input = event.target;
+        const item = input.closest('.quote-item');
+        const preview = item.querySelector('.product-photo-preview');
+        const uploadLabel = item.querySelector('.upload-label');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                if (uploadLabel) {
+                    uploadLabel.style.display = 'none';
+                }
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.style.display = 'none';
+            if (uploadLabel) {
+                uploadLabel.style.display = 'block';
+            }
+        }
+    }
+    
+    // Ajouter les écouteurs d'événements pour un item
+    function addItemEventListeners(item) {
+        // Écouteur pour le bouton de suppression
+        const removeBtn = item.querySelector('.remove-item');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', removeItem);
+        }
+        
+        // Écouteur pour le changement de type de produit
+        const productTypeSelect = item.querySelector('[name$="[productType]"]');
+        if (productTypeSelect) {
+            productTypeSelect.addEventListener('change', handleProductTypeChange);
+        }
+        
+        // Écouteur pour la prévisualisation de la photo
+        const photoInput = item.querySelector('[name$="[photoFile]"]');
+        if (photoInput) {
+            photoInput.addEventListener('change', handlePhotoPreview);
+        }
+    }
+    
+    // Ajouter un écouteur d'événement au bouton d'ajout
+    if (addItemBtn) {
+        addItemBtn.addEventListener('click', addItem);
+    }
+    
+    // Ajouter des écouteurs d'événements aux items existants
+    document.querySelectorAll('.quote-item').forEach(addItemEventListeners);
+});
+</script>
 {% endblock %} 

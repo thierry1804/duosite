@@ -6,6 +6,7 @@ use App\Entity\Quote;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -22,133 +23,100 @@ class QuoteType extends AbstractType
     {
         $builder
             ->add('firstName', TextType::class, [
-                'label' => 'Prénom *',
-                'attr' => ['class' => 'form-control']
+                'label' => 'Prénom',
+                'attr' => [
+                    'placeholder' => 'Votre prénom'
+                ]
             ])
             ->add('lastName', TextType::class, [
-                'label' => 'Nom *',
-                'attr' => ['class' => 'form-control']
+                'label' => 'Nom',
+                'attr' => [
+                    'placeholder' => 'Votre nom'
+                ]
             ])
             ->add('email', EmailType::class, [
-                'label' => 'Email *',
-                'attr' => ['class' => 'form-control']
+                'label' => 'Email',
+                'attr' => [
+                    'placeholder' => 'Votre email'
+                ]
             ])
             ->add('phone', TextType::class, [
-                'label' => 'Téléphone *',
-                'attr' => ['class' => 'form-control']
+                'label' => 'Téléphone',
+                'attr' => [
+                    'placeholder' => 'Votre numéro de téléphone'
+                ]
             ])
             ->add('company', TextType::class, [
-                'label' => 'Entreprise',
-                'required' => false,
-                'attr' => ['class' => 'form-control']
-            ])
-            ->add('productType', ChoiceType::class, [
-                'label' => 'Type de produit *',
-                'choices' => [
-                    'Électronique' => 'electronics',
-                    'Textile et mode' => 'textile',
-                    'Mobilier et décoration' => 'furniture',
-                    'Beauté et bien-être' => 'beauty',
-                    'Jouets et jeux' => 'toys',
-                    'Articles de sport' => 'sports',
-                    'Outils et matériel' => 'tools',
-                    'Autre' => 'other'
-                ],
-                'placeholder' => 'Sélectionnez une catégorie',
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Veuillez sélectionner un type de produit'
-                    ])
-                ],
-                'attr' => ['class' => 'form-select']
-            ])
-            ->add('otherProductType', TextType::class, [
-                'label' => 'Précisez le type de produit *',
+                'label' => 'Entreprise (optionnel)',
                 'required' => false,
                 'attr' => [
-                    'class' => 'form-control',
-                    'style' => 'display: none;'
-                ]
-            ])
-            ->add('productDescription', TextareaType::class, [
-                'label' => 'Description détaillée du produit *',
-                'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 4,
-                    'placeholder' => 'Veuillez décrire le produit que vous souhaitez importer (caractéristiques, spécifications, etc.)'
-                ]
-            ])
-            ->add('quantity', NumberType::class, [
-                'label' => 'Quantité estimée *',
-                'attr' => [
-                    'class' => 'form-control',
-                    'min' => 1
-                ]
-            ])
-            ->add('budget', NumberType::class, [
-                'label' => 'Budget approximatif (€)',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'min' => 0
+                    'placeholder' => 'Votre entreprise'
                 ]
             ])
             ->add('timeline', ChoiceType::class, [
-                'label' => 'Délai souhaité *',
+                'label' => 'Délai souhaité',
                 'choices' => [
-                    'Urgent (moins d\'un mois)' => 'urgent',
-                    '1-2 mois' => '1-2months',
-                    '3-6 mois' => '3-6months',
-                    'Plus de 6 mois' => '6+months',
-                    'Flexible' => 'flexible'
+                    'Urgent (moins d\'un mois)' => 'Urgent (moins d\'un mois)',
+                    '1-3 mois' => '1-3 mois',
+                    '3-6 mois' => '3-6 mois',
+                    'Plus de 6 mois' => 'Plus de 6 mois',
+                    'Pas de délai particulier' => 'Pas de délai particulier'
                 ],
                 'placeholder' => 'Sélectionnez un délai',
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Veuillez sélectionner un délai'
-                    ])
-                ],
-                'attr' => ['class' => 'form-select']
             ])
             ->add('services', ChoiceType::class, [
-                'label' => 'Services requis *',
+                'label' => 'Services souhaités',
                 'choices' => [
-                    'Sourcing de fournisseurs' => 'sourcing',
-                    'Contrôle qualité' => 'qualityControl',
-                    'Logistique et transport' => 'logistics',
-                    'Dédouanement' => 'customs',
-                    'Développement de produit' => 'productDevelopment',
-                    'Service complet (de la recherche à la livraison)' => 'fullService'
+                    'Sourcing de produits' => 'Sourcing de produits',
+                    'Négociation avec les fournisseurs' => 'Négociation avec les fournisseurs',
+                    'Contrôle qualité' => 'Contrôle qualité',
+                    'Logistique et transport' => 'Logistique et transport',
+                    'Dédouanement' => 'Dédouanement',
+                    'Accompagnement complet' => 'Accompagnement complet'
                 ],
                 'multiple' => true,
-                'expanded' => true,
-                'attr' => ['class' => 'form-check-input']
+                'expanded' => true
             ])
             ->add('additionalInfo', TextareaType::class, [
-                'label' => 'Informations complémentaires',
+                'label' => 'Informations complémentaires (optionnel)',
                 'required' => false,
                 'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 3,
-                    'placeholder' => 'Toute information supplémentaire qui pourrait nous aider à mieux comprendre votre projet'
+                    'placeholder' => 'Toute information supplémentaire qui pourrait nous aider à traiter votre demande',
+                    'rows' => 4
                 ]
             ])
             ->add('referralSource', ChoiceType::class, [
-                'label' => 'Comment avez-vous connu nos services ?',
-                'choices' => [
-                    'Moteur de recherche' => 'search',
-                    'Réseaux sociaux' => 'socialMedia',
-                    'Recommandation' => 'recommendation',
-                    'Autre' => 'other'
-                ],
-                'expanded' => true,
-                'multiple' => false,
+                'label' => 'Comment nous avez-vous connu ? (optionnel)',
                 'required' => false,
-                'attr' => ['class' => 'form-check-input']
+                'choices' => [
+                    'Recherche Google' => 'Recherche Google',
+                    'Réseaux sociaux' => 'Réseaux sociaux',
+                    'Recommandation' => 'Recommandation',
+                    'Autre' => 'Autre'
+                ],
+                'placeholder' => 'Sélectionnez une option',
             ])
             ->add('privacyPolicy', CheckboxType::class, [
-                'label' => 'J\'accepte que mes données soient traitées conformément à la politique de confidentialité *',
-                'attr' => ['class' => 'form-check-input']
+                'label' => 'J\'accepte la politique de confidentialité',
+                'label_attr' => [
+                    'class' => 'checkbox-custom-label'
+                ],
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Vous devez accepter la politique de confidentialité'
+                    ])
+                ]
+            ])
+            ->add('items', CollectionType::class, [
+                'entry_type' => QuoteItemType::class,
+                'entry_options' => ['label' => false],
+                'allow_add' => true,
+                'allow_delete' => true,
+                'by_reference' => false,
+                'label' => 'Produits',
+                'attr' => [
+                    'class' => 'quote-items-collection'
+                ]
             ])
         ;
 

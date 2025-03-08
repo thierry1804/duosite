@@ -3,6 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Nouvelle demande de devis #{{ quote.quoteNumber }}</title>
+    <style>
+        .product-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #0d6efd;
+        }
+        .product-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -21,34 +36,44 @@
             {% endif %}
         </div>
 
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <h2 style="color: #2c3e50; margin-top: 0;">Détails du projet</h2>
+        <h2 style="color: #2c3e50; margin-top: 30px;">Produits demandés</h2>
+        
+        {% for item in quote.items %}
+        <div class="product-item">
+            <h3 style="color: #2c3e50; margin-top: 0;">Produit #{{ loop.index }}</h3>
+            
+            {% if item.photoFilename %}
+            <div style="text-align: center; margin-bottom: 15px;">
+                <img src="{{ absolute_url(asset('uploads/quote_photos/' ~ item.photoFilename)) }}" alt="Photo du produit" class="product-image" style="max-width: 100%; max-height: 200px; border-radius: 5px;">
+            </div>
+            {% endif %}
+            
             <p>
                 <strong>Type de produit :</strong> 
-                {% if quote.productType == 'electronics' %}Électronique
-                {% elseif quote.productType == 'textile' %}Textile et mode
-                {% elseif quote.productType == 'furniture' %}Mobilier et décoration
-                {% elseif quote.productType == 'beauty' %}Beauté et bien-être
-                {% elseif quote.productType == 'toys' %}Jouets et jeux
-                {% elseif quote.productType == 'sports' %}Articles de sport
-                {% elseif quote.productType == 'tools' %}Outils et matériel
-                {% elseif quote.productType == 'other' %}Autre : {{ quote.otherProductType }}
+                {% if item.productType == 'Autre' %}
+                    Autre : {{ item.otherProductType }}
+                {% else %}
+                    {{ item.productType }}
                 {% endif %}
             </p>
+            
             <p><strong>Description du produit :</strong></p>
-            <p style="white-space: pre-wrap; background: #fff; padding: 10px; border-radius: 3px;">{{ quote.productDescription }}</p>
-            <p><strong>Quantité estimée :</strong> {{ quote.quantity }}</p>
-            {% if quote.budget %}
-            <p><strong>Budget approximatif :</strong> {{ quote.budget }}€</p>
+            <p style="white-space: pre-wrap; background: #fff; padding: 10px; border-radius: 3px;">{{ item.description }}</p>
+            
+            {% if item.quantity %}
+            <p><strong>Quantité :</strong> {{ item.quantity }}</p>
             {% endif %}
+            
+            {% if item.budget %}
+            <p><strong>Budget :</strong> {{ item.budget }}€</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h2 style="color: #2c3e50; margin-top: 0;">Informations générales</h2>
             <p>
-                <strong>Délai souhaité :</strong> 
-                {% if quote.timeline == 'urgent' %}Urgent (moins d'un mois)
-                {% elseif quote.timeline == '1-2months' %}1-2 mois
-                {% elseif quote.timeline == '3-6months' %}3-6 mois
-                {% elseif quote.timeline == '6+months' %}Plus de 6 mois
-                {% elseif quote.timeline == 'flexible' %}Flexible
-                {% endif %}
+                <strong>Délai souhaité :</strong> {{ quote.timeline }}
             </p>
         </div>
 
@@ -56,15 +81,7 @@
             <h2 style="color: #2c3e50; margin-top: 0;">Services requis</h2>
             <ul style="list-style-type: none; padding-left: 0;">
                 {% for service in quote.services %}
-                    <li style="margin-bottom: 5px;">✓ 
-                        {% if service == 'sourcing' %}Sourcing de fournisseurs
-                        {% elseif service == 'qualityControl' %}Contrôle qualité
-                        {% elseif service == 'logistics' %}Logistique et transport
-                        {% elseif service == 'customs' %}Dédouanement
-                        {% elseif service == 'productDevelopment' %}Développement de produit
-                        {% elseif service == 'fullService' %}Service complet (de la recherche à la livraison)
-                        {% endif %}
-                    </li>
+                    <li style="margin-bottom: 5px;">✓ {{ service }}</li>
                 {% endfor %}
             </ul>
         </div>
@@ -80,12 +97,7 @@
         <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
             <h2 style="color: #2c3e50; margin-top: 0;">Source</h2>
             <p>
-                <strong>Comment nous a-t-il connu :</strong> 
-                {% if quote.referralSource == 'search' %}Moteur de recherche
-                {% elseif quote.referralSource == 'socialMedia' %}Réseaux sociaux
-                {% elseif quote.referralSource == 'recommendation' %}Recommandation
-                {% elseif quote.referralSource == 'other' %}Autre
-                {% endif %}
+                <strong>Comment nous a-t-il connu :</strong> {{ quote.referralSource }}
             </p>
         </div>
         {% endif %}

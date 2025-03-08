@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\QuoteRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: QuoteRepository::class)]
 #[ORM\Table(name: 'quotes')]
@@ -41,26 +43,6 @@ class Quote
     private ?string $company = null;
 
     #[ORM\Column(length: 50)]
-    #[Assert\NotBlank(message: 'Le type de produit est obligatoire')]
-    private ?string $productType = null;
-
-    #[ORM\Column(length: 100, nullable: true)]
-    private ?string $otherProductType = null;
-
-    #[ORM\Column(type: 'text')]
-    #[Assert\NotBlank(message: 'La description du produit est obligatoire')]
-    #[Assert\Length(min: 10, minMessage: 'La description doit contenir au moins {{ limit }} caractères')]
-    private ?string $productDescription = null;
-
-    #[ORM\Column]
-    #[Assert\NotBlank(message: 'La quantité est obligatoire')]
-    #[Assert\Positive(message: 'La quantité doit être positive')]
-    private ?int $quantity = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?float $budget = null;
-
-    #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: 'Le délai est obligatoire')]
     private ?string $timeline = null;
 
@@ -91,10 +73,14 @@ class Quote
     #[ORM\Column(length: 50)]
     private ?string $status = 'pending';
 
+    #[ORM\OneToMany(mappedBy: 'quote', targetEntity: QuoteItem::class, orphanRemoval: true, cascade: ['persist'])]
+    private Collection $items;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->generateQuoteNumber();
+        $this->items = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -171,61 +157,6 @@ class Quote
     public function setCompany(?string $company): self
     {
         $this->company = $company;
-        return $this;
-    }
-
-    public function getProductType(): ?string
-    {
-        return $this->productType;
-    }
-
-    public function setProductType(string $productType): self
-    {
-        $this->productType = $productType;
-        return $this;
-    }
-
-    public function getOtherProductType(): ?string
-    {
-        return $this->otherProductType;
-    }
-
-    public function setOtherProductType(?string $otherProductType): self
-    {
-        $this->otherProductType = $otherProductType;
-        return $this;
-    }
-
-    public function getProductDescription(): ?string
-    {
-        return $this->productDescription;
-    }
-
-    public function setProductDescription(string $productDescription): self
-    {
-        $this->productDescription = $productDescription;
-        return $this;
-    }
-
-    public function getQuantity(): ?int
-    {
-        return $this->quantity;
-    }
-
-    public function setQuantity(int $quantity): self
-    {
-        $this->quantity = $quantity;
-        return $this;
-    }
-
-    public function getBudget(): ?float
-    {
-        return $this->budget;
-    }
-
-    public function setBudget(?float $budget): self
-    {
-        $this->budget = $budget;
         return $this;
     }
 
@@ -330,6 +261,36 @@ class Quote
     public function setStatus(string $status): self
     {
         $this->status = $status;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, QuoteItem>
+     */
+    public function getItems(): Collection
+    {
+        return $this->items;
+    }
+
+    public function addItem(QuoteItem $item): self
+    {
+        if (!$this->items->contains($item)) {
+            $this->items->add($item);
+            $item->setQuote($this);
+        }
+
+        return $this;
+    }
+
+    public function removeItem(QuoteItem $item): self
+    {
+        if ($this->items->removeElement($item)) {
+            // set the owning side to null (unless already changed)
+            if ($item->getQuote() === $this) {
+                $item->setQuote(null);
+            }
+        }
+
         return $this;
     }
 } 
