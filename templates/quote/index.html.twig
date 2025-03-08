@@ -2,6 +2,44 @@
 
 {% block title %}Demande de devis - Duo Import MDG{% endblock %}
 
+{% block stylesheets %}
+<style>
+.loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 5px solid #3498db;
+    animation: spin 1s linear infinite;
+}
+
+.loader-text {
+    margin-top: 20px;
+    font-size: 1.1em;
+    color: #333;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="container py-5">
     <h1 class="text-center mb-4">Formulaire de demande de devis</h1>
@@ -98,80 +136,8 @@
         </div>
     {{ form_end(form) }}
 </div>
-
-<style>
-.loader-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.loader {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-radius: 50%;
-    border-top: 5px solid #3498db;
-    animation: spin 1s linear infinite;
-}
-
-.loader-text {
-    margin-top: 20px;
-    font-size: 1.1em;
-    color: #333;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-</style>
+{% endblock %}
 
 {% block javascripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const productTypeSelect = document.querySelector('#quote_productType');
-    const otherProductTypeContainer = document.querySelector('#otherProductTypeContainer');
-    const form = document.querySelector('#quoteForm');
-    const loader = document.querySelector('#loader');
-    
-    // Gestion du champ "Autre type de produit"
-    if (productTypeSelect && otherProductTypeContainer) {
-        productTypeSelect.addEventListener('change', function() {
-            if (this.value === 'other') {
-                otherProductTypeContainer.style.display = 'block';
-                otherProductTypeContainer.querySelector('input').required = true;
-            } else {
-                otherProductTypeContainer.style.display = 'none';
-                otherProductTypeContainer.querySelector('input').required = false;
-            }
-        });
-    }
-
-    // Gestion du loader pendant la soumission
-    if (form) {
-        form.addEventListener('submit', function() {
-            // Désactiver le bouton de soumission
-            const submitButton = document.querySelector('#submitButton');
-            if (submitButton) {
-                submitButton.disabled = true;
-            }
-            
-            // Afficher le loader
-            if (loader) {
-                loader.style.display = 'flex';
-            }
-        });
-    }
-});
-</script>
-{% endblock %}
+<script src="{{ asset('js/quote.js') }}"></script>
 {% endblock %} 

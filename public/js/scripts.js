@@ -45,12 +45,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Afficher le message de succès
             setTimeout(function() {
                 contactForm.reset();
-                formSuccess.classList.remove('d-none');
-                
-                // Masquer le message après 5 secondes
-                setTimeout(function() {
-                    formSuccess.classList.add('d-none');
-                }, 5000);
+                if (formSuccess) {
+                    formSuccess.classList.remove('d-none');
+                    
+                    // Masquer le message après 5 secondes
+                    setTimeout(function() {
+                        formSuccess.classList.add('d-none');
+                    }, 5000);
+                }
             }, 1000);
         });
     }
