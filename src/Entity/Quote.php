@@ -2,60 +2,87 @@
 
 namespace App\Entity;
 
+use App\Repository\QuoteRepository;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[ORM\Entity(repositoryClass: QuoteRepository::class)]
+#[ORM\Table(name: 'quotes')]
+#[ORM\HasLifecycleCallbacks]
 class Quote
 {
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 20, unique: true)]
     private ?string $quoteNumber = null;
 
+    #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: 'Le prénom est obligatoire')]
     private ?string $firstName = null;
 
+    #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: 'Le nom est obligatoire')]
     private ?string $lastName = null;
 
+    #[ORM\Column(length: 180)]
     #[Assert\NotBlank(message: 'L\'email est obligatoire')]
     #[Assert\Email(message: 'L\'email {{ value }} n\'est pas un email valide')]
     private ?string $email = null;
 
+    #[ORM\Column(length: 30)]
     #[Assert\NotBlank(message: 'Le téléphone est obligatoire')]
     #[Assert\Regex(pattern: '/^[0-9+\s-]+$/', message: 'Le numéro de téléphone n\'est pas valide')]
     private ?string $phone = null;
 
+    #[ORM\Column(length: 150, nullable: true)]
     private ?string $company = null;
 
+    #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: 'Le type de produit est obligatoire')]
     private ?string $productType = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
     private ?string $otherProductType = null;
 
+    #[ORM\Column(type: 'text')]
     #[Assert\NotBlank(message: 'La description du produit est obligatoire')]
     #[Assert\Length(min: 10, minMessage: 'La description doit contenir au moins {{ limit }} caractères')]
     private ?string $productDescription = null;
 
+    #[ORM\Column]
     #[Assert\NotBlank(message: 'La quantité est obligatoire')]
     #[Assert\Positive(message: 'La quantité doit être positive')]
     private ?int $quantity = null;
 
+    #[ORM\Column(nullable: true)]
     private ?float $budget = null;
 
+    #[ORM\Column(length: 50)]
     #[Assert\NotBlank(message: 'Le délai est obligatoire')]
     private ?string $timeline = null;
 
-    /**
-     * @var array<string>
-     */
+    #[ORM\Column(type: 'json')]
     private array $services = [];
 
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $additionalInfo = null;
 
+    #[ORM\Column(length: 50, nullable: true)]
     private ?string $referralSource = null;
 
+    #[ORM\Column]
     #[Assert\NotBlank(message: 'Vous devez accepter la politique de confidentialité')]
     #[Assert\IsTrue(message: 'Vous devez accepter la politique de confidentialité')]
     private bool $privacyPolicy = false;
 
+    #[ORM\Column]
     private ?\DateTimeImmutable $createdAt;
+
+    #[ORM\Column(options: ["default" => false])]
+    private bool $processed = false;
 
     public function __construct()
     {
@@ -63,12 +90,21 @@ class Quote
         $this->generateQuoteNumber();
     }
 
+    #[ORM\PrePersist]
     private function generateQuoteNumber(): void
     {
-        // Format: DUO-YYYYMMDD-XXXX
-        $date = $this->createdAt->format('Ymd');
-        $uniqueId = substr(uniqid(), -4); // Prend les 4 derniers caractères de l'ID unique
-        $this->quoteNumber = sprintf('DUO-%s-%s', $date, strtoupper($uniqueId));
+        // Only generate if not already set
+        if ($this->quoteNumber === null) {
+            // Format: DUO-YYYYMMDD-XXXX
+            $date = $this->createdAt->format('Ymd');
+            $uniqueId = substr(uniqid(), -4); // Prend les 4 derniers caractères de l'ID unique
+            $this->quoteNumber = sprintf('DUO-%s-%s', $date, strtoupper($uniqueId));
+        }
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getQuoteNumber(): ?string
@@ -255,5 +291,16 @@ class Quote
     public function getFullName(): string
     {
         return trim($this->firstName . ' ' . $this->lastName);
+    }
+
+    public function isProcessed(): bool
+    {
+        return $this->processed;
+    }
+
+    public function setProcessed(bool $processed): self
+    {
+        $this->processed = $processed;
+        return $this;
     }
 } 

@@ -1,0 +1,139 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails du devis {{ quote.quoteNumber }}{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Détails du devis <span class="text-primary">{{ quote.quoteNumber }}</span></h1>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Informations générales</h5>
+                    <span class="badge {{ quote.processed ? 'bg-success' : 'bg-warning' }}">
+                        {{ quote.processed ? 'Traité' : 'En attente' }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Date de création:</strong> {{ quote.createdAt|date('d/m/Y H:i') }}</p>
+                            <p><strong>Nom complet:</strong> {{ quote.fullName }}</p>
+                            <p><strong>Email:</strong> {{ quote.email }}</p>
+                            <p><strong>Téléphone:</strong> {{ quote.phone }}</p>
+                            {% if quote.company %}
+                                <p><strong>Entreprise:</strong> {{ quote.company }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Type de produit:</strong> 
+                                {% if quote.productType == 'other' %}
+                                    {{ quote.otherProductType }}
+                                {% else %}
+                                    {% set productTypes = {
+                                        'electronics': 'Électronique',
+                                        'textile': 'Textile et mode',
+                                        'furniture': 'Mobilier et décoration',
+                                        'beauty': 'Beauté et bien-être',
+                                        'toys': 'Jouets et jeux',
+                                        'sports': 'Articles de sport',
+                                        'tools': 'Outils et matériel',
+                                        'other': 'Autre'
+                                    } %}
+                                    {{ productTypes[quote.productType] ?? quote.productType }}
+                                {% endif %}
+                            </p>
+                            <p><strong>Quantité:</strong> {{ quote.quantity }}</p>
+                            {% if quote.budget %}
+                                <p><strong>Budget:</strong> {{ quote.budget }} €</p>
+                            {% endif %}
+                            <p><strong>Délai souhaité:</strong> 
+                                {% set timelines = {
+                                    'urgent': 'Urgent (moins d\'un mois)',
+                                    '1-2months': '1-2 mois',
+                                    '3-6months': '3-6 mois',
+                                    '6+months': 'Plus de 6 mois',
+                                    'flexible': 'Flexible'
+                                } %}
+                                {{ timelines[quote.timeline] ?? quote.timeline }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Description du produit</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ quote.productDescription|nl2br }}</p>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Services requis</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% set serviceLabels = {
+                            'sourcing': 'Sourcing de fournisseurs',
+                            'qualityControl': 'Contrôle qualité',
+                            'logistics': 'Logistique et transport',
+                            'customs': 'Dédouanement',
+                            'productDevelopment': 'Développement de produit',
+                            'fullService': 'Service complet (de la recherche à la livraison)'
+                        } %}
+                        
+                        {% for service in quote.services %}
+                            <li class="list-group-item">{{ serviceLabels[service] ?? service }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            
+            {% if quote.additionalInfo %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Informations complémentaires</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ quote.additionalInfo|nl2br }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if quote.referralSource %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Source de référence</h5>
+                </div>
+                <div class="card-body">
+                    {% set referralSources = {
+                        'search': 'Moteur de recherche',
+                        'socialMedia': 'Réseaux sociaux',
+                        'recommendation': 'Recommandation',
+                        'other': 'Autre'
+                    } %}
+                    <p>{{ referralSources[quote.referralSource] ?? quote.referralSource }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ path('app_quote_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Retour au tableau de bord
+                </a>
+                
+                {% if not quote.processed %}
+                <a href="{{ path('app_quote_process', {'id': quote.id}) }}" class="btn btn-success">
+                    <i class="fas fa-check me-2"></i> Marquer comme traité
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
