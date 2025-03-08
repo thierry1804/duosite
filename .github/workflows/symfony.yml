@@ -54,6 +54,11 @@ jobs:
     # Uncomment when you have tests
     # - name: Run tests
     #   run: php bin/phpunit
+    
+    - name: Remove cache and log directories
+      run: |
+        rm -rf var/cache/*
+        rm -rf var/log/*
       
     - name: Déploiement sur le serveur FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
