@@ -47,6 +47,13 @@ jobs:
     # Uncomment when you have tests
     # - name: Run tests
     #   run: php bin/phpunit
+    
+    - name: Create .env file
+      run: |
+        echo "APP_ENV=${{ secrets.APP_ENV }}" > .env
+        echo "APP_SECRET=${{ secrets.APP_SECRET }}" >> .env
+        echo "MAILER_DSN=${{ secrets.MAILER_DSN }}" >> .env
+        echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
       
     - name: Déploiement sur le serveur FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -56,3 +63,10 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./  # Répertoire de build
         server-dir: /  # Répertoire distant
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          .env.local
+          .env.test
+          .env
