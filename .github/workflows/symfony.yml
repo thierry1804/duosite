@@ -70,3 +70,5 @@ jobs:
           .env.local
           .env.test
           .env
+          /var/cache/**
+          /var/log/**
