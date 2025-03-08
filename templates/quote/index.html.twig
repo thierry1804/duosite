@@ -48,10 +48,14 @@
         Veuillez remplir ce formulaire avec les détails de votre projet. Notre équipe vous contactera dans les 24 heures avec un devis personnalisé.
     </p>
 
-    {% for message in app.flashes('success') %}
-        <div class="alert alert-success">
-            {{ message }}
-        </div>
+    {% for label, messages in app.flashes %}
+        {% if label == 'success' or label == 'error' %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
     {% endfor %}
 
     <!-- Loader -->
@@ -60,7 +64,9 @@
         <p class="loader-text">Envoi de votre demande en cours...</p>
     </div>
 
-    {{ form_start(form, {'attr': {'class': 'needs-validation', 'id': 'quoteForm'}}) }}
+    {{ form_start(form, {'attr': {'class': 'needs-validation', 'id': 'quoteForm', 'novalidate': 'novalidate'}}) }}
+        {{ form_errors(form) }}
+        
         <div class="row mb-3">
             <div class="col-md-6">
                 {{ form_row(form.firstName) }}
@@ -110,6 +116,7 @@
                     </div>
                 {% endfor %}
             </div>
+            {{ form_errors(form.services) }}
         </div>
 
         {{ form_row(form.additionalInfo) }}
@@ -124,11 +131,13 @@
                     </div>
                 {% endfor %}
             </div>
+            {{ form_errors(form.referralSource) }}
         </div>
 
         <div class="mb-3 form-check">
             {{ form_widget(form.privacyPolicy) }}
             {{ form_label(form.privacyPolicy) }}
+            {{ form_errors(form.privacyPolicy) }}
         </div>
 
         <div class="text-center">

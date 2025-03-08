@@ -14,6 +14,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class QuoteType extends AbstractType
 {
@@ -44,7 +45,6 @@ class QuoteType extends AbstractType
             ->add('productType', ChoiceType::class, [
                 'label' => 'Type de produit *',
                 'choices' => [
-                    'Sélectionnez une catégorie' => '',
                     'Électronique' => 'electronics',
                     'Textile et mode' => 'textile',
                     'Mobilier et décoration' => 'furniture',
@@ -53,6 +53,12 @@ class QuoteType extends AbstractType
                     'Articles de sport' => 'sports',
                     'Outils et matériel' => 'tools',
                     'Autre' => 'other'
+                ],
+                'placeholder' => 'Sélectionnez une catégorie',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez sélectionner un type de produit'
+                    ])
                 ],
                 'attr' => ['class' => 'form-select']
             ])
@@ -90,12 +96,17 @@ class QuoteType extends AbstractType
             ->add('timeline', ChoiceType::class, [
                 'label' => 'Délai souhaité *',
                 'choices' => [
-                    'Sélectionnez un délai' => '',
                     'Urgent (moins d\'un mois)' => 'urgent',
                     '1-2 mois' => '1-2months',
                     '3-6 mois' => '3-6months',
                     'Plus de 6 mois' => '6+months',
                     'Flexible' => 'flexible'
+                ],
+                'placeholder' => 'Sélectionnez un délai',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Veuillez sélectionner un délai'
+                    ])
                 ],
                 'attr' => ['class' => 'form-select']
             ])

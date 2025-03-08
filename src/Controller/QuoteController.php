@@ -14,7 +14,7 @@ use Symfony\Component\Mime\Email;
 
 class QuoteController extends AbstractController
 {
-    #[Route('/quote', name: 'app_quote')]
+    #[Route('/quote', name: 'app_quote', methods: ['GET', 'POST'])]
     public function index(Request $request, MailerInterface $mailer, EntityManagerInterface $entityManager): Response
     {
         $quote = new Quote();
@@ -22,25 +22,35 @@ class QuoteController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Sauvegarde dans la base de données
-            $entityManager->persist($quote);
-            $entityManager->flush();
-
-            // Création de l'email
-            $email = (new Email())
-                ->from($quote->getEmail())
-                ->to('commercial@duoimport.mg')
-                ->subject('Nouvelle demande de devis')
-                ->html($this->renderView(
-                    'emails/quote.html.twig',
-                    ['quote' => $quote]
-                ));
-
-            // Envoi de l'email
-            $mailer->send($email);
-
-            $this->addFlash('success', 'Votre demande de devis a été envoyée avec succès !');
-            return $this->redirectToRoute('app_quote');
+            try {
+                // Sauvegarde dans la base de données
+                $entityManager->persist($quote);
+                $entityManager->flush();
+                
+                try {
+                    // Création de l'email
+                    $email = (new Email())
+                        ->from($quote->getEmail())
+                        ->to('commercial@duoimport.mg')
+                        ->subject('Nouvelle demande de devis')
+                        ->html($this->renderView(
+                            'emails/quote.html.twig',
+                            ['quote' => $quote]
+                        ));
+                    
+                    // Envoi de l'email
+                    $mailer->send($email);
+                } catch (\Exception $e) {
+                    // Log l'erreur mais ne pas l'afficher à l'utilisateur
+                    error_log('Erreur lors de l\'envoi de l\'email: ' . $e->getMessage());
+                }
+                
+                $this->addFlash('success', 'Votre demande de devis a été envoyée avec succès !');
+                return $this->redirectToRoute('app_quote');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Une erreur est survenue lors de l\'enregistrement de votre demande. Veuillez réessayer ultérieurement.');
+                error_log('Erreur lors de l\'enregistrement du devis: ' . $e->getMessage());
+            }
         }
         
         return $this->render('quote/index.html.twig', [

@@ -13,20 +13,24 @@ document.addEventListener('DOMContentLoaded', function() {
         // Vérifier l'état initial
         if (productTypeSelect.value === 'other') {
             otherProductTypeContainer.style.display = 'block';
-            otherProductTypeContainer.querySelector('input').required = true;
+            const input = otherProductTypeContainer.querySelector('input');
+            if (input) input.required = true;
         } else {
             otherProductTypeContainer.style.display = 'none';
-            otherProductTypeContainer.querySelector('input').required = false;
+            const input = otherProductTypeContainer.querySelector('input');
+            if (input) input.required = false;
         }
         
         // Ajouter l'écouteur d'événements
         productTypeSelect.addEventListener('change', function() {
             if (this.value === 'other') {
                 otherProductTypeContainer.style.display = 'block';
-                otherProductTypeContainer.querySelector('input').required = true;
+                const input = otherProductTypeContainer.querySelector('input');
+                if (input) input.required = true;
             } else {
                 otherProductTypeContainer.style.display = 'none';
-                otherProductTypeContainer.querySelector('input').required = false;
+                const input = otherProductTypeContainer.querySelector('input');
+                if (input) input.required = false;
             }
         });
     }
@@ -34,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gestion du loader pendant la soumission
     if (form) {
         form.addEventListener('submit', function() {
-            // Désactiver le bouton de soumission
+            // Désactiver le bouton de soumission pour éviter les soumissions multiples
             const submitButton = document.querySelector('#submitButton');
             if (submitButton) {
                 submitButton.disabled = true;
