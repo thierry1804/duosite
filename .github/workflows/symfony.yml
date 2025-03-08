@@ -31,6 +31,13 @@ jobs:
         key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
         restore-keys: |
           ${{ runner.os }}-php-
+    
+    - name: Create .env file
+      run: |
+        echo "APP_ENV=${{ secrets.APP_ENV }}" > .env
+        echo "APP_SECRET=${{ secrets.APP_SECRET }}" >> .env
+        echo "MAILER_DSN=${{ secrets.MAILER_DSN }}" >> .env
+        echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
           
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
@@ -47,13 +54,6 @@ jobs:
     # Uncomment when you have tests
     # - name: Run tests
     #   run: php bin/phpunit
-    
-    - name: Create .env file
-      run: |
-        echo "APP_ENV=${{ secrets.APP_ENV }}" > .env
-        echo "APP_SECRET=${{ secrets.APP_SECRET }}" >> .env
-        echo "MAILER_DSN=${{ secrets.MAILER_DSN }}" >> .env
-        echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
       
     - name: Déploiement sur le serveur FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
