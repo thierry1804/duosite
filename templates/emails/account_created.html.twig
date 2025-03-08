@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votre compte Duo Import MDG a été créé</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #0d6efd;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .credentials {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Bienvenue chez Duo Import MDG</h1>
+        </div>
+        <div class="content">
+            <p>Bonjour {{ user.firstName }} {{ user.lastName }},</p>
+            
+            <p>Nous vous remercions pour votre demande de devis. Un compte a été automatiquement créé pour vous sur notre plateforme, ce qui vous permettra de suivre l'état de vos demandes de devis et d'en créer de nouvelles facilement.</p>
+            
+            <p>Voici vos informations de connexion :</p>
+            
+            <div class="credentials">
+                <p><strong>Email :</strong> {{ user.email }}</p>
+                <p><strong>Mot de passe :</strong> {{ password }}</p>
+            </div>
+            
+            <p>Nous vous recommandons de changer votre mot de passe dès votre première connexion.</p>
+            
+            <p>Pour vous connecter, cliquez sur le bouton ci-dessous :</p>
+            
+            <a href="{{ absolute_url(path('app_login')) }}" class="btn">Se connecter</a>
+            
+            <p>Si vous avez des questions concernant votre demande de devis ou votre compte, n'hésitez pas à nous contacter.</p>
+            
+            <p>Cordialement,<br>L'équipe Duo Import MDG</p>
+        </div>
+        <div class="footer">
+            <p>© {{ "now"|date("Y") }} Duo Import MDG. Tous droits réservés.</p>
+            <p>Ankadindravola Ivato, Antananarivo - Madagascar</p>
+        </div>
+    </div>
+</body>
+</html> 

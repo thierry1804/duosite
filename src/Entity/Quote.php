@@ -84,6 +84,13 @@ class Quote
     #[ORM\Column(options: ["default" => false])]
     private bool $processed = false;
 
+    #[ORM\ManyToOne(inversedBy: 'quotes')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $user = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $status = 'pending';
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -301,6 +308,28 @@ class Quote
     public function setProcessed(bool $processed): self
     {
         $this->processed = $processed;
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
         return $this;
     }
 } 

@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes demandes de devis - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-3">
+            {% include 'user/_sidebar.html.twig' with {'active': 'quotes'} %}
+        </div>
+        <div class="col-md-9">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0 fs-4">Mes demandes de devis</h2>
+                    <a href="{{ path('app_quote') }}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus-circle"></i> Nouvelle demande
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {% if quotes is empty %}
+                        <div class="alert alert-info">
+                            Vous n'avez pas encore de demande de devis. <a href="{{ path('app_quote') }}">Créer une demande</a>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Numéro</th>
+                                        <th>Date</th>
+                                        <th>Produit</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for quote in quotes %}
+                                        <tr>
+                                            <td>{{ quote.quoteNumber }}</td>
+                                            <td>{{ quote.createdAt|date('d/m/Y') }}</td>
+                                            <td>{{ quote.productType }}</td>
+                                            <td>
+                                                {% if quote.status == 'pending' %}
+                                                    <span class="badge bg-warning text-dark">En attente</span>
+                                                {% elseif quote.status == 'in_progress' %}
+                                                    <span class="badge bg-info">En cours</span>
+                                                {% elseif quote.status == 'completed' %}
+                                                    <span class="badge bg-success">Terminé</span>
+                                                {% elseif quote.status == 'rejected' %}
+                                                    <span class="badge bg-danger">Rejeté</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ path('app_user_quote_show', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> Voir
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

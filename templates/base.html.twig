@@ -18,6 +18,14 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+        <style>
+            .user-icon-active {
+                color: #0d6efd;
+            }
+            .user-icon-inactive {
+                color: #6c757d;
+            }
+        </style>
         {% block stylesheets %}{% endblock %}
     </head>
     <body>
@@ -49,6 +57,29 @@
                             <li class="nav-item">
                                 <a class="btn btn-primary {% if app.request.get('_route') == 'app_quote' %}active{% endif %}" href="{{ path('app_quote') }}">Demander un devis</a>
                             </li>
+                            {% if app.user %}
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-user user-icon-active me-1"></i> {{ app.user.firstName }}
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                        <li><a class="dropdown-item" href="{{ path('app_user_profile') }}">Mon profil</a></li>
+                                        <li><a class="dropdown-item" href="{{ path('app_user_quotes') }}">Mes devis</a></li>
+                                        {% if is_granted('ROLE_ADMIN') %}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="{{ path('app_quote_dashboard') }}">Tableau de bord</a></li>
+                                        {% endif %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a></li>
+                                    </ul>
+                                </li>
+                            {% else %}
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link" href="{{ path('app_login') }}" id="navbarUserIcon">
+                                        <i class="fas fa-user user-icon-inactive fs-5"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
@@ -83,6 +114,13 @@
                                 <li><a href="{{ path('app_about') }}">Qui sommes-nous</a></li>
                                 <li><a href="{{ path('app_contact') }}">Contact</a></li>
                                 <li><a href="{{ path('app_quote') }}">Demander un devis</a></li>
+                                {% if not app.user %}
+                                    <li><a href="{{ path('app_login') }}">Connexion</a></li>
+                                    <li><a href="{{ path('app_user_register') }}">Créer un compte</a></li>
+                                {% else %}
+                                    <li><a href="{{ path('app_user_profile') }}">Mon profil</a></li>
+                                    <li><a href="{{ path('app_user_quotes') }}">Mes devis</a></li>
+                                {% endif %}
                             </ul>
                         </div>
                     </div>

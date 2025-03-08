@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0 fs-4">Créer un compte</h2>
+                </div>
+                <div class="card-body p-4">
+                    {{ form_start(form) }}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.firstName) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.lastName) }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.email) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.phone) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.company) }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.plainPassword.first) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.plainPassword.second) }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form_row(form.agreeTerms) }}
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">S'inscrire</button>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+                <div class="card-footer text-center">
+                    <p class="mb-0">Vous avez déjà un compte ? <a href="{{ path('app_login') }}">Se connecter</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

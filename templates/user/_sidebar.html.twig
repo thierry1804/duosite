@@ -1,0 +1,26 @@
+<div class="list-group mb-4">
+    <a href="{{ path('app_user_profile') }}" class="list-group-item list-group-item-action {% if active == 'profile' %}active{% endif %}">
+        <i class="fas fa-user me-2"></i> Mon profil
+    </a>
+    <a href="{{ path('app_user_quotes') }}" class="list-group-item list-group-item-action {% if active == 'quotes' %}active{% endif %}">
+        <i class="fas fa-file-invoice me-2"></i> Mes demandes de devis
+    </a>
+    <a href="{{ path('app_quote') }}" class="list-group-item list-group-item-action">
+        <i class="fas fa-plus-circle me-2"></i> Nouvelle demande de devis
+    </a>
+    <a href="{{ path('app_logout') }}" class="list-group-item list-group-item-action text-danger">
+        <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0 fs-5">Informations</h5>
+    </div>
+    <div class="card-body">
+        <p class="mb-0"><strong>Nom :</strong> {{ app.user.fullName }}</p>
+        <p class="mb-0"><strong>Email :</strong> {{ app.user.email }}</p>
+        <p class="mb-0"><strong>Membre depuis :</strong> {{ app.user.createdAt|date('d/m/Y') }}</p>
+        <p class="mb-0"><strong>Nombre de devis :</strong> {{ app.user.quotes|length }}</p>
+    </div>
+</div> 
