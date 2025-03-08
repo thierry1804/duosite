@@ -55,50 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Gestion du formulaire de demande de devis
-    const quoteForm = document.getElementById('quoteForm');
-    if (quoteForm) {
-        // Gestion du champ "Autre type de produit"
-        const productTypeSelect = document.getElementById('productType');
-        const otherProductTypeContainer = document.getElementById('otherProductTypeContainer');
-        const otherProductTypeInput = document.getElementById('otherProductType');
-        
-        if (productTypeSelect) {
-            productTypeSelect.addEventListener('change', function() {
-                if (this.value === 'other') {
-                    otherProductTypeContainer.style.display = 'block';
-                    otherProductTypeInput.setAttribute('required', 'required');
-                } else {
-                    otherProductTypeContainer.style.display = 'none';
-                    otherProductTypeInput.removeAttribute('required');
-                }
-            });
-        }
-        
-        // Soumission du formulaire
-        quoteForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Simuler l'envoi du formulaire (à remplacer par l'appel API réel)
-            const formSuccess = document.getElementById('formSuccess');
-            
-            // Afficher le message de succès
-            setTimeout(function() {
-                quoteForm.reset();
-                if (otherProductTypeContainer) {
-                    otherProductTypeContainer.style.display = 'none';
-                }
-                formSuccess.classList.remove('d-none');
-                
-                // Redirection vers le tableau de bord après 3 secondes
-                setTimeout(function() {
-                    const dashboardUrl = formSuccess.querySelector('a').getAttribute('href');
-                    window.location.href = dashboardUrl;
-                }, 3000);
-            }, 1000);
-        });
-    }
-    
     // Smooth scroll pour les ancres
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
