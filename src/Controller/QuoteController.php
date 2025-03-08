@@ -130,19 +130,12 @@ class QuoteController extends AbstractController
                             // Sécuriser le nom du fichier
                             $safeFilename = $slugger->slug($originalFilename);
                             $newFilename = $safeFilename . '-' . uniqid() . '.' . $photoFile->guessExtension();
-                            
-                            // Déplacer le fichier dans le répertoire où les photos sont stockées
-                            try {
-                                $photoFile->move(
-                                    $this->getParameter('quote_photos_directory'),
-                                    $newFilename
+                            if (is_uploaded_file($photoFile->getPathname())) {
+                                //déplacer le fichier uploadé dans le dossier final
+                                move_uploaded_file(
+                                    $photoFile->getPathname(), 
+                                    $this->getParameter('quote_photos_directory') . '/' . $newFilename
                                 );
-                                
-                                // Mettre à jour le nom du fichier dans l'entité
-                                $item->setPhotoFilename($newFilename);
-                            } catch (FileException $e) {
-                                // Gérer l'exception si quelque chose se passe pendant le téléchargement du fichier
-                                error_log('Erreur lors du téléchargement de la photo: ' . $e->getMessage());
                             }
                         }
                     }
