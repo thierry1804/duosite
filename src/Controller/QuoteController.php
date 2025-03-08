@@ -48,7 +48,7 @@ class QuoteController extends AbstractController
                 $this->addFlash('success', 'Votre demande de devis a été envoyée avec succès !');
                 return $this->redirectToRoute('app_quote');
             } catch (\Exception $e) {
-                $this->addFlash('error', 'Une erreur est survenue lors de l\'enregistrement de votre demande. Veuillez réessayer ultérieurement.');
+                $this->addFlash('error', 'Une erreur est survenue lors de l\'enregistrement de votre demande. Veuillez réessayer ultérieurement.' . $e->getMessage());
                 error_log('Erreur lors de l\'enregistrement du devis: ' . $e->getMessage());
             }
         }
