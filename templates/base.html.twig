@@ -6,6 +6,20 @@
         <title>{% block title %}Duo Import MDG{% endblock %}</title>
         <link rel="icon" href="favicon.ico">
         
+        <!-- Préchargement des polices pour éviter les décalages de mise en page -->
+        <link rel="preload" href="{{ asset('css/fonts.css') }}" as="style">
+        <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v20/pxiEyp8kv8JHgFVrJJfecg.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLGT9Z1xlFQ.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLEj6Z1xlFQ.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2" as="font" type="font/woff2" crossorigin>
+        
+        <!-- Préchargement des ressources critiques -->
+        <link rel="preload" href="{{ asset('images/logo.webp') }}" as="image" fetchpriority="high">
+        <link rel="preload" href="{{ asset('images/hero-image.webp') }}" as="image" fetchpriority="high">
+        
+        <!-- Chargement des polices avec font-display: swap -->
+        <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
+        
         <!-- CSS critique en ligne pour un rendu rapide -->
         <style>
             /* Styles critiques pour le rendu initial */
@@ -17,12 +31,13 @@
             }
 
             body {
-                font-family: 'Poppins', sans-serif;
+                font-family: 'Poppins', 'Poppins Fallback', sans-serif;
                 color: var(--text-color);
                 line-height: 1.7;
                 margin: 0;
             }
 
+            /* Réserver l'espace pour les éléments qui vont charger */
             .navbar {
                 padding: 1rem 0;
                 background: #fff !important;
@@ -39,6 +54,8 @@
 
             .navbar-brand img {
                 margin-right: 10px;
+                width: 40px;
+                height: 40px;
             }
 
             .user-icon-active {
@@ -77,22 +94,76 @@
             .hero-section p {
                 color: rgba(255, 255, 255, 0.9);
             }
+            
+            /* Réserver l'espace pour l'image hero */
+            .hero-image {
+                aspect-ratio: 3/2;
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            
+            .hero-image img {
+                width: 100%;
+                height: auto;
+                max-width: 600px;
+                max-height: 400px;
+            }
+            
+            /* Styles pour éviter les décalages de mise en page */
+            h1, h2, h3, h4, h5, h6 {
+                font-weight: 700;
+            }
+            
+            .display-4 {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+            
+            .lead {
+                font-size: 1.25rem;
+                font-weight: 400;
+            }
+            
+            /* Styles pour les boutons */
+            .btn {
+                font-weight: 500;
+                padding: 0.5rem 1.5rem;
+            }
+            
+            /* Styles pour la navigation */
+            .navbar-nav {
+                margin-left: auto;
+            }
+            
+            .nav-link {
+                padding: 0.5rem 1rem;
+                font-weight: 500;
+            }
+            
+            /* Styles pour éviter les décalages dans le footer */
+            .footer-widget h5 {
+                font-size: 1.25rem;
+                margin-bottom: 1.5rem;
+                color: #fff;
+            }
+            
+            .footer-links {
+                padding-left: 0;
+            }
+            
+            .footer-links li {
+                margin-bottom: 0.5rem;
+            }
         </style>
-        
-        <!-- Préchargement des ressources critiques -->
-        <link rel="preload" href="{{ asset('images/logo.webp') }}" as="image" fetchpriority="high">
-        <link rel="preload" href="{{ asset('images/hero-image.webp') }}" as="image" fetchpriority="high">
-        <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" as="style">
         
         <!-- Chargement asynchrone des styles non critiques -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
         <link rel="stylesheet" href="{{ asset('css/styles.css') }}" media="print" onload="this.media='all'">
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
         
         <noscript>
             <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
             <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
-            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
         </noscript>
         
         {% block stylesheets %}{% endblock %}

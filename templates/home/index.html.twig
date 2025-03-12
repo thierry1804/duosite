@@ -28,7 +28,7 @@
 <section class="section-padding">
     <div class="container">
         <div class="section-title text-center fade-up">
-            <h2>Pourquoi choisir nos services ?</h2>
+            <h2 class="section-heading">Pourquoi choisir nos services ?</h2>
             <p class="lead">Des solutions d'importation sur mesure pour votre entreprise</p>
         </div>
         <div class="row g-4 equal-height-cards">
@@ -99,7 +99,7 @@
 <section class="section-padding">
     <div class="container">
         <div class="section-title text-center fade-up">
-            <h2>Notre processus d'importation</h2>
+            <h2 class="section-heading">Notre processus d'importation</h2>
             <p class="lead">Une approche structurée pour garantir le succès de votre projet</p>
         </div>
         <div class="row">
@@ -150,7 +150,7 @@
 <section class="section-padding bg-light">
     <div class="container">
         <div class="section-title text-center fade-up">
-            <h2>Ce que disent nos clients</h2>
+            <h2 class="section-heading">Ce que disent nos clients</h2>
             <p class="lead">Des témoignages qui reflètent notre engagement envers la satisfaction client</p>
         </div>
         <div class="row equal-height-cards">
@@ -161,7 +161,7 @@
                     </div>
                     <div class="testimonial-author">
                         <div class="testimonial-avatar" data-initials="SM">
-                            <img src="{{ asset('images/testimonial-1.webp') }}" alt="Sophie Martin" onerror="this.style.display='none'; this.parentNode.setAttribute('data-show-initials', 'true');">
+                            <div class="avatar-placeholder">SM</div>
                         </div>
                         <div>
                             <h4>Sophie Martin</h4>
@@ -177,7 +177,7 @@
                     </div>
                     <div class="testimonial-author">
                         <div class="testimonial-avatar" data-initials="TD">
-                            <img src="{{ asset('images/testimonial-2.webp') }}" alt="Thomas Dubois" onerror="this.style.display='none'; this.parentNode.setAttribute('data-show-initials', 'true');">
+                            <div class="avatar-placeholder">TD</div>
                         </div>
                         <div>
                             <h4>Thomas Dubois</h4>
@@ -193,7 +193,7 @@
                     </div>
                     <div class="testimonial-author">
                         <div class="testimonial-avatar" data-initials="JL">
-                            <img src="{{ asset('images/testimonial-3.webp') }}" alt="Julie Leroy" onerror="this.style.display='none'; this.parentNode.setAttribute('data-show-initials', 'true');">
+                            <div class="avatar-placeholder">JL</div>
                         </div>
                         <div>
                             <h4>Julie Leroy</h4>
@@ -339,22 +339,15 @@
     position: relative;
 }
 
-.testimonial-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.testimonial-avatar[data-show-initials="true"]::before {
-    content: attr(data-initials);
-    position: absolute;
-    top: 0;
-    left: 0;
+.avatar-placeholder {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
 }
 
 .testimonial-author h4 {
@@ -394,6 +387,48 @@
 
 .equal-height-cards .feature-card p {
     flex-grow: 1;
+}
+
+/* Styles pour éviter les décalages de mise en page */
+.section-heading {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    min-height: 3rem;
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(43, 78, 255, 0.1);
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    color: var(--primary-color);
+    font-size: 2rem;
+}
+
+.section-padding {
+    padding: 100px 0;
+}
+
+.section-title {
+    margin-bottom: 60px;
+}
+
+/* Styles pour les animations sans décalage */
+.fade-up {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.fade-up.active {
+    opacity: 1;
+    transform: translateY(0);
 }
 </style>
 {% endblock %}
