@@ -324,8 +324,9 @@
                                 </li>
                             {% else %}
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link" href="{{ path('app_login') }}" id="navbarUserIcon">
-                                        <i class="fas fa-user user-icon-inactive fs-5"></i>
+                                    <a class="nav-link" href="{{ path('app_login') }}" id="navbarUserIcon" aria-label="Connexion à votre compte">
+                                        <i class="fas fa-user user-icon-inactive fs-5" aria-hidden="true"></i>
+                                        <span class="visually-hidden">Connexion</span>
                                     </a>
                                 </li>
                             {% endif %}
@@ -349,8 +350,14 @@
                             <h5>À propos de nous</h5>
                             <p>Duo Import MDG est votre partenaire de confiance pour l'importation de produits depuis la Chine. Nous vous accompagnons dans toutes les étapes de votre projet d'importation.</p>
                             <div class="social-icons mt-4">
-                                <a href="https://www.facebook.com/duoimportmdg" target="_blank"><i class="fab fa-facebook-f"></i></a>
-                                <a href="#" target="_blank"><i class="fab fa-tiktok"></i></a>
+                                <a href="https://www.facebook.com/duoimportmdg" target="_blank" aria-label="Suivez-nous sur Facebook">
+                                    <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Facebook</span>
+                                </a>
+                                <a href="#" target="_blank" aria-label="Suivez-nous sur TikTok">
+                                    <i class="fab fa-tiktok" aria-hidden="true"></i>
+                                    <span class="visually-hidden">TikTok</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -413,7 +420,10 @@
         </footer>
 
         <!-- Back to Top -->
-        <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="fas fa-arrow-up"></i></a>
+        <a href="#" class="back-to-top d-flex align-items-center justify-content-center" aria-label="Retour en haut de la page">
+            <i class="fas fa-arrow-up" aria-hidden="true"></i>
+            <span class="visually-hidden">Retour en haut</span>
+        </a>
 
         <!-- Chargement différé des ressources non critiques -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" media="print" onload="this.media='all'">
