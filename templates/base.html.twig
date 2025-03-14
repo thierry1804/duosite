@@ -13,9 +13,9 @@
         <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLEj6Z1xlFQ.woff2" as="font" type="font/woff2" crossorigin>
         <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2" as="font" type="font/woff2" crossorigin>
         
-        <!-- Préchargement des ressources critiques -->
-        <link rel="preload" href="{{ asset('images/logo.webp') }}" as="image" fetchpriority="high">
-        <link rel="preload" href="{{ asset('images/hero-image.webp') }}" as="image" fetchpriority="high">
+        <!-- Préchargement des ressources critiques avec dimensions explicites -->
+        <link rel="preload" href="{{ asset('images/logo.webp') }}" as="image" fetchpriority="high" imagesizes="40px" imagesrcset="{{ asset('images/logo.webp') }} 40w">
+        <link rel="preload" href="{{ asset('images/hero-image.webp') }}" as="image" fetchpriority="high" imagesizes="600px" imagesrcset="{{ asset('images/hero-image.webp') }} 600w">
         
         <!-- Chargement des polices avec font-display: swap -->
         <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
@@ -28,6 +28,7 @@
                 --primary-dark: #1a3dff;
                 --secondary-color: #6c757d;
                 --text-color: #444444;
+                --navbar-height: 80px;
             }
 
             body {
@@ -35,14 +36,17 @@
                 color: var(--text-color);
                 line-height: 1.7;
                 margin: 0;
+                overflow-x: hidden;
             }
 
             /* Réserver l'espace pour les éléments qui vont charger */
             .navbar {
-                padding: 1rem 0;
+                padding: 0;
                 background: #fff !important;
                 box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-                min-height: 80px;
+                height: var(--navbar-height);
+                display: flex;
+                align-items: center;
             }
 
             .navbar-brand {
@@ -50,6 +54,7 @@
                 font-size: 1.5rem;
                 display: flex;
                 align-items: center;
+                height: var(--navbar-height);
             }
 
             .navbar-brand img {
@@ -84,6 +89,7 @@
                 padding: 100px 0;
                 position: relative;
                 overflow: hidden;
+                min-height: 500px;
             }
             
             .hero-section h1 {
@@ -100,7 +106,10 @@
                 aspect-ratio: 3/2;
                 width: 100%;
                 max-width: 600px;
+                max-height: 400px;
                 margin: 0 auto;
+                position: relative;
+                overflow: hidden;
             }
             
             .hero-image img {
@@ -108,6 +117,7 @@
                 height: auto;
                 max-width: 600px;
                 max-height: 400px;
+                object-fit: cover;
             }
             
             /* Styles pour éviter les décalages de mise en page */
@@ -134,11 +144,53 @@
             /* Styles pour la navigation */
             .navbar-nav {
                 margin-left: auto;
+                height: 100%;
             }
             
             .nav-link {
                 padding: 0.5rem 1rem;
                 font-weight: 500;
+                height: 100%;
+                display: flex;
+                align-items: center;
+            }
+            
+            /* Navbar toggle button */
+            .navbar-toggler {
+                border: none;
+                padding: 0.5rem;
+                width: 44px;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .navbar-toggler-icon {
+                width: 24px;
+                height: 24px;
+            }
+            
+            /* Navbar collapse */
+            #navbarNav {
+                transition: height 0.3s ease;
+            }
+            
+            /* Fix for mobile navbar */
+            @media (max-width: 991px) {
+                .navbar-collapse {
+                    position: absolute;
+                    top: var(--navbar-height);
+                    left: 0;
+                    right: 0;
+                    background: white;
+                    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+                    z-index: 1000;
+                    padding: 1rem;
+                    height: auto;
+                    max-height: calc(100vh - var(--navbar-height));
+                    overflow-y: auto;
+                }
             }
             
             /* Styles pour éviter les décalages dans le footer */

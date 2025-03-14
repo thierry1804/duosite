@@ -6,6 +6,7 @@
     --text-color: #444444;
     --light-bg: #f8f9fa;
     --transition: all 0.3s ease;
+    --navbar-height: 80px; /* Explicit navbar height */
 }
 
 /* Global Styles */
@@ -13,6 +14,7 @@ body {
     font-family: 'Poppins', sans-serif;
     color: var(--text-color);
     line-height: 1.7;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -32,20 +34,24 @@ a:hover {
 
 /* Header & Navigation */
 .navbar {
-    padding: 1rem 0;
+    padding: 0;
     background: #fff !important;
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-    min-height: 80px; /* Hauteur minimale pour la navbar */
+    height: var(--navbar-height); /* Fixed height */
+    display: flex;
+    align-items: center;
 }
 
 .navbar .container {
     display: flex;
     align-items: center;
+    height: 100%;
 }
 
 .navbar-collapse {
     display: flex;
     align-items: center;
+    height: 100%;
 }
 
 .navbar-brand {
@@ -53,20 +59,25 @@ a:hover {
     font-size: 1.5rem;
     display: flex;
     align-items: center;
+    height: var(--navbar-height);
 }
 
 .navbar-brand img {
     margin-right: 10px;
+    width: 40px;
+    height: 40px;
 }
 
 .navbar-nav {
     display: flex;
     align-items: center;
+    height: 100%;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
+    height: 100%;
 }
 
 .nav-link {
@@ -75,6 +86,7 @@ a:hover {
     transition: var(--transition);
     display: flex;
     align-items: center;
+    height: 100%;
 }
 
 .nav-link:hover {
@@ -122,27 +134,50 @@ a:hover {
 
 /* Hero Section */
 .hero-section {
-    background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(45deg, #2b4eff, #1a3dff);
     padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+    min-height: 500px; /* Minimum height to prevent layout shifts */
+}
+
+.hero-image {
+    aspect-ratio: 3/2;
+    width: 100%;
+    max-width: 600px;
+    max-height: 400px;
+    margin: 0 auto;
     position: relative;
     overflow: hidden;
 }
 
-.hero-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
-    background-size: 20px 20px;
-    opacity: 0.3;
+.hero-image img {
+    width: 100%;
+    height: auto;
+    max-width: 600px;
+    max-height: 400px;
+    object-fit: cover;
 }
 
-.hero-content {
-    position: relative;
-    z-index: 1;
+/* Navbar toggle button */
+.navbar-toggler {
+    border: none;
+    padding: 0.5rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar-toggler-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* Navbar collapse */
+#navbarNav {
+    transition: height 0.3s ease;
 }
 
 /* Section Styles */
@@ -283,11 +318,17 @@ footer a:hover {
 /* Responsive Styles */
 @media (max-width: 991px) {
     .navbar-collapse {
-        background: #fff;
+        position: absolute;
+        top: var(--navbar-height);
+        left: 0;
+        right: 0;
+        background: white;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
         padding: 1rem;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        align-items: flex-start;
+        height: auto;
+        max-height: calc(100vh - var(--navbar-height));
+        overflow-y: auto;
     }
     
     .navbar-nav {
