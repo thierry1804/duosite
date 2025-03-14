@@ -5,11 +5,25 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
-    #esi: true
-    #fragments: true
+    # Enable HTTP cache
+    http_cache: true
+    
+    # Enable ESI support
+    esi: true
+    
+    # Enable fragment support
+    fragments: true
+    
+    # PHP settings
+    php_errors:
+        log: true
 
 when@test:
     framework:
         test: true
         session:
             storage_factory_id: session.storage.factory.mock_file
+
+when@prod:
+    framework:
+        http_method_override: false
