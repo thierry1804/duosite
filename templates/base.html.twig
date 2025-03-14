@@ -10,6 +10,24 @@
         <title>{% block title %}Duo Import MDG{% endblock %}</title>
         <link rel="icon" href="favicon.ico">
         
+        <!-- Script d'optimisation du LCP -->
+        <script>
+            // Fonction pour précharger l'image hero
+            (function() {
+                var heroImage = new Image();
+                heroImage.src = "{{ asset('images/hero-image-300.webp') }}";
+                heroImage.fetchPriority = "high";
+                heroImage.onload = function() {
+                    var heroImages = document.querySelectorAll('.hero-image img');
+                    if (heroImages.length > 0) {
+                        heroImages.forEach(function(img) {
+                            img.classList.add('loaded');
+                        });
+                    }
+                };
+            })();
+        </script>
+        
         <!-- Préchargement des polices pour éviter les décalages de mise en page -->
         <link rel="preload" href="{{ asset('css/fonts.css') }}" as="style">
         <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v20/pxiEyp8kv8JHgFVrJJfecg.woff2" as="font" type="font/woff2" crossorigin>
@@ -19,7 +37,7 @@
         
         <!-- Préchargement des ressources critiques avec dimensions explicites -->
         <link rel="preload" href="{{ asset('images/logo.webp') }}" as="image" fetchpriority="high" imagesizes="40px" imagesrcset="{{ asset('images/logo.webp') }} 40w">
-        <link rel="preload" href="{{ asset('images/hero-image.webp') }}" as="image" fetchpriority="high" imagesizes="600px" imagesrcset="{{ asset('images/hero-image.webp') }} 600w">
+        <link rel="preload" href="{{ asset('images/hero-image-300.webp') }}" as="image" fetchpriority="high" imagesizes="300px" imagesrcset="{{ asset('images/hero-image-300.webp') }} 300w">
         
         <!-- Chargement des polices avec font-display: swap -->
         <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
@@ -114,6 +132,9 @@
                 margin: 0 auto;
                 position: relative;
                 overflow: hidden;
+                background-color: #1a3dff;
+                border-radius: 0.5rem;
+                box-shadow: 0 1rem 3rem rgba(0,0,0,.175);
             }
             
             .hero-image img {
@@ -122,6 +143,25 @@
                 max-width: 600px;
                 max-height: 400px;
                 object-fit: cover;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .hero-image img.loaded {
+                opacity: 1;
+            }
+            
+            /* Optimisation pour le LCP */
+            @media (max-width: 768px) {
+                .hero-section {
+                    padding: 60px 0;
+                    min-height: auto;
+                }
+                
+                .hero-image {
+                    max-width: 100%;
+                    max-height: 300px;
+                }
             }
             
             /* Styles pour éviter les décalages de mise en page */
@@ -378,6 +418,7 @@
         <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"></noscript>
 
         <!-- Scripts -->
+        <script src="{{ asset('js/image-optimizer.js') }}" defer></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
         <script src="{{ asset('js/scripts.js') }}" defer></script>
         {% block javascripts %}{% endblock %}
