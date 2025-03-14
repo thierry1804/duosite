@@ -8,3 +8,9 @@
     # Redirige toutes les requêtes vers public/index.php
     RewriteRule ^(.*)$ public/index.php [QSA,L]
 </IfModule>
+
+# Remove x-robots-tag header if it exists
+<IfModule mod_headers.c>
+    Header unset X-Robots-Tag
+    Header set X-Robots-Tag "index, follow" env=!dont_index
+</IfModule>

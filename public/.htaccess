@@ -1,0 +1,25 @@
+# Enable rewrite engine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+</IfModule>
+
+# Remove x-robots-tag header if it exists
+<IfModule mod_headers.c>
+    Header unset X-Robots-Tag
+    Header set X-Robots-Tag "index, follow" env=!dont_index
+</IfModule>
+
+# Serve resources with the proper MIME types
+<IfModule mod_mime.c>
+    AddType image/webp .webp
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# Handle front controller
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule> 
