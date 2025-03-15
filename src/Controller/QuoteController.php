@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Address;
 use App\Service\QuoteFeeCalculator;
+use App\Service\UserIdentityTracker;
 
 class QuoteController extends AbstractController
 {
@@ -32,7 +33,8 @@ class QuoteController extends AbstractController
         UserRepository $userRepository,
         UserPasswordHasherInterface $passwordHasher,
         SluggerInterface $slugger,
-        QuoteFeeCalculator $feeCalculator
+        QuoteFeeCalculator $feeCalculator,
+        UserIdentityTracker $identityTracker
     ): Response
     {
         $quote = new Quote();
@@ -78,12 +80,15 @@ class QuoteController extends AbstractController
                     
                     // Si l'utilisateur n'est pas connecté, vérifier s'il existe déjà ou en créer un nouveau
                     if (!$user) {
-                        // Vérifier si un utilisateur avec cet email existe déjà
-                        $existingUser = $userRepository->findOneBy(['email' => $quote->getEmail()]);
+                        // Vérifier si un utilisateur avec cet email ou ce téléphone existe déjà
+                        $existingUser = $userRepository->findByEmailOrPhone($quote->getEmail(), $quote->getPhone());
                         
                         if ($existingUser) {
-                            // Associer le devis à l'utilisateur existant
+                            // Associer le devis à l'utilisateur existant sans mettre à jour ses informations
                             $quote->setUser($existingUser);
+                            
+                            // Tracer les informations originales de l'utilisateur
+                            $identityTracker->traceUserIdentity($quote);
                         } else {
                             // Créer un nouvel utilisateur
                             $newUser = new User();
@@ -103,6 +108,9 @@ class QuoteController extends AbstractController
                             
                             // Associer le devis au nouvel utilisateur
                             $quote->setUser($newUser);
+                            
+                            // Tracer les informations originales de l'utilisateur
+                            $identityTracker->traceUserIdentity($quote);
                             
                             // Envoyer un email avec les informations de connexion
                             try {

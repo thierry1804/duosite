@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\QuoteSettings;
 use App\Form\QuoteSettingsType;
 use App\Repository\QuoteSettingsRepository;
+use App\Repository\UserRepository;
+use App\Service\UserIdentityTracker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,6 +47,32 @@ class AdminController extends AbstractController
         
         return $this->render('admin/quote_settings.html.twig', [
             'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/users/suspicious', name: 'app_admin_suspicious_users')]
+    public function suspiciousUsers(
+        UserRepository $userRepository,
+        UserIdentityTracker $identityTracker
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        $users = $userRepository->findAll();
+        $suspiciousUsers = [];
+        
+        foreach ($users as $user) {
+            $fraudCheck = $identityTracker->detectPotentialFraud($user);
+            
+            if ($fraudCheck['suspiciousActivity']) {
+                $suspiciousUsers[] = [
+                    'user' => $user,
+                    'fraudDetails' => $fraudCheck
+                ];
+            }
+        }
+        
+        return $this->render('admin/suspicious_users.html.twig', [
+            'suspiciousUsers' => $suspiciousUsers
         ]);
     }
 } 

@@ -79,7 +79,10 @@ class QuoteFeeCalculator
             return true; // Si pas d'utilisateur, on considère que c'est le premier devis
         }
         
-        $quotesCount = $this->quoteRepository->count(['user' => $user]);
-        return $quotesCount <= 1; // On compte le devis actuel, donc on vérifie <= 1
+        // Compter les devis de cet utilisateur
+        $quotesCount = $this->quoteRepository->countByUser($user);
+        
+        // Si c'est le premier devis (en comptant le devis actuel)
+        return $quotesCount <= 1;
     }
 } 

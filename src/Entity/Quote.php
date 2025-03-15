@@ -75,6 +75,9 @@ class Quote
     #[ORM\OneToMany(mappedBy: 'quote', targetEntity: QuoteItem::class, orphanRemoval: true, cascade: ['persist'])]
     private Collection $items;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $originalUserData = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -290,6 +293,17 @@ class Quote
             }
         }
 
+        return $this;
+    }
+
+    public function getOriginalUserData(): ?array
+    {
+        return $this->originalUserData;
+    }
+
+    public function setOriginalUserData(?array $originalUserData): self
+    {
+        $this->originalUserData = $originalUserData;
         return $this;
     }
 } 
