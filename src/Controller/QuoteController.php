@@ -175,9 +175,9 @@ class QuoteController extends AbstractController
                     try {
                         // Création de l'email pour l'administrateur
                         $emailAdmin = (new Email())
-                            ->from($quote->getEmail())
+                            ->from('noreply@duoimport.mg')
+                            ->replyTo($quote->getEmail())
                             ->to('commercial@duoimport.mg')
-                            ->bcc($quote->getEmail())
                             ->subject('Nouvelle demande de devis - ' . $quote->getQuoteNumber())
                             ->html($this->renderView(
                                 'emails/quote.html.twig',

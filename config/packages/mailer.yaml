@@ -1,3 +1,7 @@
 framework:
     mailer:
         dsn: '%env(MAILER_DSN)%'
+        envelope:
+            sender: 'noreply@duoimport.mg'
+        headers:
+            From: 'Duo Import MDG <noreply@duoimport.mg>'
