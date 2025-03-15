@@ -19,6 +19,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Address;
+use App\Service\QuoteFeeCalculator;
 
 class QuoteController extends AbstractController
 {
@@ -30,7 +31,8 @@ class QuoteController extends AbstractController
         EntityManagerInterface $entityManager,
         UserRepository $userRepository,
         UserPasswordHasherInterface $passwordHasher,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        QuoteFeeCalculator $feeCalculator
     ): Response
     {
         $quote = new Quote();
@@ -175,6 +177,9 @@ class QuoteController extends AbstractController
                     $entityManager->persist($quote);
                     $entityManager->flush();
                     
+                    // Calcul des frais de devis
+                    $feeDetails = $feeCalculator->calculateFee($quote);
+                    
                     // Création de l'email pour l'administrateur
                     $emailAdmin = (new Email())
                         ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG - Système de gestion des devis'))
@@ -183,7 +188,10 @@ class QuoteController extends AbstractController
                         ->subject('Nouvelle demande de devis - ' . $quote->getQuoteNumber())
                         ->html($this->renderView(
                             'emails/quote.html.twig',
-                            ['quote' => $quote]
+                            [
+                                'quote' => $quote,
+                                'feeDetails' => $feeDetails
+                            ]
                         ));
                     
                     // Envoi de l'email à l'administrateur
@@ -203,7 +211,10 @@ class QuoteController extends AbstractController
                         ->subject('Confirmation de votre demande de devis - ' . $quote->getQuoteNumber())
                         ->html($this->renderView(
                             'emails/quote_confirmation.html.twig',
-                            ['quote' => $quote]
+                            [
+                                'quote' => $quote,
+                                'feeDetails' => $feeDetails
+                            ]
                         ));
                     
                     // Envoi de l'email au client

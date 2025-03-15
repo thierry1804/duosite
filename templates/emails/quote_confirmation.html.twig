@@ -30,6 +30,26 @@
             <p>Cher(e) {{ quote.firstName }} {{ quote.lastName }},</p>
             <p>Nous vous remercions pour votre demande de devis. Notre équipe commerciale l'examinera dans les plus brefs délais et vous contactera sous 24 à 72 heures.</p>
             <p>Veuillez conserver ce numéro de devis pour toute communication future concernant cette demande.</p>
+            
+            {% if feeDetails.totalFee > 0 %}
+            <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin-top: 15px; border-left: 4px solid #ffc107;">
+                <p><strong>Information importante concernant les frais de traitement :</strong></p>
+                <p>Votre demande de devis comporte {{ feeDetails.itemCount }} article(s).</p>
+                
+                {% if feeDetails.isFirstQuote %}
+                    <p>Pour votre première demande, les {{ feeDetails.freeItemsLimit }} premiers articles sont gratuits.</p>
+                    {% if feeDetails.paidItems > 0 %}
+                        <p>Vous avez {{ feeDetails.paidItems }} article(s) supplémentaire(s) qui sont facturés à {{ feeDetails.itemPrice|number_format(0, ' ', '.') }} Ariary chacun.</p>
+                        <p><strong>Montant total à payer : {{ feeDetails.totalFee|number_format(0, ' ', '.') }} Ariary</strong></p>
+                        <p>Veuillez vous acquitter de ce montant pour que votre demande soit traitée. Notre équipe vous contactera pour les modalités de paiement.</p>
+                    {% endif %}
+                {% else %}
+                    <p>Pour cette demande, tous les articles sont facturés à {{ feeDetails.itemPrice|number_format(0, ' ', '.') }} Ariary chacun.</p>
+                    <p><strong>Montant total à payer : {{ feeDetails.totalFee|number_format(0, ' ', '.') }} Ariary</strong></p>
+                    <p>Veuillez vous acquitter de ce montant pour que votre demande soit traitée. Notre équipe vous contactera pour les modalités de paiement.</p>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
 
         <h2 style="color: #2c3e50; margin-top: 30px;">Récapitulatif de votre demande</h2>
