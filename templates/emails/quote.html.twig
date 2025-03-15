@@ -65,7 +65,7 @@
             {% endif %}
             
             {% if item.budget %}
-            <p><strong>Budget :</strong> {{ item.budget }}€</p>
+            <p><strong>Budget :</strong> {{ item.budget|number_format(0, ' ', '.') }} Ar</p>
             {% endif %}
         </div>
         {% endfor %}
