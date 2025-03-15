@@ -42,9 +42,8 @@ class Quote
     #[ORM\Column(length: 150, nullable: true)]
     private ?string $company = null;
 
-    #[ORM\Column(length: 50)]
-    #[Assert\NotBlank(message: 'Le délai est obligatoire')]
-    private ?string $timeline = null;
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $shippingMethod = null;
 
     #[ORM\Column(type: 'json')]
     private array $services = [];
@@ -160,14 +159,14 @@ class Quote
         return $this;
     }
 
-    public function getTimeline(): ?string
+    public function getShippingMethod(): ?string
     {
-        return $this->timeline;
+        return $this->shippingMethod;
     }
 
-    public function setTimeline(string $timeline): self
+    public function setShippingMethod(?string $shippingMethod): self
     {
-        $this->timeline = $timeline;
+        $this->shippingMethod = $shippingMethod;
         return $this;
     }
 

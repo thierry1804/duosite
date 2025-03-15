@@ -176,8 +176,8 @@ class QuoteController extends AbstractController
                     
                     // Création de l'email pour l'administrateur
                     $emailAdmin = (new Email())
-                        ->from('commercial@duoimport.mg')
-                        ->replyTo($quote->getEmail())
+                        ->from('commercial@duoimport.mg', 'Duo Import MDG - Système de gestion des devis')
+                        ->replyTo($quote->getEmail(), $quote->getFirstName() . ' ' . $quote->getLastName())
                         ->to('commercial@duoimport.mg')
                         ->subject('Nouvelle demande de devis - ' . $quote->getQuoteNumber())
                         ->html($this->renderView(
@@ -197,7 +197,7 @@ class QuoteController extends AbstractController
                     
                     // Création de l'email de confirmation pour le client
                     $emailClient = (new Email())
-                        ->from('commercial@duoimport.mg')
+                        ->from('commercial@duoimport.mg', 'Duo Import MDG - Système de gestion des devis')
                         ->to($quote->getEmail())
                         ->subject('Confirmation de votre demande de devis - ' . $quote->getQuoteNumber())
                         ->html($this->renderView(

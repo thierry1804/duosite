@@ -243,39 +243,73 @@
             <i class="fas fa-plus-circle me-2"></i> Ajouter un produit
         </button>
         
-        {{ form_row(form.timeline, {'attr': {'class': 'form-select'}}) }}
-
-        <div class="mb-3">
-            {{ form_label(form.services) }}
-            <div class="services-checkboxes">
-                {% for service in form.services %}
-                    <div class="form-check">
-                        {{ form_widget(service, {'attr': {'class': 'form-check-input'}}) }}
-                        {{ form_label(service, null, {'label_attr': {'class': 'form-check-label'}}) }}
+        <div class="row mt-4 mb-4">
+            <!-- Services souhaités (colonne gauche) -->
+            <div class="col-md-6">
+                <div class="mb-3 h-100">
+                    {{ form_label(form.services) }}
+                    <div class="services-switches d-flex flex-column h-100">
+                        {% for service in form.services %}
+                            <div class="mb-2 flex-grow-1">
+                                <label class="switch-container h-100">
+                                    {{ form_widget(service, {'attr': {'class': 'switch-input'}}) }}
+                                    <span class="switch-slider"></span>
+                                    <span class="switch-label">{{ service.vars.label }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+                    {{ form_errors(form.services) }}
+                </div>
             </div>
-            {{ form_errors(form.services) }}
+            
+            <!-- Choix de l'envoi (colonne droite) -->
+            <div class="col-md-6">
+                <div class="mb-3 shipping-method-container h-100">
+                    {{ form_label(form.shippingMethod) }}
+                    <div class="shipping-method-options row h-100">
+                        {% for choice in form.shippingMethod %}
+                            <div class="col-4 col-sm-4 col-md-4 col-lg-4 mb-2">
+                                <label class="radio-card h-100">
+                                    {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}}) }}
+                                    <div class="radio-card-content">
+                                        <div class="shipping-icon">
+                                            {% if choice.vars.value == 'maritime' %}
+                                                <i class="fas fa-ship"></i>
+                                            {% elseif choice.vars.value == 'aerien_express' %}
+                                                <i class="fas fa-plane-departure"></i>
+                                            {% elseif choice.vars.value == 'aerien_normal' %}
+                                                <i class="fas fa-plane"></i>
+                                            {% endif %}
+                                        </div>
+                                        <span class="radio-card-label">{{ choice.vars.label }}</span>
+                                    </div>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {{ form_errors(form.shippingMethod) }}
+                </div>
+            </div>
         </div>
         
-        {{ form_row(form.additionalInfo, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+        <div class="mb-4">
+            {{ form_label(form.additionalInfo) }}
+            {{ form_widget(form.additionalInfo, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+            {{ form_errors(form.additionalInfo) }}
+        </div>
 
         <div class="mb-3">
             {{ form_label(form.referralSource) }}
-            <div class="referral-radio">
-                {% for choice in form.referralSource %}
-                    <div class="form-check">
-                        {{ form_widget(choice, {'attr': {'class': 'form-check-input'}}) }}
-                        {{ form_label(choice, null, {'label_attr': {'class': 'form-check-label'}}) }}
-                    </div>
-                {% endfor %}
-            </div>
+            {{ form_widget(form.referralSource, {'attr': {'class': 'form-select'}}) }}
             {{ form_errors(form.referralSource) }}
         </div>
 
         <div class="mb-3 form-check">
             {{ form_widget(form.privacyPolicy, {'attr': {'class': 'form-check-input'}}) }}
-            {{ form_label(form.privacyPolicy, null, {'label_attr': {'class': 'form-check-label'}}) }}
+            <label for="{{ form.privacyPolicy.vars.id }}" class="form-check-label">
+                J'accepte la <a href="{{ path('app_privacy_policy') }}" target="_blank">politique de confidentialité</a>
+            </label>
             {{ form_errors(form.privacyPolicy) }}
         </div>
 

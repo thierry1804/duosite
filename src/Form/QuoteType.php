@@ -53,29 +53,30 @@ class QuoteType extends AbstractType
                     'placeholder' => 'Votre entreprise'
                 ]
             ])
-            ->add('timeline', ChoiceType::class, [
-                'label' => 'Délai souhaité',
-                'choices' => [
-                    'Urgent (moins d\'un mois)' => 'Urgent (moins d\'un mois)',
-                    '1-3 mois' => '1-3 mois',
-                    '3-6 mois' => '3-6 mois',
-                    'Plus de 6 mois' => 'Plus de 6 mois',
-                    'Pas de délai particulier' => 'Pas de délai particulier'
-                ],
-                'placeholder' => 'Sélectionnez un délai',
-            ])
             ->add('services', ChoiceType::class, [
                 'label' => 'Services souhaités',
                 'choices' => [
-                    'Sourcing de produits' => 'Sourcing de produits',
-                    'Négociation avec les fournisseurs' => 'Négociation avec les fournisseurs',
-                    'Contrôle qualité' => 'Contrôle qualité',
-                    'Logistique et transport' => 'Logistique et transport',
-                    'Dédouanement' => 'Dédouanement',
-                    'Accompagnement complet' => 'Accompagnement complet'
+                    'Sourcing de produits et négociation avec les fournisseurs' => 'Sourcing et négociation',
+                    'Logistique et transport, dédouanement et livraison' => 'Transport et logistique',
                 ],
                 'multiple' => true,
                 'expanded' => true
+            ])
+            ->add('shippingMethod', ChoiceType::class, [
+                'label' => 'Choix de l\'envoi',
+                'choices' => [
+                    'Envoi maritime (délai estimé: 50-70 jours)' => 'maritime',
+                    'Envoi aérien express (délai estimé: 3-7 jours)' => 'aerien_express',
+                    'Envoi aérien normal (délai estimé: 15-30 jours)' => 'aerien_normal',
+                ],
+                'expanded' => true,
+                'required' => true,
+                'attr' => [
+                    'class' => 'shipping-method-options',
+                ],
+                'row_attr' => [
+                    'style' => 'display: none;' // Cacher tout le groupe de formulaire par défaut
+                ]
             ])
             ->add('additionalInfo', TextareaType::class, [
                 'label' => 'Informations complémentaires (optionnel)',

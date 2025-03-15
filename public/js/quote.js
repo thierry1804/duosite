@@ -7,6 +7,116 @@ document.addEventListener('DOMContentLoaded', function() {
     const otherProductTypeContainer = document.querySelector('#otherProductTypeContainer');
     const form = document.querySelector('#quoteForm');
     const loader = document.querySelector('#loader');
+    const shippingMethodContainer = document.querySelector('.shipping-method-container');
+    
+    // Fonction pour vérifier si les deux catégories de services sont sélectionnées
+    function checkServicesSelection() {
+        console.log("checkServicesSelection called");
+        const serviceCheckboxes = document.querySelectorAll('input[name="quote[services][]"]');
+        let sourcingCheckbox, logisticsCheckbox;
+        
+        // Identifier les checkboxes
+        serviceCheckboxes.forEach(function(checkbox) {
+            console.log("Checkbox value:", checkbox.value);
+            if (checkbox.value === 'Sourcing et négociation') {
+                sourcingCheckbox = checkbox;
+                console.log("Sourcing checkbox found, checked:", checkbox.checked);
+            }
+            if (checkbox.value === 'Transport et logistique') {
+                logisticsCheckbox = checkbox;
+                console.log("Logistics checkbox found, checked:", checkbox.checked);
+            }
+        });
+        
+        // Vérifier si la première option est sélectionnée
+        const sourcingSelected = sourcingCheckbox && sourcingCheckbox.checked;
+        console.log("Sourcing selected:", sourcingSelected);
+        
+        // Gérer l'état de la seconde option (Transport et logistique)
+        if (logisticsCheckbox) {
+            if (!sourcingSelected) {
+                // Désactiver et décocher la seconde option si la première n'est pas sélectionnée
+                logisticsCheckbox.disabled = true;
+                logisticsCheckbox.checked = false;
+                
+                // Ajouter une classe pour le style visuel
+                logisticsCheckbox.parentElement.classList.add('disabled-option');
+                console.log("Logistics checkbox disabled");
+            } else {
+                // Activer la seconde option si la première est sélectionnée
+                logisticsCheckbox.disabled = false;
+                logisticsCheckbox.parentElement.classList.remove('disabled-option');
+                console.log("Logistics checkbox enabled");
+            }
+        }
+        
+        // Vérifier si la seconde option est sélectionnée
+        const logisticsSelected = logisticsCheckbox && logisticsCheckbox.checked;
+        
+        // Afficher ou masquer le choix d'envoi en fonction des sélections
+        if (shippingMethodContainer) {
+            if (logisticsSelected) {
+                shippingMethodContainer.style.display = 'block';
+                // Rendre le champ obligatoire quand il est visible
+                document.querySelectorAll('input[name="quote[shippingMethod]"]').forEach(function(radio) {
+                    radio.required = true;
+                });
+            } else {
+                shippingMethodContainer.style.display = 'none';
+                // Désélectionner toutes les options et les rendre non obligatoires
+                document.querySelectorAll('input[name="quote[shippingMethod]"]').forEach(function(radio) {
+                    radio.checked = false;
+                    radio.required = false;
+                });
+            }
+        }
+    }
+    
+    // Désactiver la seconde option par défaut au chargement de la page
+    function initializeServiceOptions() {
+        console.log("initializeServiceOptions called");
+        const logisticsCheckbox = document.querySelector('input[name="quote[services][]"][value="Transport et logistique"]');
+        if (logisticsCheckbox) {
+            logisticsCheckbox.disabled = true;
+            logisticsCheckbox.parentElement.classList.add('disabled-option');
+            console.log("Logistics checkbox initially disabled");
+        } else {
+            console.log("Logistics checkbox not found");
+        }
+        
+        // Vérifier l'état initial des options
+        checkServicesSelection();
+    }
+    
+    // Initialiser les options de service au chargement de la page
+    console.log("Document loaded");
+    initializeServiceOptions();
+    
+    // Ajouter des écouteurs d'événements pour les cases à cocher de services
+    document.querySelectorAll('input[name="quote[services][]"]').forEach(function(checkbox) {
+        console.log("Adding event listener to checkbox:", checkbox.value);
+        checkbox.addEventListener('change', function() {
+            console.log("Checkbox changed:", this.value, "checked:", this.checked);
+            checkServicesSelection();
+        });
+    });
+    
+    // Initialiser le conteneur de méthode d'envoi
+    if (shippingMethodContainer) {
+        console.log("Shipping method container found");
+        // S'assurer que le conteneur est masqué par défaut
+        shippingMethodContainer.style.display = 'none';
+        
+        // Désactiver l'attribut required des boutons radio au chargement initial
+        document.querySelectorAll('input[name="quote[shippingMethod]"]').forEach(function(radio) {
+            radio.required = false;
+        });
+        
+        // Vérifier l'état initial
+        checkServicesSelection();
+    } else {
+        console.log("Shipping method container not found");
+    }
     
     // Gestion du champ "Autre type de produit"
     if (productTypeSelect && otherProductTypeContainer) {
@@ -392,7 +502,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Gestion du loader pendant la soumission
     if (form) {
-        form.addEventListener('submit', function() {
+        form.addEventListener('submit', function(event) {
+            // Vérifier si le choix d'envoi est visible
+            if (shippingMethodContainer && shippingMethodContainer.style.display === 'block') {
+                const shippingMethodSelected = Array.from(
+                    document.querySelectorAll('input[name="quote[shippingMethod]"]')
+                ).some(radio => radio.checked);
+                
+                if (!shippingMethodSelected) {
+                    // Empêcher la soumission du formulaire
+                    event.preventDefault();
+                    
+                    // Afficher un message d'erreur
+                    alert('Veuillez sélectionner une méthode d\'envoi.');
+                    
+                    // Faire défiler jusqu'au choix d'envoi
+                    shippingMethodContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    return false;
+                }
+            } else {
+                // Si le choix d'envoi est masqué, désactiver la validation HTML5 pour ce champ
+                document.querySelectorAll('input[name="quote[shippingMethod]"]').forEach(function(radio) {
+                    radio.required = false;
+                });
+            }
+            
             // Désactiver le bouton de soumission pour éviter les soumissions multiples
             const submitButton = document.querySelector('#submitButton');
             if (submitButton) {
