@@ -306,6 +306,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Mettre à jour l'index
                 itemsWrapper.dataset.index = index + 1;
+                
+                // Mettre à jour la visibilité des boutons de suppression
+                updateRemoveButtonsVisibility();
             } else {
                 // S'il n'y a pas d'élément existant, utiliser le prototype
                 const prototype = itemsWrapper.dataset.prototype;
@@ -438,6 +441,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Mettre à jour l'index
                 itemsWrapper.dataset.index = index + 1;
+                
+                // Mettre à jour la visibilité des boutons de suppression
+                updateRemoveButtonsVisibility();
             }
         });
     }
@@ -445,6 +451,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gestion de la suppression d'élément
     document.addEventListener('click', function(e) {
         if (e.target && (e.target.classList.contains('remove-item') || e.target.closest('.remove-item'))) {
+            const items = document.querySelectorAll('.quote-item');
+            
+            // Empêcher la suppression si c'est le seul produit
+            if (items.length <= 1) {
+                alert('Vous ne pouvez pas supprimer ce produit car au moins un produit est requis.');
+                return;
+            }
+            
             const item = e.target.closest('.quote-item');
             if (item) {
                 item.remove();
@@ -498,7 +512,31 @@ document.addEventListener('DOMContentLoaded', function() {
         if (itemsWrapper) {
             itemsWrapper.dataset.index = items.length;
         }
+        
+        // Mettre à jour la visibilité des boutons de suppression
+        updateRemoveButtonsVisibility();
     }
+    
+    // Fonction pour mettre à jour la visibilité des boutons de suppression
+    function updateRemoveButtonsVisibility() {
+        const items = document.querySelectorAll('.quote-item');
+        const removeButtons = document.querySelectorAll('.remove-item');
+        
+        if (items.length <= 1) {
+            // Masquer les boutons de suppression s'il n'y a qu'un seul produit
+            removeButtons.forEach(function(button) {
+                button.style.display = 'none';
+            });
+        } else {
+            // Afficher les boutons de suppression s'il y a plusieurs produits
+            removeButtons.forEach(function(button) {
+                button.style.display = 'block';
+            });
+        }
+    }
+    
+    // Initialiser la visibilité des boutons de suppression au chargement de la page
+    updateRemoveButtonsVisibility();
 
     // Gestion du loader pendant la soumission
     if (form) {
