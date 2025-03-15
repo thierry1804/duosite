@@ -6,8 +6,8 @@
 // Fonction pour précharger les images importantes
 function preloadCriticalImages() {
     const criticalImages = [
-        '/images/hero-image-300.webp',
-        '/images/logo.webp'
+        '/public/images/hero-image-300.webp',
+        '/public/images/logo.webp'
     ];
     
     criticalImages.forEach(src => {
