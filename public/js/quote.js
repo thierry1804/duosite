@@ -338,9 +338,57 @@ document.addEventListener('DOMContentLoaded', function() {
             const item = e.target.closest('.quote-item');
             if (item) {
                 item.remove();
+                
+                // Réindexer tous les champs pour éviter les trous dans les index
+                reindexItems();
             }
         }
     });
+    
+    // Fonction pour réindexer tous les items
+    function reindexItems() {
+        const items = document.querySelectorAll('.quote-item');
+        items.forEach(function(item, index) {
+            // Mettre à jour les IDs et noms des champs
+            const inputs = item.querySelectorAll('input, select, textarea');
+            inputs.forEach(function(input) {
+                const oldId = input.id;
+                const oldName = input.name;
+                
+                if (oldId) {
+                    const newId = oldId.replace(/\d+/, index);
+                    input.id = newId;
+                    
+                    // Mettre à jour les labels associés
+                    const labels = item.querySelectorAll(`label[for="${oldId}"]`);
+                    labels.forEach(function(label) {
+                        label.setAttribute('for', newId);
+                    });
+                }
+                
+                if (oldName) {
+                    const newName = oldName.replace(/\[\d+\]/, `[${index}]`);
+                    input.name = newName;
+                }
+            });
+            
+            // Mettre à jour les IDs des divs
+            const divs = item.querySelectorAll('div[id]');
+            divs.forEach(function(div) {
+                const oldId = div.id;
+                if (oldId) {
+                    const newId = oldId.replace(/\d+/, index);
+                    div.id = newId;
+                }
+            });
+        });
+        
+        // Mettre à jour l'index pour le prochain item
+        const itemsWrapper = document.querySelector('.quote-items-wrapper');
+        if (itemsWrapper) {
+            itemsWrapper.dataset.index = items.length;
+        }
+    }
 
     // Gestion du loader pendant la soumission
     if (form) {

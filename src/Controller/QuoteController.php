@@ -122,27 +122,48 @@ class QuoteController extends AbstractController
                     }
                     
                     // Traiter les photos pour chaque item
-                    foreach ($quote->getItems() as $index => $item) {
-                        $photoFile = $form->get('items')->get($index)->get('photoFile')->getData();
+                    $filesData = $request->files->get('quote');
+                    error_log('Files data: ' . print_r($filesData, true));
+                    
+                    if (isset($filesData['items']) && is_array($filesData['items'])) {
+                        // Créer un tableau associatif des fichiers par index
+                        $photoFiles = [];
+                        foreach ($filesData['items'] as $fileIndex => $fileData) {
+                            error_log("Checking file data for index $fileIndex: " . print_r($fileData, true));
+                            if (isset($fileData['photoFile']) && $fileData['photoFile']) {
+                                $photoFiles[$fileIndex] = $fileData['photoFile'];
+                                error_log("Added photo file for index $fileIndex");
+                            }
+                        }
                         
-                        if ($photoFile) {
-                            $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
-                            // Sécuriser le nom du fichier
-                            $safeFilename = $slugger->slug($originalFilename);
-                            $newFilename = $safeFilename . '-' . uniqid() . '.' . $photoFile->guessExtension();
-                            
-                            try {
-                                // Déplacer le fichier dans le répertoire final
-                                $photoFile->move(
-                                    $this->getParameter('quote_photos_directory'),
-                                    $newFilename
-                                );
+                        error_log('Photo files: ' . print_r(array_keys($photoFiles), true));
+                        
+                        // Parcourir les items du formulaire et associer les photos
+                        foreach ($form->get('items') as $index => $itemForm) {
+                            error_log("Processing item form at index $index");
+                            if (isset($photoFiles[$index])) {
+                                $photoFile = $photoFiles[$index];
+                                $item = $itemForm->getData();
+                                error_log("Found photo file for item at index $index");
                                 
-                                // Mettre à jour le nom du fichier dans l'entité
-                                $item->setPhotoFilename($newFilename);
-                            } catch (FileException $e) {
-                                // Log l'erreur mais continuer le traitement
-                                error_log('Erreur lors du téléchargement de la photo: ' . $e->getMessage());
+                                $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
+                                // Sécuriser le nom du fichier
+                                $safeFilename = $slugger->slug($originalFilename);
+                                $newFilename = $safeFilename . '-' . uniqid() . '.' . $photoFile->guessExtension();
+                                
+                                try {
+                                    // Déplacer le fichier dans le répertoire final
+                                    $photoFile->move(
+                                        $this->getParameter('quote_photos_directory'),
+                                        $newFilename
+                                    );
+                                    
+                                    // Mettre à jour le nom du fichier dans l'entité
+                                    $item->setPhotoFilename($newFilename);
+                                } catch (FileException $e) {
+                                    // Log l'erreur mais continuer le traitement
+                                    error_log('Erreur lors du téléchargement de la photo: ' . $e->getMessage());
+                                }
                             }
                         }
                     }
@@ -180,6 +201,7 @@ class QuoteController extends AbstractController
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'Une erreur est survenue lors de l\'enregistrement de votre demande. Veuillez réessayer ultérieurement.' . $e->getMessage());
                     error_log('Erreur lors de l\'enregistrement du devis: ' . $e->getMessage());
+                    error_log('Trace: ' . $e->getTraceAsString());
                 }
             } else {
                 if (!$itemsValid) {
