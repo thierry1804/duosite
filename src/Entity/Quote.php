@@ -42,7 +42,7 @@ class Quote
     #[ORM\Column(length: 150, nullable: true)]
     private ?string $company = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
+    #[ORM\Column(name: "shipping_method", length: 50, nullable: true)]
     private ?string $shippingMethod = null;
 
     #[ORM\Column(type: 'json')]
