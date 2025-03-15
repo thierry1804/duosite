@@ -122,8 +122,8 @@ class QuoteController extends AbstractController
                     }
                     
                     // Traiter les photos pour chaque item
-                    foreach ($quote->getItems() as $item) {
-                        $photoFile = $form->get('items')->get($item->getId() ?? 0)->get('photoFile')->getData();
+                    foreach ($quote->getItems() as $index => $item) {
+                        $photoFile = $form->get('items')->get($index)->get('photoFile')->getData();
                         
                         if ($photoFile) {
                             $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
