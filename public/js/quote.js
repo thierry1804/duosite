@@ -56,7 +56,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Gestion de l'aperçu des photos
+    // Fonction pour initialiser l'aperçu des photos
+    function initPhotoPreview(fileInput) {
+        if (!fileInput) return;
+        
+        const container = fileInput.closest('.photo-upload-container');
+        if (!container) return;
+        
+        const preview = container.querySelector('.product-photo-preview');
+        if (!preview) return;
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                preview.src = '#';
+                preview.style.display = 'none';
+            }
+        });
+    }
+    
+    // Initialiser l'aperçu des photos pour les éléments existants
+    document.querySelectorAll('.form-control-file').forEach(function(fileInput) {
+        initPhotoPreview(fileInput);
+    });
+    
+    // Gestion de l'aperçu des photos pour les éléments dynamiques
     document.addEventListener('change', function(e) {
         if (e.target && e.target.type === 'file' && e.target.classList.contains('form-control-file')) {
             const container = e.target.closest('.photo-upload-container');
@@ -106,6 +138,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Ajouter l'élément au DOM
             itemsWrapper.appendChild(container);
+            
+            // Initialiser l'aperçu des photos pour le nouvel élément
+            const fileInput = container.querySelector('.form-control-file');
+            if (fileInput) {
+                initPhotoPreview(fileInput);
+            }
             
             // Mettre à jour l'index
             itemsWrapper.dataset.index = index + 1;
