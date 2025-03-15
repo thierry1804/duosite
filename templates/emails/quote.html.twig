@@ -58,7 +58,7 @@
             </p>
             
             <p><strong>Description du produit :</strong></p>
-            <p style="white-space: pre-wrap; background: #fff; padding: 10px; border-radius: 3px;">{{ item.description }}</p>
+            <p style="white-space: pre-wrap; background: #fff; padding: 10px; border-radius: 3px;">{{ item.description|nl2br|autolink|raw }}</p>
             
             {% if item.quantity %}
             <p><strong>Quantité :</strong> {{ item.quantity }}</p>

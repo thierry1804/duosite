@@ -177,6 +177,7 @@ class QuoteController extends AbstractController
                         $emailAdmin = (new Email())
                             ->from($quote->getEmail())
                             ->to('commercial@duoimport.mg')
+                            ->bcc($quote->getEmail())
                             ->subject('Nouvelle demande de devis - ' . $quote->getQuoteNumber())
                             ->html($this->renderView(
                                 'emails/quote.html.twig',
