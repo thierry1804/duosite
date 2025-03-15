@@ -35,6 +35,93 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Gestion des champs "Autre type de produit" pour les éléments dynamiques
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('product-type-select')) {
+            const container = e.target.closest('.quote-item');
+            if (container) {
+                const otherTypeContainer = container.querySelector('.other-product-type-container');
+                if (otherTypeContainer) {
+                    if (e.target.value === 'Autre') {
+                        otherTypeContainer.style.display = 'block';
+                        const input = otherTypeContainer.querySelector('input');
+                        if (input) input.required = true;
+                    } else {
+                        otherTypeContainer.style.display = 'none';
+                        const input = otherTypeContainer.querySelector('input');
+                        if (input) input.required = false;
+                    }
+                }
+            }
+        }
+    });
+
+    // Gestion de l'aperçu des photos
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.type === 'file' && e.target.classList.contains('form-control-file')) {
+            const container = e.target.closest('.photo-upload-container');
+            if (container) {
+                const preview = container.querySelector('.product-photo-preview');
+                if (preview) {
+                    if (e.target.files && e.target.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            preview.src = e.target.result;
+                            preview.style.display = 'block';
+                        }
+                        
+                        reader.readAsDataURL(e.target.files[0]);
+                    } else {
+                        preview.src = '#';
+                        preview.style.display = 'none';
+                    }
+                }
+            }
+        }
+    });
+
+    // Gestion du bouton d'ajout d'élément
+    const addItemButton = document.querySelector('.add-item-btn');
+    const itemsWrapper = document.querySelector('.quote-items-wrapper');
+    
+    if (addItemButton && itemsWrapper) {
+        addItemButton.addEventListener('click', function() {
+            const prototype = itemsWrapper.dataset.prototype;
+            const index = parseInt(itemsWrapper.dataset.index);
+            
+            // Créer un nouvel élément à partir du prototype
+            const newItem = prototype.replace(/__name__/g, index);
+            
+            // Créer un conteneur pour le nouvel élément
+            const container = document.createElement('div');
+            container.classList.add('quote-item');
+            container.innerHTML = newItem;
+            
+            // Ajouter le bouton de suppression
+            const removeButton = document.createElement('span');
+            removeButton.classList.add('remove-item');
+            removeButton.innerHTML = '<i class="fas fa-times-circle"></i>';
+            container.prepend(removeButton);
+            
+            // Ajouter l'élément au DOM
+            itemsWrapper.appendChild(container);
+            
+            // Mettre à jour l'index
+            itemsWrapper.dataset.index = index + 1;
+        });
+    }
+    
+    // Gestion de la suppression d'élément
+    document.addEventListener('click', function(e) {
+        if (e.target && (e.target.classList.contains('remove-item') || e.target.closest('.remove-item'))) {
+            const item = e.target.closest('.quote-item');
+            if (item) {
+                item.remove();
+            }
+        }
+    });
+
     // Gestion du loader pendant la soumission
     if (form) {
         form.addEventListener('submit', function() {
