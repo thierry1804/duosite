@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Nouvelle demande de devis #{{ quote.quoteNumber }}</title>
+    <title>Confirmation de votre demande de devis #{{ quote.quoteNumber }}</title>
     <style>
         .product-item {
             background: #f8f9fa;
@@ -21,22 +21,18 @@
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #2c3e50;">Nouvelle demande de devis - {{ quote.quoteNumber }}</h1>
+        <h1 style="color: #2c3e50;">Confirmation de votre demande de devis</h1>
         <p style="color: #666; font-size: 1.1em; text-align: center; background: #e9ecef; padding: 10px; border-radius: 5px;">
             Numéro de devis : <strong>{{ quote.quoteNumber }}</strong>
         </p>
         
         <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <h2 style="color: #2c3e50; margin-top: 0;">Informations du client</h2>
-            <p><strong>Nom complet :</strong> {{ quote.firstName }} {{ quote.lastName }}</p>
-            <p><strong>Email :</strong> {{ quote.email }}</p>
-            <p><strong>Téléphone :</strong> {{ quote.phone }}</p>
-            {% if quote.company %}
-            <p><strong>Entreprise :</strong> {{ quote.company }}</p>
-            {% endif %}
+            <p>Cher(e) {{ quote.firstName }} {{ quote.lastName }},</p>
+            <p>Nous vous remercions pour votre demande de devis. Notre équipe commerciale l'examinera dans les plus brefs délais et vous contactera sous 24 à 48 heures.</p>
+            <p>Veuillez conserver ce numéro de devis pour toute communication future concernant cette demande.</p>
         </div>
 
-        <h2 style="color: #2c3e50; margin-top: 30px;">Produits demandés</h2>
+        <h2 style="color: #2c3e50; margin-top: 30px;">Récapitulatif de votre demande</h2>
         
         {% for item in quote.items %}
         <div class="product-item">
@@ -86,24 +82,18 @@
             </ul>
         </div>
 
-        {% if quote.additionalInfo %}
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <h2 style="color: #2c3e50; margin-top: 0;">Informations complémentaires</h2>
-            <p style="white-space: pre-wrap;">{{ quote.additionalInfo }}</p>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center;">
+            <p>Si vous avez des questions ou souhaitez modifier votre demande, n'hésitez pas à nous contacter :</p>
+            <p><strong>Email :</strong> commercial@duoimport.mg</p>
+            <p><strong>Téléphone :</strong> +261 32 12 345 67</p>
         </div>
-        {% endif %}
-
-        {% if quote.referralSource %}
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <h2 style="color: #2c3e50; margin-top: 0;">Source</h2>
-            <p>
-                <strong>Comment nous a-t-il connu :</strong> {{ quote.referralSource }}
-            </p>
-        </div>
-        {% endif %}
 
         <p style="color: #666; font-size: 0.9em; margin-top: 20px; text-align: center;">
             Cette demande a été envoyée le {{ quote.createdAt|date('d/m/Y à H:i') }}
+        </p>
+        
+        <p style="color: #666; font-size: 0.8em; text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+            © {{ "now"|date("Y") }} Duo Import MDG. Tous droits réservés.
         </p>
     </div>
 </body>

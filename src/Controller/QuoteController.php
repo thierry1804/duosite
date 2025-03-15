@@ -173,18 +173,31 @@ class QuoteController extends AbstractController
                     $entityManager->flush();
                     
                     try {
-                        // Création de l'email
-                        $email = (new Email())
+                        // Création de l'email pour l'administrateur
+                        $emailAdmin = (new Email())
                             ->from($quote->getEmail())
                             ->to('commercial@duoimport.mg')
-                            ->subject('Nouvelle demande de devis')
+                            ->subject('Nouvelle demande de devis - ' . $quote->getQuoteNumber())
                             ->html($this->renderView(
                                 'emails/quote.html.twig',
                                 ['quote' => $quote]
                             ));
                         
-                        // Envoi de l'email
-                        $mailer->send($email);
+                        // Envoi de l'email à l'administrateur
+                        $mailer->send($emailAdmin);
+                        
+                        // Création de l'email de confirmation pour le client
+                        $emailClient = (new Email())
+                            ->from('noreply@duoimport.mg')
+                            ->to($quote->getEmail())
+                            ->subject('Confirmation de votre demande de devis - ' . $quote->getQuoteNumber())
+                            ->html($this->renderView(
+                                'emails/quote_confirmation.html.twig',
+                                ['quote' => $quote]
+                            ));
+                        
+                        // Envoi de l'email au client
+                        $mailer->send($emailClient);
                     } catch (\Exception $e) {
                         // Log l'erreur mais ne pas l'afficher à l'utilisateur
                         error_log('Erreur lors de l\'envoi de l\'email: ' . $e->getMessage());
