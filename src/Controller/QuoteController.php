@@ -17,13 +17,15 @@ use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\Mailer\Transport\TransportInterface;
 
 class QuoteController extends AbstractController
 {
     #[Route('/quote', name: 'app_quote', methods: ['GET', 'POST'])]
     public function index(
         Request $request, 
-        MailerInterface $mailer, 
+        MailerInterface $mailer,
+        TransportInterface $transport,
         EntityManagerInterface $entityManager,
         UserRepository $userRepository,
         UserPasswordHasherInterface $passwordHasher,
@@ -172,36 +174,45 @@ class QuoteController extends AbstractController
                     $entityManager->persist($quote);
                     $entityManager->flush();
                     
+                    // Création de l'email pour l'administrateur
+                    $emailAdmin = (new Email())
+                        ->from('noreply@duoimport.mg')
+                        ->replyTo($quote->getEmail())
+                        ->to('commercial@duoimport.mg')
+                        ->subject('Nouvelle demande de devis - ' . $quote->getQuoteNumber())
+                        ->html($this->renderView(
+                            'emails/quote.html.twig',
+                            ['quote' => $quote]
+                        ));
+                    
+                    // Envoi de l'email à l'administrateur
                     try {
-                        // Création de l'email pour l'administrateur
-                        $emailAdmin = (new Email())
-                            ->from('noreply@duoimport.mg')
-                            ->replyTo($quote->getEmail())
-                            ->to('commercial@duoimport.mg')
-                            ->subject('Nouvelle demande de devis - ' . $quote->getQuoteNumber())
-                            ->html($this->renderView(
-                                'emails/quote.html.twig',
-                                ['quote' => $quote]
-                            ));
-                        
-                        // Envoi de l'email à l'administrateur
-                        $mailer->send($emailAdmin);
-                        
-                        // Création de l'email de confirmation pour le client
-                        $emailClient = (new Email())
-                            ->from('noreply@duoimport.mg')
-                            ->to($quote->getEmail())
-                            ->subject('Confirmation de votre demande de devis - ' . $quote->getQuoteNumber())
-                            ->html($this->renderView(
-                                'emails/quote_confirmation.html.twig',
-                                ['quote' => $quote]
-                            ));
-                        
-                        // Envoi de l'email au client
-                        $mailer->send($emailClient);
+                        // Utiliser directement le transport pour plus de contrôle
+                        $message = $transport->send($emailAdmin);
+                        error_log('Email administrateur envoyé avec succès via transport direct');
                     } catch (\Exception $e) {
-                        // Log l'erreur mais ne pas l'afficher à l'utilisateur
-                        error_log('Erreur lors de l\'envoi de l\'email: ' . $e->getMessage());
+                        error_log('Erreur lors de l\'envoi de l\'email administrateur: ' . $e->getMessage());
+                        error_log('Trace: ' . $e->getTraceAsString());
+                    }
+                    
+                    // Création de l'email de confirmation pour le client
+                    $emailClient = (new Email())
+                        ->from('noreply@duoimport.mg')
+                        ->to($quote->getEmail())
+                        ->subject('Confirmation de votre demande de devis - ' . $quote->getQuoteNumber())
+                        ->html($this->renderView(
+                            'emails/quote_confirmation.html.twig',
+                            ['quote' => $quote]
+                        ));
+                    
+                    // Envoi de l'email au client
+                    try {
+                        // Utiliser directement le transport pour plus de contrôle
+                        $message = $transport->send($emailClient);
+                        error_log('Email client envoyé avec succès à ' . $quote->getEmail() . ' via transport direct');
+                    } catch (\Exception $e) {
+                        error_log('Erreur lors de l\'envoi de l\'email client: ' . $e->getMessage());
+                        error_log('Trace: ' . $e->getTraceAsString());
                     }
                     
                     $this->addFlash('success', 'Votre demande de devis a été envoyée avec succès !');

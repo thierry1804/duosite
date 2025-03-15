@@ -5,3 +5,7 @@ framework:
             sender: 'noreply@duoimport.mg'
         headers:
             From: 'Duo Import MDG <noreply@duoimport.mg>'
+            X-Auto-Response-Suppress: 'OOF, DR, RN, NRN, AutoReply'
+            X-Priority: 1
+            X-MSMail-Priority: 'High'
+            Importance: 'High'
