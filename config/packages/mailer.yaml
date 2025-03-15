@@ -2,9 +2,9 @@ framework:
     mailer:
         dsn: '%env(MAILER_DSN)%'
         envelope:
-            sender: 'noreply@duoimport.mg'
+            sender: 'commercial@duoimport.mg'
         headers:
-            From: 'Duo Import MDG <noreply@duoimport.mg>'
+            From: 'Duo Import MDG <commercial@duoimport.mg>'
             X-Auto-Response-Suppress: 'OOF, DR, RN, NRN, AutoReply'
             X-Priority: 1
             X-MSMail-Priority: 'High'

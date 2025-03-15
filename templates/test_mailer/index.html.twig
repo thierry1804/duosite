@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Test d'envoi d'email{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h1 class="h4 mb-0">Test d'envoi d'email</h1>
+                </div>
+                <div class="card-body">
+                    {% if success %}
+                        <div class="alert alert-success">
+                            <h4 class="alert-heading">Succès!</h4>
+                            <p>L'email de test a été envoyé avec succès à <strong>thierry1804@gmail.com</strong>.</p>
+                            <p>Veuillez vérifier votre boîte de réception (et éventuellement le dossier spam) pour confirmer la réception.</p>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger">
+                            <h4 class="alert-heading">Erreur!</h4>
+                            <p>Une erreur s'est produite lors de l'envoi de l'email de test.</p>
+                            <p><strong>Message d'erreur:</strong> {{ error }}</p>
+                        </div>
+                        <div class="alert alert-info">
+                            <h5>Suggestions:</h5>
+                            <ul>
+                                <li>Vérifiez les logs du serveur pour plus de détails sur l'erreur</li>
+                                <li>Vérifiez la configuration SMTP dans les fichiers .env et .env.local</li>
+                                <li>Assurez-vous que le serveur SMTP est correctement configuré et accessible</li>
+                                <li>Vérifiez les paramètres de sécurité du serveur SMTP</li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <h5 class="mt-4">Détails techniques:</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>De:</strong> commercial@duoimport.mg
+                        </li>
+                        <li class="list-group-item">
+                            <strong>À:</strong> thierry1804@gmail.com
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Sujet:</strong> Test d'envoi d'email - {{ "now"|date("Y-m-d H:i:s") }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Date:</strong> {{ "now"|date("Y-m-d H:i:s") }}
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-4">
+                        <a href="{{ path('app_test_mailer') }}" class="btn btn-primary">Réessayer</a>
+                        <a href="{{ path('app_home') }}" class="btn btn-secondary">Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
