@@ -25,7 +25,7 @@ class QuoteItemType extends AbstractType
     {
         $builder
             ->add('productType', ChoiceType::class, [
-                'label' => 'Type de produit *',
+                'label' => 'Type de produit',
                 'choices' => [
                     'Vêtements' => 'Vêtements',
                     'Électronique' => 'Électronique',
@@ -54,7 +54,7 @@ class QuoteItemType extends AbstractType
                 ]
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Description du produit *',
+                'label' => 'Description du produit',
                 'constraints' => [
                     new NotBlank([
                         'message' => 'La description du produit est obligatoire'
@@ -70,7 +70,8 @@ class QuoteItemType extends AbstractType
                 ]
             ])
             ->add('quantity', NumberType::class, [
-                'label' => 'Quantité *',
+                'label' => 'Quantité',
+                'required' => false,
                 'constraints' => [
                     new NotBlank([
                         'message' => 'La quantité est obligatoire'
@@ -87,7 +88,7 @@ class QuoteItemType extends AbstractType
             ->add('budget', MoneyType::class, [
                 'label' => 'Budget (facultatif)',
                 'required' => false,
-                'currency' => 'EUR',
+                'currency' => 'MGA',
                 'attr' => [
                     'placeholder' => 'Budget estimé'
                 ]
