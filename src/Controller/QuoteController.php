@@ -18,6 +18,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Mailer\Transport\TransportInterface;
+use Symfony\Component\Mime\Address;
 
 class QuoteController extends AbstractController
 {
@@ -104,7 +105,7 @@ class QuoteController extends AbstractController
                             // Envoyer un email avec les informations de connexion
                             try {
                                 $accountEmail = (new Email())
-                                    ->from('noreply@duoimport.mg')
+                                    ->from(new Address('noreply@duoimport.mg', 'Duo Import MDG'))
                                     ->to($quote->getEmail())
                                     ->subject('Votre compte Duo Import MDG a été créé')
                                     ->html($this->renderView(
@@ -176,8 +177,8 @@ class QuoteController extends AbstractController
                     
                     // Création de l'email pour l'administrateur
                     $emailAdmin = (new Email())
-                        ->from('commercial@duoimport.mg', 'Duo Import MDG - Système de gestion des devis')
-                        ->replyTo($quote->getEmail(), $quote->getFirstName() . ' ' . $quote->getLastName())
+                        ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG - Système de gestion des devis'))
+                        ->replyTo(new Address($quote->getEmail(), $quote->getFirstName() . ' ' . $quote->getLastName()))
                         ->to('commercial@duoimport.mg')
                         ->subject('Nouvelle demande de devis - ' . $quote->getQuoteNumber())
                         ->html($this->renderView(
@@ -197,7 +198,7 @@ class QuoteController extends AbstractController
                     
                     // Création de l'email de confirmation pour le client
                     $emailClient = (new Email())
-                        ->from('commercial@duoimport.mg', 'Duo Import MDG - Système de gestion des devis')
+                        ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG - Système de gestion des devis'))
                         ->to($quote->getEmail())
                         ->subject('Confirmation de votre demande de devis - ' . $quote->getQuoteNumber())
                         ->html($this->renderView(
