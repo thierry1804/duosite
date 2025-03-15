@@ -4,6 +4,7 @@
  */
 
 // Fonction pour précharger les images importantes
+// Test
 function preloadCriticalImages() {
     const criticalImages = [
         '/public/images/hero-image-300.webp',

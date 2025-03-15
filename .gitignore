@@ -41,3 +41,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+/public/uploads/quote_photos/*
+/public/uploads/quote_photos/.*

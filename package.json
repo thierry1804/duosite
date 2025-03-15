@@ -1,0 +1,25 @@
+{
+  "name": "duosite",
+  "version": "1.0.0",
+  "description": "Ce projet est un site web moderne et intuitif pour une entreprise spécialisée dans l'importation de produits depuis la Chine. Le site présente les services de l'entreprise, permet aux clients de demander des devis et de suivre leurs projets d'importation.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "gulp",
+    "watch": "gulp watch",
+    "watch-cursor": "node watch-and-build.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chokidar": "^3.5.3",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-rename": "^2.0.0",
+    "gulp-uglify": "^3.0.2"
+  }
+}
