@@ -44,7 +44,13 @@
                                         <tr>
                                             <td>{{ quote.quoteNumber }}</td>
                                             <td>{{ quote.createdAt|date('d/m/Y') }}</td>
-                                            <td>{{ quote.productType }}</td>
+                                            <td>
+                                                {% if quote.items.first %}
+                                                    {{ quote.items.first.productType }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
                                             <td>
                                                 {% if quote.status == 'pending' %}
                                                     <span class="badge bg-warning text-dark">En attente</span>

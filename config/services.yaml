@@ -30,6 +30,12 @@ services:
     App\EventListener\PerformanceListener:
         tags:
             - { name: kernel.event_subscriber }
+           
+    # Service de suivi d'identité utilisateur
+    App\Service\UserIdentityTracker:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $quoteRepository: '@App\Repository\QuoteRepository'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

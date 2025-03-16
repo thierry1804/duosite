@@ -424,6 +424,42 @@ footer a:hover {
     transform: translateY(-3px);
 }
 
+/* WhatsApp Button */
+.whatsapp-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px; /* Aligné à droite comme le bouton back-to-top */
+    z-index: 1000;
+    transition: var(--transition);
+}
+
+/* Déplacer le bouton WhatsApp vers le haut quand le bouton back-to-top est visible */
+.back-to-top.active ~ .whatsapp-button {
+    bottom: 85px; /* 25px (position initiale) + 50px (taille du bouton back-to-top) + 10px (espace) */
+}
+
+.whatsapp-button a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px; /* Même taille que le bouton back-to-top */
+    height: 50px;
+    background-color: #25D366;
+    color: white;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.whatsapp-button a:hover {
+    background-color: #128C7E;
+    transform: scale(1.1);
+}
+
+.whatsapp-button i {
+    font-size: 32px;
+}
+
 /* Accessibility - Screen reader only text */
 .visually-hidden {
     position: absolute;

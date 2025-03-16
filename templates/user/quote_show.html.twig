@@ -47,19 +47,22 @@
                     <div class="row mb-4">
                         <div class="col-12">
                             <h5 class="border-bottom pb-2 mb-3">Détails du produit</h5>
-                            <p><strong>Type de produit :</strong> {{ quote.productType }}</p>
-                            {% if quote.otherProductType %}
-                                <p><strong>Précision :</strong> {{ quote.otherProductType }}</p>
+                            {% if quote.items.first %}
+                                <p><strong>Type de produit :</strong> {{ quote.items.first.productType }}</p>
+                                {% if quote.items.first.otherProductType %}
+                                    <p><strong>Précision :</strong> {{ quote.items.first.otherProductType }}</p>
+                                {% endif %}
+                                <p><strong>Description :</strong></p>
+                                <div class="p-3 bg-light rounded mb-3">
+                                    {{ quote.items.first.description|nl2br }}
+                                </div>
+                                <p><strong>Quantité :</strong> {{ quote.items.first.quantity }}</p>
+                                {% if quote.items.first.budget %}
+                                    <p><strong>Budget :</strong> {{ quote.items.first.budget }} €</p>
+                                {% endif %}
+                            {% else %}
+                                <p>Aucun détail de produit disponible.</p>
                             {% endif %}
-                            <p><strong>Description :</strong></p>
-                            <div class="p-3 bg-light rounded mb-3">
-                                {{ quote.productDescription|nl2br }}
-                            </div>
-                            <p><strong>Quantité :</strong> {{ quote.quantity }}</p>
-                            {% if quote.budget %}
-                                <p><strong>Budget :</strong> {{ quote.budget }} €</p>
-                            {% endif %}
-                            <p><strong>Délai :</strong> {{ quote.timeline }}</p>
                         </div>
                     </div>
 

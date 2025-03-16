@@ -27,37 +27,21 @@
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Type de produit:</strong> 
-                                {% if quote.productType == 'other' %}
-                                    {{ quote.otherProductType }}
-                                {% else %}
-                                    {% set productTypes = {
-                                        'electronics': 'Électronique',
-                                        'textile': 'Textile et mode',
-                                        'furniture': 'Mobilier et décoration',
-                                        'beauty': 'Beauté et bien-être',
-                                        'toys': 'Jouets et jeux',
-                                        'sports': 'Articles de sport',
-                                        'tools': 'Outils et matériel',
-                                        'other': 'Autre'
-                                    } %}
-                                    {{ productTypes[quote.productType] ?? quote.productType }}
+                            <p><strong>Statut:</strong>
+                                {% if quote.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">En attente</span>
+                                {% elseif quote.status == 'in_progress' %}
+                                    <span class="badge bg-info">En cours</span>
+                                {% elseif quote.status == 'completed' %}
+                                    <span class="badge bg-success">Terminé</span>
+                                {% elseif quote.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejeté</span>
                                 {% endif %}
                             </p>
-                            <p><strong>Quantité:</strong> {{ quote.quantity }}</p>
-                            {% if quote.budget %}
-                                <p><strong>Budget:</strong> {{ quote.budget }} €</p>
+                            {% if quote.shippingMethod %}
+                                <p><strong>Méthode d'expédition:</strong> {{ quote.shippingMethod }}</p>
                             {% endif %}
-                            <p><strong>Délai souhaité:</strong> 
-                                {% set timelines = {
-                                    'urgent': 'Urgent (moins d\'un mois)',
-                                    '1-2months': '1-2 mois',
-                                    '3-6months': '3-6 mois',
-                                    '6+months': 'Plus de 6 mois',
-                                    'flexible': 'Flexible'
-                                } %}
-                                {{ timelines[quote.timeline] ?? quote.timeline }}
-                            </p>
+                            <p><strong>Nombre de produits:</strong> {{ quote.items|length }}</p>
                         </div>
                     </div>
                 </div>
@@ -65,10 +49,61 @@
             
             <div class="card shadow-sm mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">Description du produit</h5>
+                    <h5 class="mb-0">Produits demandés</h5>
                 </div>
                 <div class="card-body">
-                    <p>{{ quote.productDescription|nl2br }}</p>
+                    {% if quote.items|length > 0 %}
+                        {% for item in quote.items %}
+                            <div class="border-bottom pb-3 mb-3 {% if not loop.last %}mb-3{% endif %}">
+                                <h6 class="fw-bold">Produit #{{ loop.index }}</h6>
+                                
+                                <div class="row mb-2">
+                                    <div class="col-md-4">
+                                        <p><strong>Type de produit:</strong> 
+                                            {% if item.productType == 'other' %}
+                                                {{ item.otherProductType }}
+                                            {% else %}
+                                                {% set productTypes = {
+                                                    'electronics': 'Électronique',
+                                                    'textile': 'Textile et mode',
+                                                    'furniture': 'Mobilier et décoration',
+                                                    'beauty': 'Beauté et bien-être',
+                                                    'toys': 'Jouets et jeux',
+                                                    'sports': 'Articles de sport',
+                                                    'tools': 'Outils et matériel',
+                                                    'other': 'Autre'
+                                                } %}
+                                                {{ productTypes[item.productType] ?? item.productType }}
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Quantité:</strong> {{ item.quantity ?: 'Non spécifié' }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        {% if item.budget %}
+                                            <p><strong>Budget:</strong> {{ item.budget }} €</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <p><strong>Description:</strong></p>
+                                <div class="p-3 bg-light rounded">
+                                    {{ item.description|nl2br }}
+                                </div>
+                                
+                                {% if item.photoFilename %}
+                                    <p class="mt-2"><strong>Photo:</strong> 
+                                        <a href="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" target="_blank">
+                                            Voir la photo
+                                        </a>
+                                    </p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>Aucun produit spécifié</p>
+                    {% endif %}
                 </div>
             </div>
             

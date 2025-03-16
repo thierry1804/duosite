@@ -47,6 +47,11 @@ class SecurityController extends AbstractController
             // Mettre à jour la date de dernière connexion
             $user->setLastLoginAt(new \DateTimeImmutable());
             $entityManager->flush();
+      
+            // Rediriger les administrateurs vers le tableau de bord admin
+            if ($this->isGranted('ROLE_ADMIN')) {
+                return $this->redirectToRoute('app_quote_dashboard');
+            }
         }
 
         return $this->redirectToRoute('app_user_profile');

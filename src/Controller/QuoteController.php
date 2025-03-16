@@ -278,6 +278,7 @@ class QuoteController extends AbstractController
             'inProgressQuotes' => $inProgressQuotes,
             'completedQuotes' => $completedQuotes,
             'rejectedQuotes' => $rejectedQuotes,
+            'processedQuotes' => array_merge($completedQuotes, $rejectedQuotes),
         ]);
     }
 
@@ -321,5 +322,21 @@ class QuoteController extends AbstractController
         return $this->render('quote/view.html.twig', [
             'quote' => $quote,
         ]);
+    }
+
+    #[Route('/quote/{id}/process', name: 'app_quote_process')]
+    public function processQuote(Quote $quote, EntityManagerInterface $entityManager): Response
+    {
+        // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        // Mettre à jour le statut du devis à "in_progress"
+        $quote->setStatus('in_progress');
+        $entityManager->flush();
+        
+        $this->addFlash('success', 'Le devis a été marqué comme "En cours de traitement".');
+        
+        // Rediriger vers la page de détail du devis
+        return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
     }
 } 

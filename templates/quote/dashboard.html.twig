@@ -54,23 +54,27 @@
                                     <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
                                     <td>{{ quote.fullName }}</td>
                                     <td>
-                                        {% if quote.productType == 'other' %}
-                                            {{ quote.otherProductType }}
+                                        {% if quote.items.first %}
+                                            {% if quote.items.first.productType == 'other' %}
+                                                {{ quote.items.first.otherProductType }}
+                                            {% else %}
+                                                {% set productTypes = {
+                                                    'electronics': 'Électronique',
+                                                    'textile': 'Textile et mode',
+                                                    'furniture': 'Mobilier et décoration',
+                                                    'beauty': 'Beauté et bien-être',
+                                                    'toys': 'Jouets et jeux',
+                                                    'sports': 'Articles de sport',
+                                                    'tools': 'Outils et matériel',
+                                                    'other': 'Autre'
+                                                } %}
+                                                {{ productTypes[quote.items.first.productType] ?? quote.items.first.productType }}
+                                            {% endif %}
                                         {% else %}
-                                            {% set productTypes = {
-                                                'electronics': 'Électronique',
-                                                'textile': 'Textile et mode',
-                                                'furniture': 'Mobilier et décoration',
-                                                'beauty': 'Beauté et bien-être',
-                                                'toys': 'Jouets et jeux',
-                                                'sports': 'Articles de sport',
-                                                'tools': 'Outils et matériel',
-                                                'other': 'Autre'
-                                            } %}
-                                            {{ productTypes[quote.productType] ?? quote.productType }}
+                                            -
                                         {% endif %}
                                     </td>
-                                    <td>{{ quote.quantity }}</td>
+                                    <td>{{ quote.items.first ? quote.items.first.quantity : '-' }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-primary">
@@ -114,20 +118,24 @@
                                     <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
                                     <td>{{ quote.fullName }}</td>
                                     <td>
-                                        {% if quote.productType == 'other' %}
-                                            {{ quote.otherProductType }}
+                                        {% if quote.items.first %}
+                                            {% if quote.items.first.productType == 'other' %}
+                                                {{ quote.items.first.otherProductType }}
+                                            {% else %}
+                                                {% set productTypes = {
+                                                    'electronics': 'Électronique',
+                                                    'textile': 'Textile et mode',
+                                                    'furniture': 'Mobilier et décoration',
+                                                    'beauty': 'Beauté et bien-être',
+                                                    'toys': 'Jouets et jeux',
+                                                    'sports': 'Articles de sport',
+                                                    'tools': 'Outils et matériel',
+                                                    'other': 'Autre'
+                                                } %}
+                                                {{ productTypes[quote.items.first.productType] ?? quote.items.first.productType }}
+                                            {% endif %}
                                         {% else %}
-                                            {% set productTypes = {
-                                                'electronics': 'Électronique',
-                                                'textile': 'Textile et mode',
-                                                'furniture': 'Mobilier et décoration',
-                                                'beauty': 'Beauté et bien-être',
-                                                'toys': 'Jouets et jeux',
-                                                'sports': 'Articles de sport',
-                                                'tools': 'Outils et matériel',
-                                                'other': 'Autre'
-                                            } %}
-                                            {{ productTypes[quote.productType] ?? quote.productType }}
+                                            -
                                         {% endif %}
                                     </td>
                                     <td>{{ quote.quantity }}</td>
