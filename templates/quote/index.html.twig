@@ -223,11 +223,6 @@
                                     {{ form_row(itemForm.budget, {'attr': {'class': 'form-control', 'min': 0}}) }}
                                 </div>
                                 
-                                <!-- Champ "Autre type de produit" qui apparaît conditionnellement -->
-                                <div class="col-12 mb-3 other-product-type-container" style="{{ itemForm.productType.vars.value == 'Autre' ? '' : 'display: none;' }}">
-                                    {{ form_row(itemForm.otherProductType, {'attr': {'class': 'form-control other-product-type'}}) }}
-                                </div>
-                                
                                 <!-- Description en dessous -->
                                 <div class="col-12 mb-3">
                                     {{ form_row(itemForm.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}

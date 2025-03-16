@@ -118,54 +118,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Shipping method container not found");
     }
     
-    // Gestion du champ "Autre type de produit"
-    if (productTypeSelect && otherProductTypeContainer) {
-        // Vérifier l'état initial
-        if (productTypeSelect.value === 'other') {
-            otherProductTypeContainer.style.display = 'block';
-            const input = otherProductTypeContainer.querySelector('input');
-            if (input) input.required = true;
-        } else {
-            otherProductTypeContainer.style.display = 'none';
-            const input = otherProductTypeContainer.querySelector('input');
-            if (input) input.required = false;
-        }
-        
-        // Ajouter l'écouteur d'événements
-        productTypeSelect.addEventListener('change', function() {
-            if (this.value === 'other') {
-                otherProductTypeContainer.style.display = 'block';
-                const input = otherProductTypeContainer.querySelector('input');
-                if (input) input.required = true;
-            } else {
-                otherProductTypeContainer.style.display = 'none';
-                const input = otherProductTypeContainer.querySelector('input');
-                if (input) input.required = false;
-            }
-        });
-    }
-
-    // Gestion des champs "Autre type de produit" pour les éléments dynamiques
-    document.addEventListener('change', function(e) {
-        if (e.target && e.target.classList.contains('product-type-select')) {
-            const container = e.target.closest('.quote-item');
-            if (container) {
-                const otherTypeContainer = container.querySelector('.other-product-type-container');
-                if (otherTypeContainer) {
-                    if (e.target.value === 'Autre') {
-                        otherTypeContainer.style.display = 'block';
-                        const input = otherTypeContainer.querySelector('input');
-                        if (input) input.required = true;
-                    } else {
-                        otherTypeContainer.style.display = 'none';
-                        const input = otherTypeContainer.querySelector('input');
-                        if (input) input.required = false;
-                    }
-                }
-            }
-        }
-    });
-
     // Fonction pour initialiser l'aperçu des photos
     function initPhotoPreview(fileInput) {
         if (!fileInput) return;
@@ -354,7 +306,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const productTypeDiv = tempDiv.querySelector('div[id$="_productType"]');
                 const quantityDiv = tempDiv.querySelector('div[id$="_quantity"]');
                 const budgetDiv = tempDiv.querySelector('div[id$="_budget"]');
-                const otherProductTypeDiv = tempDiv.querySelector('div[id$="_otherProductType"]');
                 const descriptionDiv = tempDiv.querySelector('div[id$="_description"]');
                 
                 // Ajouter les éléments dans la structure
@@ -419,15 +370,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         budgetCol.className = 'col-md-4 mb-3';
                         budgetCol.appendChild(budgetDiv);
                         infoRow.appendChild(budgetCol);
-                    }
-                    
-                    // Ajouter le champ "Autre type de produit"
-                    if (otherProductTypeDiv) {
-                        const otherTypeContainer = document.createElement('div');
-                        otherTypeContainer.className = 'col-12 mb-3 other-product-type-container';
-                        otherTypeContainer.style.display = 'none';
-                        otherTypeContainer.appendChild(otherProductTypeDiv);
-                        infoRow.appendChild(otherTypeContainer);
                     }
                     
                     // Ajouter le champ de description

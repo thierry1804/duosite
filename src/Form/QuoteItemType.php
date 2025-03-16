@@ -27,12 +27,23 @@ class QuoteItemType extends AbstractType
             ->add('productType', ChoiceType::class, [
                 'label' => 'Type de produit',
                 'choices' => [
-                    'Vêtements' => 'Vêtements',
-                    'Électronique' => 'Électronique',
-                    'Mobilier' => 'Mobilier',
-                    'Accessoires' => 'Accessoires',
-                    'Matériel industriel' => 'Matériel industriel',
-                    'Autre' => 'Autre'
+                    'Modes et accessoires' => 'Modes et accessoires',
+                    'Lingerie' => 'Lingerie',
+                    'Bijoux inoxydable' => 'Bijoux inoxydable',
+                    'Article de bébé' => 'Article de bébé',
+                    'Électroménager' => 'Électroménager',
+                    'Ustensiles de cuisine' => 'Ustensiles de cuisine',
+                    'Linge de maison' => 'Linge de maison',
+                    'Meuble d\'intérieur' => 'Meuble d\'intérieur',
+                    'Décoration' => 'Décoration',
+                    'Meuble de jardin' => 'Meuble de jardin',
+                    'Article pour les animaux domestiques' => 'Article pour les animaux domestiques',
+                    'Accessoires mobiles' => 'Accessoires mobiles',
+                    'Article de voyage' => 'Article de voyage',
+                    'Équipements de cuisine et de restauration' => 'Équipements de cuisine et de restauration',
+                    'Équipements de pâtisserie et de boulangerie' => 'Équipements de pâtisserie et de boulangerie',
+                    'Jouets' => 'Jouets',
+                    'Articles de sport' => 'Articles de sport'
                 ],
                 'placeholder' => 'Sélectionnez un type de produit',
                 'constraints' => [
@@ -42,15 +53,6 @@ class QuoteItemType extends AbstractType
                 ],
                 'attr' => [
                     'class' => 'product-type-select'
-                ]
-            ])
-            ->add('otherProductType', TextType::class, [
-                'label' => 'Précisez le type de produit',
-                'required' => false,
-                'attr' => [
-                    'placeholder' => 'Précisez le type de produit',
-                    'class' => 'other-product-type',
-                    'style' => 'display: none;'
                 ]
             ])
             ->add('description', TextareaType::class, [
@@ -113,28 +115,6 @@ class QuoteItemType extends AbstractType
                     'class' => 'form-control-file'
                 ]
             ]);
-
-        // Afficher le champ "otherProductType" uniquement si "productType" est "Autre"
-        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
-            $data = $event->getData();
-            $form = $event->getForm();
-
-            if (isset($data['productType']) && $data['productType'] === 'Autre') {
-                $form->add('otherProductType', TextType::class, [
-                    'label' => 'Précisez le type de produit',
-                    'required' => true,
-                    'constraints' => [
-                        new NotBlank([
-                            'message' => 'Veuillez préciser le type de produit'
-                        ])
-                    ],
-                    'attr' => [
-                        'placeholder' => 'Précisez le type de produit',
-                        'class' => 'other-product-type'
-                    ]
-                ]);
-            }
-        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -66,11 +66,7 @@
             
             <p>
                 <strong>Type de produit :</strong> 
-                {% if item.productType == 'Autre' %}
-                    Autre : {{ item.otherProductType }}
-                {% else %}
-                    {{ item.productType }}
-                {% endif %}
+                {{ item.productType }}
             </p>
             
             <p><strong>Description du produit :</strong></p>

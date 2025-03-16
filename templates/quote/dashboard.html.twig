@@ -55,21 +55,26 @@
                                     <td>{{ quote.fullName }}</td>
                                     <td>
                                         {% if quote.items.first %}
-                                            {% if quote.items.first.productType == 'other' %}
-                                                {{ quote.items.first.otherProductType }}
-                                            {% else %}
-                                                {% set productTypes = {
-                                                    'electronics': 'Électronique',
-                                                    'textile': 'Textile et mode',
-                                                    'furniture': 'Mobilier et décoration',
-                                                    'beauty': 'Beauté et bien-être',
-                                                    'toys': 'Jouets et jeux',
-                                                    'sports': 'Articles de sport',
-                                                    'tools': 'Outils et matériel',
-                                                    'other': 'Autre'
-                                                } %}
-                                                {{ productTypes[quote.items.first.productType] ?? quote.items.first.productType }}
-                                            {% endif %}
+                                            {% set productTypes = {
+                                                'Modes et accessoires': 'Modes et accessoires',
+                                                'Lingerie': 'Lingerie',
+                                                'Bijoux inoxydable': 'Bijoux inoxydable',
+                                                'Article de bébé': 'Article de bébé',
+                                                'Électroménager': 'Électroménager',
+                                                'Ustensiles de cuisine': 'Ustensiles de cuisine',
+                                                'Linge de maison': 'Linge de maison',
+                                                'Meuble d\'intérieur': 'Meuble d\'intérieur',
+                                                'Décoration': 'Décoration',
+                                                'Meuble de jardin': 'Meuble de jardin',
+                                                'Article pour les animaux domestiques': 'Article pour les animaux domestiques',
+                                                'Accessoires mobiles': 'Accessoires mobiles',
+                                                'Article de voyage': 'Article de voyage',
+                                                'Équipements de cuisine et de restauration': 'Équipements de cuisine et de restauration',
+                                                'Équipements de pâtisserie et de boulangerie': 'Équipements de pâtisserie et de boulangerie',
+                                                'Jouets': 'Jouets',
+                                                'Articles de sport': 'Articles de sport'
+                                            } %}
+                                            {{ productTypes[quote.items.first.productType] ?? quote.items.first.productType }}
                                         {% else %}
                                             -
                                         {% endif %}
@@ -119,21 +124,26 @@
                                     <td>{{ quote.fullName }}</td>
                                     <td>
                                         {% if quote.items.first %}
-                                            {% if quote.items.first.productType == 'other' %}
-                                                {{ quote.items.first.otherProductType }}
-                                            {% else %}
-                                                {% set productTypes = {
-                                                    'electronics': 'Électronique',
-                                                    'textile': 'Textile et mode',
-                                                    'furniture': 'Mobilier et décoration',
-                                                    'beauty': 'Beauté et bien-être',
-                                                    'toys': 'Jouets et jeux',
-                                                    'sports': 'Articles de sport',
-                                                    'tools': 'Outils et matériel',
-                                                    'other': 'Autre'
-                                                } %}
-                                                {{ productTypes[quote.items.first.productType] ?? quote.items.first.productType }}
-                                            {% endif %}
+                                            {% set productTypes = {
+                                                'Modes et accessoires': 'Modes et accessoires',
+                                                'Lingerie': 'Lingerie',
+                                                'Bijoux inoxydable': 'Bijoux inoxydable',
+                                                'Article de bébé': 'Article de bébé',
+                                                'Électroménager': 'Électroménager',
+                                                'Ustensiles de cuisine': 'Ustensiles de cuisine',
+                                                'Linge de maison': 'Linge de maison',
+                                                'Meuble d\'intérieur': 'Meuble d\'intérieur',
+                                                'Décoration': 'Décoration',
+                                                'Meuble de jardin': 'Meuble de jardin',
+                                                'Article pour les animaux domestiques': 'Article pour les animaux domestiques',
+                                                'Accessoires mobiles': 'Accessoires mobiles',
+                                                'Article de voyage': 'Article de voyage',
+                                                'Équipements de cuisine et de restauration': 'Équipements de cuisine et de restauration',
+                                                'Équipements de pâtisserie et de boulangerie': 'Équipements de pâtisserie et de boulangerie',
+                                                'Jouets': 'Jouets',
+                                                'Articles de sport': 'Articles de sport'
+                                            } %}
+                                            {{ productTypes[quote.items.first.productType] ?? quote.items.first.productType }}
                                         {% else %}
                                             -
                                         {% endif %}
