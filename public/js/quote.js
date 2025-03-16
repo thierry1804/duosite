@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Vérifier si le choix d'envoi est visible
             if (shippingMethodContainer && shippingMethodContainer.style.display === 'block') {
                 const shippingMethodSelected = Array.from(
-                    document.querySelectorAll('input[name="quote[shippingMethod]"]')
+                    document.querySelectorAll('input[name="quote[shippingMethod][]"]')
                 ).some(radio => radio.checked);
                 
                 if (!shippingMethodSelected) {
@@ -561,7 +561,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 // Si le choix d'envoi est masqué, désactiver la validation HTML5 pour ce champ
-                document.querySelectorAll('input[name="quote[shippingMethod]"]').forEach(function(radio) {
+                document.querySelectorAll('input[name="quote[shippingMethod][]"]').forEach(function(radio) {
                     radio.required = false;
                 });
             }
