@@ -2,100 +2,159 @@
 
 {% block title %}Détail de la demande {{ quote.quoteNumber }} - {{ parent() }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/user/profile.min.css') }}">
+{% endblock %}
+
 {% block body %}
 <div class="container my-5">
-    <div class="row">
-        <div class="col-md-3">
+    <div class="row g-4">
+        <div class="col-lg-3">
             {% include 'user/_sidebar.html.twig' with {'active': 'quotes'} %}
         </div>
-        <div class="col-md-9">
-            <div class="card shadow mb-4">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h2 class="mb-0 fs-4">Demande de devis {{ quote.quoteNumber }}</h2>
-                    <a href="{{ path('app_user_quotes') }}" class="btn btn-light btn-sm">
-                        <i class="fas fa-arrow-left"></i> Retour
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+                <div class="card-header bg-primary text-white p-4 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-invoice fs-3 me-3"></i>
+                        <h2 class="mb-0 fs-4 fw-bold">Demande {{ quote.quoteNumber }}</h2>
+                    </div>
+                    <a href="{{ path('app_user_quotes') }}" class="btn btn-light rounded-3 px-3 py-2">
+                        <i class="fas fa-arrow-left me-2"></i> Retour
                     </a>
                 </div>
                 <div class="card-body p-4">
-                    <div class="row mb-4">
+                    <div class="row g-4 mb-4">
                         <div class="col-md-6">
-                            <h5 class="border-bottom pb-2 mb-3">Informations générales</h5>
-                            <p><strong>Date de création :</strong> {{ quote.createdAt|date('d/m/Y à H:i') }}</p>
-                            <p><strong>Statut :</strong> 
-                                {% if quote.status == 'pending' %}
-                                    <span class="badge bg-warning text-dark">En attente</span>
-                                {% elseif quote.status == 'in_progress' %}
-                                    <span class="badge bg-info">En cours</span>
-                                {% elseif quote.status == 'completed' %}
-                                    <span class="badge bg-success">Terminé</span>
-                                {% elseif quote.status == 'rejected' %}
-                                    <span class="badge bg-danger">Rejeté</span>
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div class="col-md-6">
-                            <h5 class="border-bottom pb-2 mb-3">Contact</h5>
-                            <p><strong>Nom :</strong> {{ quote.fullName }}</p>
-                            <p><strong>Email :</strong> {{ quote.email }}</p>
-                            <p><strong>Téléphone :</strong> {{ quote.phone }}</p>
-                            {% if quote.company %}
-                                <p><strong>Entreprise :</strong> {{ quote.company }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h5 class="border-bottom pb-2 mb-3">Détails du produit</h5>
-                            {% if quote.items.first %}
-                                <p><strong>Type de produit :</strong> {{ quote.items.first.productType }}</p>
-                                {% if quote.items.first.otherProductType %}
-                                    <p><strong>Précision :</strong> {{ quote.items.first.otherProductType }}</p>
-                                {% endif %}
-                                <p><strong>Description :</strong></p>
-                                <div class="p-3 bg-light rounded mb-3">
-                                    {{ quote.items.first.description|nl2br }}
+                            <div class="card h-100 border-0 bg-light rounded-3">
+                                <div class="card-body">
+                                    <h5 class="card-title d-flex align-items-center mb-3">
+                                        <i class="fas fa-info-circle text-primary me-2"></i>
+                                        Informations générales
+                                    </h5>
+                                    <div class="mb-2">
+                                        <span class="text-muted">Date de création :</span>
+                                        <div class="fw-medium">
+                                            {{ quote.createdAt|date('d/m/Y') }}
+                                            <span class="text-muted ms-2">{{ quote.createdAt|date('H:i') }}</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted">Statut :</span>
+                                        <div class="mt-1">
+                                            {% if quote.status == 'pending' %}
+                                                <span class="badge bg-warning text-dark rounded-pill px-3 py-2">En attente</span>
+                                            {% elseif quote.status == 'in_progress' %}
+                                                <span class="badge bg-info rounded-pill px-3 py-2">En cours</span>
+                                            {% elseif quote.status == 'completed' %}
+                                                <span class="badge bg-success rounded-pill px-3 py-2">Terminé</span>
+                                            {% elseif quote.status == 'rejected' %}
+                                                <span class="badge bg-danger rounded-pill px-3 py-2">Rejeté</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
-                                <p><strong>Quantité :</strong> {{ quote.items.first.quantity }}</p>
-                                {% if quote.items.first.budget %}
-                                    <p><strong>Budget :</strong> {{ quote.items.first.budget }} €</p>
-                                {% endif %}
-                            {% else %}
-                                <p>Aucun détail de produit disponible.</p>
-                            {% endif %}
+                            </div>
                         </div>
-                    </div>
-
-                    {% if quote.services|length > 0 %}
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h5 class="border-bottom pb-2 mb-3">Services demandés</h5>
-                            <ul class="list-group">
-                                {% for service in quote.services %}
-                                    <li class="list-group-item">{{ service }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if quote.additionalInfo %}
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <h5 class="border-bottom pb-2 mb-3">Informations complémentaires</h5>
-                            <div class="p-3 bg-light rounded">
-                                {{ quote.additionalInfo|nl2br }}
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 bg-light rounded-3">
+                                <div class="card-body">
+                                    <h5 class="card-title d-flex align-items-center mb-3">
+                                        <i class="fas fa-user text-primary me-2"></i>
+                                        Contact
+                                    </h5>
+                                    <div class="mb-2">
+                                        <span class="text-muted">Nom :</span>
+                                        <div class="fw-medium">{{ quote.fullName }}</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="text-muted">Email :</span>
+                                        <div class="fw-medium">{{ quote.email }}</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="text-muted">Téléphone :</span>
+                                        <div class="fw-medium">{{ quote.phone }}</div>
+                                    </div>
+                                    {% if quote.company %}
+                                        <div>
+                                            <span class="text-muted">Entreprise :</span>
+                                            <div class="fw-medium">{{ quote.company }}</div>
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
-                    {% endif %}
 
-                    {% if quote.referralSource %}
-                    <div class="row">
-                        <div class="col-12">
-                            <p><strong>Comment nous avez-vous connu :</strong> {{ quote.referralSource }}</p>
+                    <div class="card border-0 bg-light rounded-3 mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="card-title d-flex align-items-center mb-3">
+                                <i class="fas fa-box text-primary me-2"></i>
+                                Détails du produit
+                            </h5>
+                            {% if quote.items.first %}
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <thead class="table-light rounded-3">
+                                            <tr>
+                                                <th>Type de produit</th>
+                                                <th>Quantité</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in quote.items %}
+                                                <tr>
+                                                    <td class="fw-medium">{{ item.productType }}</td>
+                                                    <td>{{ item.quantity }}</td>
+                                                    <td>{{ item.description }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info mb-0">
+                                    Aucun produit spécifié pour cette demande.
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
+
+                    {% if quote.additionalInfo %}
+                        <div class="card border-0 bg-light rounded-3">
+                            <div class="card-body p-4">
+                                <h5 class="card-title d-flex align-items-center mb-3">
+                                    <i class="fas fa-comment-alt text-primary me-2"></i>
+                                    Informations complémentaires
+                                </h5>
+                                <div class="p-3 bg-white rounded-3">
+                                    {{ quote.additionalInfo|nl2br }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if quote.services|length > 0 %}
+                        <div class="card border-0 bg-light rounded-3 mt-4">
+                            <div class="card-body p-4">
+                                <h5 class="card-title d-flex align-items-center mb-3">
+                                    <i class="fas fa-cogs text-primary me-2"></i>
+                                    Services demandés
+                                </h5>
+                                <div class="p-3 bg-white rounded-3">
+                                    <ul class="list-group list-group-flush">
+                                        {% for service in quote.services %}
+                                            <li class="list-group-item bg-transparent px-0">
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                {{ service }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     {% endif %}
                 </div>
             </div>

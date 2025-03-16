@@ -2,52 +2,112 @@
 
 {% block title %}Mon profil - {{ parent() }}{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/user/profile.min.css') }}">
+{% endblock %}
+
 {% block body %}
 <div class="container my-5">
-    <div class="row">
-        <div class="col-md-3">
+    <div class="row g-4">
+        <div class="col-lg-3">
             {% include 'user/_sidebar.html.twig' with {'active': 'profile'} %}
         </div>
-        <div class="col-md-9">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0 fs-4">Mon profil</h2>
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                <div class="card-header bg-primary text-white p-4 d-flex align-items-center">
+                    <i class="fas fa-user-circle fs-3 me-3"></i>
+                    <h2 class="mb-0 fs-4 fw-bold">Mon profil</h2>
                 </div>
                 <div class="card-body p-4">
                     {% for message in app.flashes('success') %}
-                        <div class="alert alert-success">
-                            {{ message }}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     {% endfor %}
 
-                    {{ form_start(form) }}
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form_row(form.firstName) }}
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                {{ form_widget(form.firstName, {'attr': {'class': 'form-control', 'placeholder': 'Prénom'}}) }}
+                                {{ form_label(form.firstName) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.firstName) }}
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form_row(form.lastName) }}
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        {{ form_row(form.email) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form_row(form.phone) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form_row(form.company) }}
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form_row(form.plainPassword.first) }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form_row(form.plainPassword.second) }}
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                {{ form_widget(form.lastName, {'attr': {'class': 'form-control', 'placeholder': 'Nom'}}) }}
+                                {{ form_label(form.lastName) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.lastName) }}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Mettre à jour mon profil</button>
+
+                    <div class="form-floating mb-3">
+                        {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'Email'}}) }}
+                        {{ form_label(form.email) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.email) }}
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {{ form_widget(form.phone, {'attr': {'class': 'form-control', 'placeholder': 'Téléphone'}}) }}
+                        {{ form_label(form.phone) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.phone) }}
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        {{ form_widget(form.company, {'attr': {'class': 'form-control', 'placeholder': 'Entreprise'}}) }}
+                        {{ form_label(form.company) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.company) }}
+                        </div>
+                    </div>
+
+                    <div class="card bg-light border-0 rounded-3 mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-lock me-2 text-primary"></i>Modifier votre mot de passe
+                            </h5>
+                            <p class="text-muted small mb-3">Laissez vide si vous ne souhaitez pas modifier votre mot de passe actuel</p>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        {{ form_widget(form.plainPassword.first, {'attr': {'class': 'form-control', 'placeholder': 'Nouveau mot de passe'}}) }}
+                                        {{ form_label(form.plainPassword.first) }}
+                                        <div class="invalid-feedback">
+                                            {{ form_errors(form.plainPassword.first) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        {{ form_widget(form.plainPassword.second, {'attr': {'class': 'form-control', 'placeholder': 'Confirmer le mot de passe'}}) }}
+                                        {{ form_label(form.plainPassword.second) }}
+                                        <div class="invalid-feedback">
+                                            {{ form_errors(form.plainPassword.second) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm">
+                            <i class="fas fa-save me-2"></i>Mettre à jour mon profil
+                        </button>
                     </div>
                     {{ form_end(form) }}
                 </div>

@@ -1,0 +1,58 @@
+/* Styles pour la page de profil utilisateur */
+
+/* Styles pour les champs flottants */
+.form-floating > .form-control {
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+}
+
+.form-floating > label {
+    padding: 1rem 0.75rem;
+}
+
+/* Styles pour les boutons */
+.btn-primary {
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(43, 78, 255, 0.3);
+}
+
+/* Styles pour les cartes */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Styles pour l'avatar */
+.avatar-placeholder {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.avatar-placeholder:hover {
+    transform: scale(1.05);
+}
+
+/* Styles pour les éléments de la liste */
+.list-group-item {
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover:not(.active) {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.list-group-item.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+} 
