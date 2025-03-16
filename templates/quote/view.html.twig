@@ -39,7 +39,21 @@
                                 {% endif %}
                             </p>
                             {% if quote.shippingMethod %}
-                                <p><strong>Méthode d'expédition:</strong> {{ quote.shippingMethod }}</p>
+                                <p><strong>Méthode(s) d'expédition:</strong>
+                                    <ul class="mt-1">
+                                    {% for method in quote.shippingMethod %}
+                                        <li>
+                                        {% if method == 'maritime' %}
+                                            Envoi maritime (délai estimé: 50-70 jours)
+                                        {% elseif method == 'aerien_express' %}
+                                            Envoi aérien express (délai estimé: 3-7 jours)
+                                        {% elseif method == 'aerien_normal' %}
+                                            Envoi aérien normal (délai estimé: 15-30 jours)
+                                        {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                </p>
                             {% endif %}
                             <p><strong>Nombre de produits:</strong> {{ quote.items|length }}</p>
                         </div>

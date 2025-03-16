@@ -90,14 +90,20 @@
             <h2 style="color: #2c3e50; margin-top: 0;">Informations générales</h2>
             {% if quote.shippingMethod %}
             <p>
-                <strong>Méthode d'envoi :</strong> 
-                {% if quote.shippingMethod == 'maritime' %}
-                    Envoi maritime (délai estimé: 50-70 jours)
-                {% elseif quote.shippingMethod == 'aerien_express' %}
-                    Envoi aérien express (délai estimé: 3-7 jours)
-                {% elseif quote.shippingMethod == 'aerien_normal' %}
-                    Envoi aérien normal (délai estimé: 15-30 jours)
-                {% endif %}
+                <strong>Méthode(s) d'envoi :</strong> 
+                <ul style="margin-top: 5px; padding-left: 20px;">
+                {% for method in quote.shippingMethod %}
+                    <li>
+                    {% if method == 'maritime' %}
+                        Envoi maritime (délai estimé: 50-70 jours)
+                    {% elseif method == 'aerien_express' %}
+                        Envoi aérien express (délai estimé: 3-7 jours)
+                    {% elseif method == 'aerien_normal' %}
+                        Envoi aérien normal (délai estimé: 15-30 jours)
+                    {% endif %}
+                    </li>
+                {% endfor %}
+                </ul>
             </p>
             {% endif %}
         </div>
