@@ -42,8 +42,8 @@ class Quote
     #[ORM\Column(length: 150, nullable: true)]
     private ?string $company = null;
 
-    #[ORM\Column(name: "shipping_method", length: 50, nullable: true)]
-    private ?string $shippingMethod = null;
+    #[ORM\Column(name: "shipping_method", type: "json", nullable: true)]
+    private array $shippingMethod = [];
 
     #[ORM\Column(type: 'json')]
     private array $services = [];
@@ -162,12 +162,12 @@ class Quote
         return $this;
     }
 
-    public function getShippingMethod(): ?string
+    public function getShippingMethod(): array
     {
         return $this->shippingMethod;
     }
 
-    public function setShippingMethod(?string $shippingMethod): self
+    public function setShippingMethod(array $shippingMethod): self
     {
         $this->shippingMethod = $shippingMethod;
         return $this;

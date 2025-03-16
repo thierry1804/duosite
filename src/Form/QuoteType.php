@@ -70,6 +70,7 @@ class QuoteType extends AbstractType
                     'Envoi aérien normal (délai estimé: 15-30 jours)' => 'aerien_normal',
                 ],
                 'expanded' => true,
+                'multiple' => true,
                 'required' => true,
                 'attr' => [
                     'class' => 'shipping-method-options',
