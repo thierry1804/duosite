@@ -14,9 +14,12 @@ class SecurityController extends AbstractController
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils, EntityManagerInterface $entityManager): Response
     {
-        // Si l'utilisateur est déjà connecté, le rediriger vers la page d'accueil
+        // Si l'utilisateur est déjà connecté, le rediriger vers la page appropriée
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_home');
+            if ($this->isGranted('ROLE_ADMIN')) {
+                return $this->redirectToRoute('app_admin_dashboard');
+            }
+            return $this->redirectToRoute('app_user_profile');
         }
 
         // Récupérer l'erreur de connexion s'il y en a une
@@ -50,10 +53,11 @@ class SecurityController extends AbstractController
       
             // Rediriger les administrateurs vers le tableau de bord admin
             if ($this->isGranted('ROLE_ADMIN')) {
-                return $this->redirectToRoute('app_quote_dashboard');
+                return $this->redirectToRoute('app_admin_dashboard');
             }
         }
 
+        // Rediriger les utilisateurs normaux vers leur profil
         return $this->redirectToRoute('app_user_profile');
     }
 } 
