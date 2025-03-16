@@ -1,84 +1,101 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
-{% block title %}Utilisateurs suspects{% endblock %}
+{% block title %}Utilisateurs suspects - Administration{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Utilisateurs suspects</li>
+{% endblock %}
 
 {% block body %}
-<div class="container my-5">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="mb-4">Utilisateurs avec activité suspecte</h1>
-            
-            <div class="alert alert-info">
-                <p>Cette page affiche les utilisateurs qui ont potentiellement tenté de contourner le système en utilisant différentes identités.</p>
-            </div>
-            
-            {% if suspiciousUsers is empty %}
-                <div class="alert alert-success">
-                    <p>Aucun utilisateur suspect détecté.</p>
-                </div>
-            {% else %}
+    <h1 class="mb-4">Utilisateurs suspects</h1>
+    
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h5 class="mb-0">Liste des utilisateurs avec activité suspecte</h5>
+        </div>
+        <div class="admin-card-body">
+            {% if suspiciousUsers|length > 0 %}
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
+                    <table class="table table-hover">
+                        <thead>
                             <tr>
                                 <th>Utilisateur</th>
-                                <th>Email actuel</th>
-                                <th>Téléphone actuel</th>
-                                <th>Emails utilisés</th>
-                                <th>Téléphones utilisés</th>
-                                <th>Noms utilisés</th>
-                                <th>Détails</th>
+                                <th>Email</th>
+                                <th>Date d'inscription</th>
+                                <th>Dernière connexion</th>
+                                <th>Raison</th>
+                                <th>Score de risque</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for item in suspiciousUsers %}
+                            {% for suspiciousUser in suspiciousUsers %}
                                 <tr>
-                                    <td>{{ item.user.firstName }} {{ item.user.lastName }}</td>
-                                    <td>{{ item.user.email }}</td>
-                                    <td>{{ item.user.phone }}</td>
                                     <td>
-                                        <ul class="list-unstyled">
-                                            {% for email in item.fraudDetails.emails %}
-                                                <li>{{ email }}</li>
-                                            {% endfor %}
-                                        </ul>
+                                        {{ suspiciousUser.user.firstName }} {{ suspiciousUser.user.lastName }}
+                                    </td>
+                                    <td>{{ suspiciousUser.user.email }}</td>
+                                    <td>{{ suspiciousUser.user.createdAt|date('d/m/Y H:i') }}</td>
+                                    <td>
+                                        {% if suspiciousUser.user.lastLoginAt %}
+                                            {{ suspiciousUser.user.lastLoginAt|date('d/m/Y H:i') }}
+                                        {% else %}
+                                            <span class="text-muted">Jamais connecté</span>
+                                        {% endif %}
                                     </td>
                                     <td>
-                                        <ul class="list-unstyled">
-                                            {% for phone in item.fraudDetails.phones %}
-                                                <li>{{ phone }}</li>
-                                            {% endfor %}
-                                        </ul>
+                                        <span class="badge bg-danger">{{ suspiciousUser.fraudDetails.reason }}</span>
                                     </td>
                                     <td>
-                                        <ul class="list-unstyled">
-                                            {% for name in item.fraudDetails.names %}
-                                                <li>{{ name }}</li>
-                                            {% endfor %}
-                                        </ul>
+                                        <div class="progress" style="height: 20px;">
+                                            {% set riskScore = suspiciousUser.fraudDetails.riskScore|default(50) %}
+                                            {% set colorClass = riskScore > 75 ? 'bg-danger' : (riskScore > 50 ? 'bg-warning' : 'bg-success') %}
+                                            <div class="progress-bar {{ colorClass }}" role="progressbar" style="width: {{ riskScore }}%;" aria-valuenow="{{ riskScore }}" aria-valuemin="0" aria-valuemax="100">{{ riskScore }}%</div>
+                                        </div>
                                     </td>
                                     <td>
-                                        <ul class="list-unstyled">
-                                            {% for detail in item.fraudDetails.details %}
-                                                <li><span class="badge bg-warning text-dark">{{ detail }}</span></li>
-                                            {% endfor %}
-                                        </ul>
-                                    </td>
-                                    <td>
-                                        <a href="{{ path('app_user_quotes', {'id': item.user.id}) }}" class="btn btn-sm btn-primary">Voir les devis</a>
+                                        <div class="btn-group" role="group">
+                                            <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le profil">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-warning" data-bs-toggle="tooltip" title="Bloquer l'utilisateur">
+                                                <i class="fas fa-ban"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Supprimer l'utilisateur">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i> Aucun utilisateur suspect détecté.
+                </div>
             {% endif %}
-            
-            <div class="mt-4">
-                <a href="{{ path('app_admin_dashboard') }}" class="btn btn-secondary">Retour au tableau de bord</a>
+        </div>
+    </div>
+    
+    <div class="admin-card mt-4">
+        <div class="admin-card-header">
+            <h5 class="mb-0">Informations sur la détection</h5>
+        </div>
+        <div class="admin-card-body">
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle me-2"></i> Comment fonctionne la détection ?</h5>
+                <p>Le système analyse plusieurs facteurs pour détecter les activités suspectes :</p>
+                <ul>
+                    <li>Adresses IP multiples ou changeantes</li>
+                    <li>Tentatives de connexion échouées</li>
+                    <li>Comportement inhabituel lors de la navigation</li>
+                    <li>Demandes de devis anormales</li>
+                    <li>Informations de profil incohérentes</li>
+                </ul>
+                <p class="mb-0">Ces indicateurs sont combinés pour calculer un score de risque global pour chaque utilisateur.</p>
             </div>
         </div>
     </div>
-</div>
 {% endblock %} 

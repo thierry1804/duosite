@@ -1,66 +1,54 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
-{% block title %}Paramètres des devis{% endblock %}
+{% block title %}Paramètres des devis - Administration{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Paramètres des devis</li>
+{% endblock %}
 
 {% block body %}
-<div class="container my-5">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">Paramètres des devis</h2>
-                </div>
-                <div class="card-body">
-                    {% for label, messages in app.flashes %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ label }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endfor %}
-                    
-                    <p class="lead mb-4">
-                        Configurez ici les paramètres liés aux frais de traitement des devis.
-                    </p>
-                    
-                    {{ form_start(form) }}
-                    
-                    <div class="mb-3">
-                        {{ form_label(form.freeItemsLimit) }}
-                        {{ form_widget(form.freeItemsLimit) }}
-                        <div class="form-text">{{ form_help(form.freeItemsLimit) }}</div>
-                        <div class="invalid-feedback">
-                            {{ form_errors(form.freeItemsLimit) }}
+    <h1 class="mb-4">Paramètres des devis</h1>
+    
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h5 class="mb-0">Configuration des devis</h5>
+        </div>
+        <div class="admin-card-body">
+            {{ form_start(form) }}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.freeItemsLimit) }}
+                            {{ form_widget(form.freeItemsLimit, {'attr': {'class': 'form-control'}}) }}
+                            <div class="form-text">{{ form_help(form.freeItemsLimit) }}</div>
+                            <div class="invalid-feedback">{{ form_errors(form.freeItemsLimit) }}</div>
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        {{ form_label(form.itemPrice) }}
-                        {{ form_widget(form.itemPrice) }}
-                        <div class="form-text">{{ form_help(form.itemPrice) }}</div>
-                        <div class="invalid-feedback">
-                            {{ form_errors(form.itemPrice) }}
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form_label(form.itemPrice) }}
+                            {{ form_widget(form.itemPrice, {'attr': {'class': 'form-control'}}) }}
+                            <div class="form-text">{{ form_help(form.itemPrice) }}</div>
+                            <div class="invalid-feedback">{{ form_errors(form.itemPrice) }}</div>
                         </div>
                     </div>
-                    
-                    <div class="alert alert-info">
-                        <h5>Règles de gestion actuelles :</h5>
-                        <ul>
-                            <li>Pour la première demande de devis d'un utilisateur, les {{ form.vars.value.freeItemsLimit }} premiers articles sont gratuits.</li>
-                            <li>Au-delà de {{ form.vars.value.freeItemsLimit }} articles, chaque article supplémentaire est facturé {{ form.vars.value.itemPrice|number_format(0, ' ', '.') }} Ariary.</li>
-                            <li>Pour tous les devis suivants, tous les articles sont facturés {{ form.vars.value.itemPrice|number_format(0, ' ', '.') }} Ariary chacun.</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-secondary me-md-2">Retour</a>
-                        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-                    </div>
-                    
-                    {{ form_end(form) }}
                 </div>
-            </div>
+                
+                <div class="alert alert-info">
+                    <h5>Règles de gestion actuelles :</h5>
+                    <ul>
+                        <li>Pour la première demande de devis d'un utilisateur, les {{ form.vars.value.freeItemsLimit }} premiers articles sont gratuits.</li>
+                        <li>Au-delà de {{ form.vars.value.freeItemsLimit }} articles, chaque article supplémentaire est facturé {{ form.vars.value.itemPrice|number_format(0, ' ', '.') }} Ariary.</li>
+                        <li>Pour tous les devis suivants, tous les articles sont facturés {{ form.vars.value.itemPrice|number_format(0, ' ', '.') }} Ariary chacun.</li>
+                    </ul>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i> Enregistrer les modifications
+                    </button>
+                </div>
+            {{ form_end(form) }}
         </div>
     </div>
-</div>
 {% endblock %} 

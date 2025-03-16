@@ -1,166 +1,235 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
-{% block title %}Tableau de bord des devis{% endblock %}
+{% block title %}Gestion des devis - Administration{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Gestion des devis</li>
+{% endblock %}
 
 {% block body %}
-<div class="container my-5">
-    <h1 class="mb-4">Tableau de bord des devis</h1>
+    <h1 class="mb-4">Gestion des devis</h1>
     
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    {% endfor %}
-    
-    <ul class="nav nav-tabs mb-4" id="quotesTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
-                En attente <span class="badge bg-warning ms-2">{{ pendingQuotes|length }}</span>
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="processed-tab" data-bs-toggle="tab" data-bs-target="#processed" type="button" role="tab" aria-controls="processed" aria-selected="false">
-                Traités <span class="badge bg-success ms-2">{{ processedQuotes|length }}</span>
-            </button>
-        </li>
-    </ul>
-    
-    <div class="tab-content" id="quotesTabsContent">
-        <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
-            {% if pendingQuotes is empty %}
-                <div class="alert alert-info">
-                    Aucun devis en attente.
-                </div>
-            {% else %}
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>N° de devis</th>
-                                <th>Date</th>
-                                <th>Client</th>
-                                <th>Produit</th>
-                                <th>Quantité</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for quote in pendingQuotes %}
-                                <tr>
-                                    <td>{{ quote.quoteNumber }}</td>
-                                    <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
-                                    <td>{{ quote.fullName }}</td>
-                                    <td>
-                                        {% if quote.items.first %}
-                                            {% set productTypes = {
-                                                'Modes et accessoires': 'Modes et accessoires',
-                                                'Lingerie': 'Lingerie',
-                                                'Bijoux inoxydable': 'Bijoux inoxydable',
-                                                'Article de bébé': 'Article de bébé',
-                                                'Électroménager': 'Électroménager',
-                                                'Ustensiles de cuisine': 'Ustensiles de cuisine',
-                                                'Linge de maison': 'Linge de maison',
-                                                'Meuble d\'intérieur': 'Meuble d\'intérieur',
-                                                'Décoration': 'Décoration',
-                                                'Meuble de jardin': 'Meuble de jardin',
-                                                'Article pour les animaux domestiques': 'Article pour les animaux domestiques',
-                                                'Accessoires mobiles': 'Accessoires mobiles',
-                                                'Article de voyage': 'Article de voyage',
-                                                'Équipements de cuisine et de restauration': 'Équipements de cuisine et de restauration',
-                                                'Équipements de pâtisserie et de boulangerie': 'Équipements de pâtisserie et de boulangerie',
-                                                'Jouets': 'Jouets',
-                                                'Articles de sport': 'Articles de sport'
-                                            } %}
-                                            {{ productTypes[quote.items.first.productType] ?? quote.items.first.productType }}
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ quote.items.first ? quote.items.first.quantity : '-' }}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-eye"></i> Voir
-                                            </a>
-                                            <a href="{{ path('app_quote_process', {'id': quote.id}) }}" class="btn btn-sm btn-success">
-                                                <i class="fas fa-check"></i> Traiter
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% endif %}
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h5 class="mb-0">Liste des devis</h5>
         </div>
-        
-        <div class="tab-pane fade" id="processed" role="tabpanel" aria-labelledby="processed-tab">
-            {% if processedQuotes is empty %}
-                <div class="alert alert-info">
-                    Aucun devis traité.
+        <div class="admin-card-body">
+            <ul class="nav nav-tabs mb-4" id="quotesTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
+                        <i class="fas fa-clock me-2"></i> En attente <span class="badge bg-warning text-dark ms-1">{{ pendingQuotes|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="in-progress-tab" data-bs-toggle="tab" data-bs-target="#in-progress" type="button" role="tab" aria-controls="in-progress" aria-selected="false">
+                        <i class="fas fa-spinner me-2"></i> En cours <span class="badge bg-info ms-1">{{ inProgressQuotes|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="false">
+                        <i class="fas fa-check-circle me-2"></i> Complétés <span class="badge bg-success ms-1">{{ completedQuotes|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab" aria-controls="rejected" aria-selected="false">
+                        <i class="fas fa-times-circle me-2"></i> Rejetés <span class="badge bg-danger ms-1">{{ rejectedQuotes|length }}</span>
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="quotesTabsContent">
+                <!-- Devis en attente -->
+                <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                    {% if pendingQuotes is empty %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Aucun devis en attente.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Date</th>
+                                        <th>Produits</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for quote in pendingQuotes %}
+                                        <tr>
+                                            <td>#{{ quote.id }}</td>
+                                            <td>
+                                                {% if quote.user %}
+                                                    {{ quote.user.email }}
+                                                {% else %}
+                                                    {{ quote.email }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
+                                            <td>{{ quote.items|length }} produit(s)</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('app_quote_process', {'id': quote.id}) }}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="Traiter">
+                                                        <i class="fas fa-play"></i>
+                                                    </a>
+                                                    <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Rejeter" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
+                                                        <i class="fas fa-times"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
-            {% else %}
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>N° de devis</th>
-                                <th>Date</th>
-                                <th>Client</th>
-                                <th>Produit</th>
-                                <th>Quantité</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for quote in processedQuotes %}
-                                <tr>
-                                    <td>{{ quote.quoteNumber }}</td>
-                                    <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
-                                    <td>{{ quote.fullName }}</td>
-                                    <td>
-                                        {% if quote.items.first %}
-                                            {% set productTypes = {
-                                                'Modes et accessoires': 'Modes et accessoires',
-                                                'Lingerie': 'Lingerie',
-                                                'Bijoux inoxydable': 'Bijoux inoxydable',
-                                                'Article de bébé': 'Article de bébé',
-                                                'Électroménager': 'Électroménager',
-                                                'Ustensiles de cuisine': 'Ustensiles de cuisine',
-                                                'Linge de maison': 'Linge de maison',
-                                                'Meuble d\'intérieur': 'Meuble d\'intérieur',
-                                                'Décoration': 'Décoration',
-                                                'Meuble de jardin': 'Meuble de jardin',
-                                                'Article pour les animaux domestiques': 'Article pour les animaux domestiques',
-                                                'Accessoires mobiles': 'Accessoires mobiles',
-                                                'Article de voyage': 'Article de voyage',
-                                                'Équipements de cuisine et de restauration': 'Équipements de cuisine et de restauration',
-                                                'Équipements de pâtisserie et de boulangerie': 'Équipements de pâtisserie et de boulangerie',
-                                                'Jouets': 'Jouets',
-                                                'Articles de sport': 'Articles de sport'
-                                            } %}
-                                            {{ productTypes[quote.items.first.productType] ?? quote.items.first.productType }}
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ quote.quantity }}</td>
-                                    <td>
-                                        <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-eye"></i> Voir
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                
+                <!-- Devis en cours -->
+                <div class="tab-pane fade" id="in-progress" role="tabpanel" aria-labelledby="in-progress-tab">
+                    {% if inProgressQuotes is empty %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Aucun devis en cours de traitement.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Date</th>
+                                        <th>Produits</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for quote in inProgressQuotes %}
+                                        <tr>
+                                            <td>#{{ quote.id }}</td>
+                                            <td>
+                                                {% if quote.user %}
+                                                    {{ quote.user.email }}
+                                                {% else %}
+                                                    {{ quote.email }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
+                                            <td>{{ quote.items|length }} produit(s)</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'completed'}) }}" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Marquer comme complété">
+                                                        <i class="fas fa-check"></i>
+                                                    </a>
+                                                    <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Rejeter" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
+                                                        <i class="fas fa-times"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
-            {% endif %}
+                
+                <!-- Devis complétés -->
+                <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                    {% if completedQuotes is empty %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Aucun devis complété.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Date</th>
+                                        <th>Produits</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for quote in completedQuotes %}
+                                        <tr>
+                                            <td>#{{ quote.id }}</td>
+                                            <td>
+                                                {% if quote.user %}
+                                                    {{ quote.user.email }}
+                                                {% else %}
+                                                    {{ quote.email }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
+                                            <td>{{ quote.items|length }} produit(s)</td>
+                                            <td>
+                                                <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Devis rejetés -->
+                <div class="tab-pane fade" id="rejected" role="tabpanel" aria-labelledby="rejected-tab">
+                    {% if rejectedQuotes is empty %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Aucun devis rejeté.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Date</th>
+                                        <th>Produits</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for quote in rejectedQuotes %}
+                                        <tr>
+                                            <td>#{{ quote.id }}</td>
+                                            <td>
+                                                {% if quote.user %}
+                                                    {{ quote.user.email }}
+                                                {% else %}
+                                                    {{ quote.email }}
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
+                                            <td>{{ quote.items|length }} produit(s)</td>
+                                            <td>
+                                                <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
-</div>
 {% endblock %} 
