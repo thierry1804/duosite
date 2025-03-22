@@ -17,22 +17,22 @@
             <ul class="nav nav-tabs mb-4" id="quotesTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
-                        <i class="fas fa-clock me-2"></i> En attente <span class="badge bg-warning text-dark ms-1">{{ pendingQuotes|length }}</span>
+                        <i data-lucide="clock"></i> En attente <span class="badge bg-warning text-dark ms-1">{{ pendingQuotes|length }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="in-progress-tab" data-bs-toggle="tab" data-bs-target="#in-progress" type="button" role="tab" aria-controls="in-progress" aria-selected="false">
-                        <i class="fas fa-spinner me-2"></i> En cours <span class="badge bg-info ms-1">{{ inProgressQuotes|length }}</span>
+                        <i data-lucide="rotate-cw"></i> En cours <span class="badge bg-info ms-1">{{ inProgressQuotes|length }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="false">
-                        <i class="fas fa-check-circle me-2"></i> Complétés <span class="badge bg-success ms-1">{{ completedQuotes|length }}</span>
+                        <i data-lucide="check-circle"></i> Complétés <span class="badge bg-success ms-1">{{ completedQuotes|length }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab" aria-controls="rejected" aria-selected="false">
-                        <i class="fas fa-times-circle me-2"></i> Rejetés <span class="badge bg-danger ms-1">{{ rejectedQuotes|length }}</span>
+                        <i data-lucide="x-circle"></i> Rejetés <span class="badge bg-danger ms-1">{{ rejectedQuotes|length }}</span>
                     </button>
                 </li>
             </ul>
@@ -42,7 +42,7 @@
                 <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
                     {% if pendingQuotes is empty %}
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i> Aucun devis en attente.
+                            <i data-lucide="info"></i> Aucun devis en attente.
                         </div>
                     {% else %}
                         <div class="table-responsive">
@@ -53,6 +53,7 @@
                                         <th>Client</th>
                                         <th>Date</th>
                                         <th>Produits</th>
+                                        <th>Paiement</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -63,22 +64,54 @@
                                             <td>
                                                 {% if quote.user %}
                                                     {{ quote.user.email }}
+                                                    {% if quote.user.quotes|length <= 1 %}
+                                                        <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
+                                                    {% endif %}
                                                 {% else %}
                                                     {{ quote.email }}
+                                                    <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
                                                 {% endif %}
                                             </td>
                                             <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
-                                            <td>{{ quote.items|length }} produit(s)</td>
+                                            <td>
+                                                {{ quote.items|length }} produit(s)
+                                                {% if quote.isPaymentRequired %}
+                                                    <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
+                                                          title="Ce devis contient des produits payants">
+                                                        {{ quote.user and quote.user.quotes|length <= 1 ? (quote.items|length - freeItemsLimit) : quote.items|length }} payant(s)
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if quote.isPaymentRequired %}
+                                                    {% if quote.isPaid %}
+                                                        <span class="badge bg-success">Payé</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">Paiement requis</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Non requis</span>
+                                                {% endif %}
+                                            </td>
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
-                                                        <i class="fas fa-eye"></i>
+                                                        <i data-lucide="eye"></i>
                                                     </a>
-                                                    <a href="{{ path('app_quote_process', {'id': quote.id}) }}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="Traiter">
-                                                        <i class="fas fa-play"></i>
-                                                    </a>
+                                                    {% if quote.isPaymentRequired and not quote.isPaid %}
+                                                        <a href="{{ path('app_quote_mark_as_paid', {'id': quote.id}) }}" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Confirmer paiement">
+                                                            <i data-lucide="credit-card"></i>
+                                                        </a>
+                                                        <button class="btn btn-sm btn-outline-info" disabled data-bs-toggle="tooltip" title="Paiement requis pour traiter">
+                                                            <i data-lucide="play"></i>
+                                                        </button>
+                                                    {% else %}
+                                                        <a href="{{ path('app_quote_process', {'id': quote.id}) }}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="Traiter">
+                                                            <i data-lucide="play"></i>
+                                                        </a>
+                                                    {% endif %}
                                                     <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Rejeter" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
-                                                        <i class="fas fa-times"></i>
+                                                        <i data-lucide="x"></i>
                                                     </a>
                                                 </div>
                                             </td>
@@ -94,7 +127,7 @@
                 <div class="tab-pane fade" id="in-progress" role="tabpanel" aria-labelledby="in-progress-tab">
                     {% if inProgressQuotes is empty %}
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i> Aucun devis en cours de traitement.
+                            <i data-lucide="info"></i> Aucun devis en cours de traitement.
                         </div>
                     {% else %}
                         <div class="table-responsive">
@@ -115,22 +148,34 @@
                                             <td>
                                                 {% if quote.user %}
                                                     {{ quote.user.email }}
+                                                    {% if quote.user.quotes|length <= 1 %}
+                                                        <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
+                                                    {% endif %}
                                                 {% else %}
                                                     {{ quote.email }}
+                                                    <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
                                                 {% endif %}
                                             </td>
                                             <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
-                                            <td>{{ quote.items|length }} produit(s)</td>
+                                            <td>
+                                                {{ quote.items|length }} produit(s)
+                                                {% if quote.isPaymentRequired %}
+                                                    <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
+                                                          title="Ce devis contient des produits payants">
+                                                        {{ quote.user and quote.user.quotes|length <= 1 ? (quote.items|length - 3) : quote.items|length }} payant(s)
+                                                    </span>
+                                                {% endif %}
+                                            </td>
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
-                                                        <i class="fas fa-eye"></i>
+                                                        <i data-lucide="eye"></i>
                                                     </a>
                                                     <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'completed'}) }}" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Marquer comme complété">
-                                                        <i class="fas fa-check"></i>
+                                                        <i data-lucide="check"></i>
                                                     </a>
                                                     <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Rejeter" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
-                                                        <i class="fas fa-times"></i>
+                                                        <i data-lucide="x"></i>
                                                     </a>
                                                 </div>
                                             </td>
@@ -146,7 +191,7 @@
                 <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
                     {% if completedQuotes is empty %}
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i> Aucun devis complété.
+                            <i data-lucide="info"></i> Aucun devis complété.
                         </div>
                     {% else %}
                         <div class="table-responsive">
@@ -167,15 +212,27 @@
                                             <td>
                                                 {% if quote.user %}
                                                     {{ quote.user.email }}
+                                                    {% if quote.user.quotes|length <= 1 %}
+                                                        <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
+                                                    {% endif %}
                                                 {% else %}
                                                     {{ quote.email }}
+                                                    <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
                                                 {% endif %}
                                             </td>
                                             <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
-                                            <td>{{ quote.items|length }} produit(s)</td>
+                                            <td>
+                                                {{ quote.items|length }} produit(s)
+                                                {% if quote.isPaymentRequired %}
+                                                    <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
+                                                          title="Ce devis contient des produits payants">
+                                                        {{ quote.user and quote.user.quotes|length <= 1 ? (quote.items|length - 3) : quote.items|length }} payant(s)
+                                                    </span>
+                                                {% endif %}
+                                            </td>
                                             <td>
                                                 <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
-                                                    <i class="fas fa-eye"></i>
+                                                    <i data-lucide="eye"></i>
                                                 </a>
                                             </td>
                                         </tr>
@@ -190,7 +247,7 @@
                 <div class="tab-pane fade" id="rejected" role="tabpanel" aria-labelledby="rejected-tab">
                     {% if rejectedQuotes is empty %}
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i> Aucun devis rejeté.
+                            <i data-lucide="info"></i> Aucun devis rejeté.
                         </div>
                     {% else %}
                         <div class="table-responsive">
@@ -211,15 +268,27 @@
                                             <td>
                                                 {% if quote.user %}
                                                     {{ quote.user.email }}
+                                                    {% if quote.user.quotes|length <= 1 %}
+                                                        <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
+                                                    {% endif %}
                                                 {% else %}
                                                     {{ quote.email }}
+                                                    <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
                                                 {% endif %}
                                             </td>
                                             <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
-                                            <td>{{ quote.items|length }} produit(s)</td>
+                                            <td>
+                                                {{ quote.items|length }} produit(s)
+                                                {% if quote.isPaymentRequired %}
+                                                    <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
+                                                          title="Ce devis contient des produits payants">
+                                                        {{ quote.user and quote.user.quotes|length <= 1 ? (quote.items|length - 3) : quote.items|length }} payant(s)
+                                                    </span>
+                                                {% endif %}
+                                            </td>
                                             <td>
                                                 <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
-                                                    <i class="fas fa-eye"></i>
+                                                    <i data-lucide="eye"></i>
                                                 </a>
                                             </td>
                                         </tr>

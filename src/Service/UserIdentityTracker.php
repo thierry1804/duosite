@@ -35,6 +35,8 @@ class UserIdentityTracker
             'timestamp' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
         ];
 
+        // Utiliser directement la propriété de l'entité
+        // Le setter gère la conversion en fonction du type attendu
         $quote->setOriginalUserData($originalData);
     }
 
@@ -58,6 +60,11 @@ class UserIdentityTracker
             // Si pas de données originales, passer au suivant
             if (!$originalData) {
                 continue;
+            }
+            
+            // S'assurer que les données sont bien sous forme de tableau
+            if (is_string($originalData)) {
+                $originalData = json_decode($originalData, true) ?: [];
             }
             
             // Collecter les différentes valeurs utilisées

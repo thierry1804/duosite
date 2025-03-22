@@ -27,28 +27,27 @@
         </p>
         
         <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <p>Cher(e) {{ quote.firstName }} {{ quote.lastName }},</p>
-            <p>Nous vous remercions pour votre demande de devis. Notre équipe commerciale l'examinera dans les plus brefs délais et vous contactera sous 24 à 72 heures.</p>
+            <p>Bonjour {{ quote.firstName }},</p>
+            <p>Nous avons bien reçu votre demande de devis <strong>{{ quote.quoteNumber }}</strong>. Notre équipe va étudier votre demande dans les plus brefs délais.</p>
             <p>Veuillez conserver ce numéro de devis pour toute communication future concernant cette demande.</p>
             
-            {% if feeDetails.totalFee > 0 %}
-            <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin-top: 15px; border-left: 4px solid #ffc107;">
-                <p><strong>Information importante concernant les frais de traitement :</strong></p>
-                <p>Votre demande de devis comporte {{ feeDetails.itemCount }} article(s).</p>
-                
-                {% if feeDetails.isFirstQuote %}
-                    <p>Pour votre première demande, les {{ feeDetails.freeItemsLimit }} premiers articles sont gratuits.</p>
-                    {% if feeDetails.paidItems > 0 %}
-                        <p>Vous avez {{ feeDetails.paidItems }} article(s) supplémentaire(s) qui sont facturés à {{ feeDetails.itemPrice|number_format(0, ' ', '.') }} Ariary chacun.</p>
-                        <p><strong>Montant total à payer : {{ feeDetails.totalFee|number_format(0, ' ', '.') }} Ariary</strong></p>
-                        <p>Veuillez vous acquitter de ce montant pour que votre demande soit traitée. Notre équipe vous contactera pour les modalités de paiement.</p>
-                    {% endif %}
-                {% else %}
-                    <p>Pour cette demande, tous les articles sont facturés à {{ feeDetails.itemPrice|number_format(0, ' ', '.') }} Ariary chacun.</p>
-                    <p><strong>Montant total à payer : {{ feeDetails.totalFee|number_format(0, ' ', '.') }} Ariary</strong></p>
-                    <p>Veuillez vous acquitter de ce montant pour que votre demande soit traitée. Notre équipe vous contactera pour les modalités de paiement.</p>
-                {% endif %}
-            </div>
+            {% if feeDetails.paymentRequired|default(false) %}
+                <div style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                    <h3 style="margin-top: 0;">Paiement requis</h3>
+                    <p>Pour traiter votre demande, un paiement de <strong>{{ feeDetails.totalFee|default(5000)|number_format(0, ',', ' ') }} Ar</strong> est nécessaire.</p>
+                    
+                    <h4>Détails du calcul:</h4>
+                    <ul>
+                        <li>Nombre total de produits: <strong>{{ feeDetails.itemCount|default(quote.items|length) }}</strong></li>
+                        {% if feeDetails.isFirstQuote|default(false) %}
+                            <li>Produits gratuits (premier devis): <strong>{{ feeDetails.freeItems|default(0) }}</strong></li>
+                        {% endif %}
+                        <li>Produits payants: <strong>{{ feeDetails.paidItems|default(feeDetails.itemCount|default(quote.items|length)) }}</strong></li>
+                        <li>Prix par produit: <strong>{{ feeDetails.itemPrice|default(5000)|number_format(0, ',', ' ') }} Ar</strong></li>
+                    </ul>
+                    
+                    <p>Veuillez effectuer votre paiement par mobile money au <strong>032 XX XX XX</strong> en indiquant votre numéro de devis.</p>
+                </div>
             {% endif %}
         </div>
 

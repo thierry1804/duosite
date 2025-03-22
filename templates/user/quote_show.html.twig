@@ -99,6 +99,7 @@
                                         <thead class="table-light rounded-3">
                                             <tr>
                                                 <th>Type de produit</th>
+                                                <th>Image</th>
                                                 <th>Quantité</th>
                                                 <th>Description</th>
                                             </tr>
@@ -107,8 +108,33 @@
                                             {% for item in quote.items %}
                                                 <tr>
                                                     <td class="fw-medium">{{ item.productType }}</td>
+                                                    <td>
+                                                        {% if item.photoFilename %}
+                                                            <a href="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" target="_blank" class="product-thumbnail">
+                                                                <img src="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" alt="Image du produit" class="img-thumbnail" style="max-width: 80px; max-height: 60px;">
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-muted"><i data-lucide="image-off" class="icon-sm"></i></span>
+                                                        {% endif %}
+                                                    </td>
                                                     <td>{{ item.quantity }}</td>
-                                                    <td>{{ item.description }}</td>
+                                                    <td>
+                                                        {% set description = item.description %}
+                                                        {% if description|length > 100 %}
+                                                            <div class="position-relative">
+                                                                <div class="description-preview">
+                                                                    <span class="description-short">{{ description|slice(0, 100)|nl2br|autolink|raw }}...</span>
+                                                                    <span class="description-full d-none">{{ description|nl2br|autolink|raw }}</span>
+                                                                </div>
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary description-expand-btn mt-2">
+                                                                    <span class="expand-text">Voir plus</span>
+                                                                    <span class="collapse-text d-none">Voir moins</span>
+                                                                </button>
+                                                            </div>
+                                                        {% else %}
+                                                            {{ description|nl2br|autolink|raw }}
+                                                        {% endif %}
+                                                    </td>
                                                 </tr>
                                             {% endfor %}
                                         </tbody>
@@ -161,4 +187,30 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestionnaire pour le bouton d'expansion de la description
+        document.querySelectorAll('.description-expand-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const container = this.closest('.position-relative');
+                const shortText = container.querySelector('.description-short');
+                const fullText = container.querySelector('.description-full');
+                const expandText = this.querySelector('.expand-text');
+                const collapseText = this.querySelector('.collapse-text');
+                
+                // Toggle texte court/complet
+                shortText.classList.toggle('d-none');
+                fullText.classList.toggle('d-none');
+                
+                // Toggle texte du bouton
+                expandText.classList.toggle('d-none');
+                collapseText.classList.toggle('d-none');
+            });
+        });
+    });
+</script>
 {% endblock %} 

@@ -9,223 +9,20 @@
         
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!-- Font Awesome -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- Lucide Icons -->
+        <script src="https://unpkg.com/lucide@latest"></script>
         <!-- Google Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         
-        <style>
-            :root {
-                --primary-color: #2b4eff;
-                --secondary-color: #6c757d;
-                --success-color: #28a745;
-                --danger-color: #dc3545;
-                --warning-color: #ffc107;
-                --info-color: #17a2b8;
-                --dark-color: #343a40;
-                --light-color: #f8f9fa;
-                --sidebar-width: 250px;
-                --header-height: 60px;
-            }
-            
-            body {
-                font-family: 'Poppins', sans-serif;
-                background-color: #f5f7fb;
-                margin: 0;
-                padding: 0;
-                overflow-x: hidden;
-            }
-            
-            /* Sidebar */
-            .admin-sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: var(--sidebar-width);
-                height: 100vh;
-                background: #2c3e50;
-                color: #fff;
-                z-index: 1000;
-                transition: all 0.3s;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                overflow-y: auto;
-            }
-            
-            .sidebar-header {
-                padding: 20px;
-                background: #1a2530;
-                text-align: center;
-            }
-            
-            .sidebar-header img {
-                max-width: 120px;
-            }
-            
-            .sidebar-menu {
-                padding: 0;
-                list-style: none;
-            }
-            
-            .sidebar-menu li {
-                margin: 0;
-                padding: 0;
-            }
-            
-            .sidebar-menu li a {
-                padding: 15px 20px;
-                display: block;
-                color: #ecf0f1;
-                text-decoration: none;
-                transition: all 0.3s;
-                border-left: 3px solid transparent;
-            }
-            
-            .sidebar-menu li a:hover,
-            .sidebar-menu li a.active {
-                background: #34495e;
-                border-left: 3px solid var(--primary-color);
-            }
-            
-            .sidebar-menu li a i {
-                margin-right: 10px;
-                width: 20px;
-                text-align: center;
-            }
-            
-            /* Main content */
-            .admin-content {
-                margin-left: var(--sidebar-width);
-                padding: 20px;
-                min-height: 100vh;
-                transition: all 0.3s;
-            }
-            
-            /* Header */
-            .admin-header {
-                background: #fff;
-                height: var(--header-height);
-                padding: 0 20px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-                margin-bottom: 20px;
-            }
-            
-            .admin-header .breadcrumb {
-                margin: 0;
-                background: transparent;
-            }
-            
-            .admin-header .user-dropdown {
-                display: flex;
-                align-items: center;
-            }
-            
-            .admin-header .user-dropdown img {
-                width: 35px;
-                height: 35px;
-                border-radius: 50%;
-                margin-right: 10px;
-            }
-            
-            /* Cards */
-            .admin-card {
-                background: #fff;
-                border-radius: 10px;
-                box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-                margin-bottom: 20px;
-                overflow: hidden;
-            }
-            
-            .admin-card-header {
-                padding: 15px 20px;
-                border-bottom: 1px solid #eee;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-            
-            .admin-card-body {
-                padding: 20px;
-            }
-            
-            /* Stats cards */
-            .stats-card {
-                background: #fff;
-                border-radius: 10px;
-                box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-                padding: 20px;
-                margin-bottom: 20px;
-                display: flex;
-                align-items: center;
-            }
-            
-            .stats-card-icon {
-                width: 60px;
-                height: 60px;
-                border-radius: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin-right: 15px;
-                font-size: 24px;
-            }
-            
-            .stats-card-info h3 {
-                font-size: 24px;
-                margin: 0;
-                font-weight: 600;
-            }
-            
-            .stats-card-info p {
-                margin: 0;
-                color: #6c757d;
-            }
-            
-            /* Responsive */
-            @media (max-width: 768px) {
-                .admin-sidebar {
-                    margin-left: -250px;
-                }
-                
-                .admin-sidebar.active {
-                    margin-left: 0;
-                }
-                
-                .admin-content {
-                    margin-left: 0;
-                }
-                
-                .admin-content.active {
-                    margin-left: 250px;
-                }
-            }
-            
-            /* Toggle button */
-            #sidebarCollapse {
-                background: transparent;
-                border: none;
-                color: #333;
-                font-size: 20px;
-                cursor: pointer;
-                display: none;
-            }
-            
-            @media (max-width: 768px) {
-                #sidebarCollapse {
-                    display: block;
-                }
-            }
-        </style>
+        <!-- Admin CSS -->
+        <link rel="stylesheet" href="{{ asset('css/admin/style.min.css') }}">
         
         {% block stylesheets %}{% endblock %}
     </head>
     <body>
-        <div class="admin-sidebar">
+        <div class="admin-sidebar collapsed">
             <div class="sidebar-header">
                 <img src="{{ asset('images/logo.webp') }}" alt="Duo Import MDG">
                 <h5 class="mt-2 mb-0">Administration</h5>
@@ -234,55 +31,60 @@
             <ul class="sidebar-menu">
                 <li>
                     <a href="{{ path('app_admin_dashboard') }}" class="{{ app.request.get('_route') == 'app_admin_dashboard' ? 'active' : '' }}">
-                        <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        <i data-lucide="layout-dashboard"></i> <span>Tableau de bord</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_quote_dashboard') }}" class="{{ app.request.get('_route') == 'app_quote_dashboard' ? 'active' : '' }}">
-                        <i class="fas fa-file-invoice-dollar"></i> Devis
+                        <i data-lucide="file-text"></i> <span>Devis</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_admin_quote_settings') }}" class="{{ app.request.get('_route') == 'app_admin_quote_settings' ? 'active' : '' }}">
-                        <i class="fas fa-cog"></i> Paramètres des devis
+                        <i data-lucide="settings"></i> <span>Paramètres des devis</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_admin_suspicious_users') }}" class="{{ app.request.get('_route') == 'app_admin_suspicious_users' ? 'active' : '' }}">
-                        <i class="fas fa-user-shield"></i> Utilisateurs suspects
+                        <i data-lucide="user-cog"></i> <span>Utilisateurs suspects</span>
                     </a>
                 </li>
+            </ul>
+            
+            <ul class="bottom-menu">
                 <li>
                     <a href="{{ path('app_home') }}">
-                        <i class="fas fa-home"></i> Retour au site
+                        <i data-lucide="home"></i> <span>Retour au site</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ path('app_logout') }}">
-                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        <i data-lucide="log-out"></i> <span>Déconnexion</span>
                     </a>
                 </li>
             </ul>
         </div>
         
-        <div class="admin-content">
+        <div class="admin-content expanded">
             <div class="admin-header">
-                <button type="button" id="sidebarCollapse">
-                    <i class="fas fa-bars"></i>
-                </button>
-                
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Administration</a></li>
-                        {% block breadcrumb %}{% endblock %}
-                    </ol>
-                </nav>
+                <div class="d-flex align-items-center">
+                    <button type="button" id="sidebarCollapse" class="btn-icon">
+                        <i data-lucide="panel-left"></i>
+                    </button>
+                    <div class="separator mx-2">|</div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Administration</a></li>
+                            {% block breadcrumb %}{% endblock %}
+                        </ol>
+                    </nav>
+                </div>
                 
                 <div class="user-dropdown">
                     <span class="me-2">{{ app.user.firstName }} {{ app.user.lastName }}</span>
                     <div class="dropdown">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-user-circle"></i>
+                            <i data-lucide="user-circle"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                             <li><a class="dropdown-item" href="{{ path('app_user_profile') }}">Mon profil</a></li>
@@ -308,26 +110,13 @@
         
         <!-- Bootstrap Bundle with Popper -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- Admin Scripts -->
+        <script src="{{ asset('js/admin/scripts.min.js') }}"></script>
+        
+        <!-- Initialize Lucide icons -->
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Toggle sidebar
-                const sidebarCollapse = document.getElementById('sidebarCollapse');
-                const sidebar = document.querySelector('.admin-sidebar');
-                const content = document.querySelector('.admin-content');
-                
-                if (sidebarCollapse) {
-                    sidebarCollapse.addEventListener('click', function() {
-                        sidebar.classList.toggle('active');
-                        content.classList.toggle('active');
-                    });
-                }
-                
-                // Initialize tooltips
-                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                tooltipTriggerList.map(function(tooltipTriggerEl) {
-                    return new bootstrap.Tooltip(tooltipTriggerEl);
-                });
-            });
+            lucide.createIcons();
         </script>
         
         {% block javascripts %}{% endblock %}

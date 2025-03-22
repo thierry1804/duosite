@@ -36,23 +36,24 @@
             {% endif %}
         </div>
 
-        {% if feeDetails.totalFee > 0 %}
-        <div style="background: #e2f3fc; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #17a2b8;">
-            <h2 style="color: #2c3e50; margin-top: 0;">Frais de traitement du devis</h2>
-            <p>Nombre total d'articles : <strong>{{ feeDetails.itemCount }}</strong></p>
-            
-            {% if feeDetails.isFirstQuote %}
-                <p>Premier devis de l'utilisateur - Limite d'articles gratuits : <strong>{{ feeDetails.freeItemsLimit }}</strong></p>
-                <p>Articles gratuits : <strong>{{ feeDetails.freeItems }}</strong></p>
-                <p>Articles payants : <strong>{{ feeDetails.paidItems }}</strong></p>
-            {% else %}
-                <p>Ce n'est pas le premier devis de l'utilisateur - Tous les articles sont payants</p>
+        <h4>Informations sur les frais</h4>
+        <div style="background-color: #e9ecef; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+            {% if feeDetails.isFirstQuote|default(false) %}
+                <p>Premier devis de l'utilisateur - Limite d'articles gratuits : <strong>{{ feeDetails.freeItemsLimit|default(3) }}</strong></p>
             {% endif %}
             
-            <p>Prix par article : <strong>{{ feeDetails.itemPrice|number_format(0, ' ', '.') }} Ariary</strong></p>
-            <p style="font-size: 1.2em; font-weight: bold; color: #17a2b8;">Montant total à payer : {{ feeDetails.totalFee|number_format(0, ' ', '.') }} Ariary</p>
+            <p>Nombre total d'articles : <strong>{{ feeDetails.itemCount|default(quote.items|length) }}</strong></p>
+            <p>Articles gratuits : <strong>{{ feeDetails.freeItems|default(0) }}</strong></p>
+            <p>Articles payants : <strong>{{ feeDetails.paidItems|default(quote.items|length) }}</strong></p>
+            <p>Prix par article : <strong>{{ feeDetails.itemPrice|default(5000)|number_format(0, ',', ' ') }} Ar</strong></p>
+            <p>Montant total : <strong>{{ feeDetails.totalFee|default(feeDetails.paidItems|default(quote.items|length) * feeDetails.itemPrice|default(5000))|number_format(0, ',', ' ') }} Ar</strong></p>
+            
+            {% if feeDetails.paymentRequired|default(false) %}
+                <p><strong style="color: #dc3545;">Un paiement est requis avant traitement</strong></p>
+            {% else %}
+                <p><strong style="color: #28a745;">Aucun paiement requis</strong></p>
+            {% endif %}
         </div>
-        {% endif %}
 
         <h2 style="color: #2c3e50; margin-top: 30px;">Produits demandés</h2>
         

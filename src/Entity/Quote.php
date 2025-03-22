@@ -75,8 +75,14 @@ class Quote
     #[ORM\OneToMany(mappedBy: 'quote', targetEntity: QuoteItem::class, orphanRemoval: true, cascade: ['persist'])]
     private Collection $items;
 
-    #[ORM\Column(type: 'json', nullable: true)]
-    private ?array $originalUserData = null;
+    /**
+     * @var string|array|null
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private $originalUserData = null;
+
+    #[ORM\Column(type: 'string', length: 20, options: ['default' => 'not_required'])]
+    private string $paymentStatus = 'not_required';
 
     public function __construct()
     {
@@ -296,14 +302,48 @@ class Quote
         return $this;
     }
 
+    /**
+     * Get originalUserData value
+     */
     public function getOriginalUserData(): ?array
     {
+        // Si la valeur est une chaîne JSON, la convertir en tableau
+        if (is_string($this->originalUserData) && !empty($this->originalUserData)) {
+            return json_decode($this->originalUserData, true);
+        }
+        
         return $this->originalUserData;
     }
-
-    public function setOriginalUserData(?array $originalUserData): self
+    
+    /**
+     * Set originalUserData value
+     */
+    public function setOriginalUserData($originalUserData): self
     {
+        // Si un tableau est fourni, le stocker tel quel
+        // La conversion JSON se fera automatiquement par Doctrine
         $this->originalUserData = $originalUserData;
         return $this;
+    }
+
+    public function getPaymentStatus(): string
+    {
+        return $this->paymentStatus;
+    }
+
+    public function setPaymentStatus(string $paymentStatus): self
+    {
+        $this->paymentStatus = $paymentStatus;
+        return $this;
+    }
+
+    public function isPaymentRequired(): bool
+    {
+        return $this->paymentStatus !== 'not_required';
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->paymentStatus === 'completed';
     }
 } 

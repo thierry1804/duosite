@@ -22,9 +22,10 @@ class QuoteFeeCalculator
 
     public function calculateFee(Quote $quote): array
     {
+        // Récupérer les paramètres, avec des valeurs par défaut si non configurés
         $settings = $this->settingsRepository->getSettings();
-        $freeItemsLimit = $settings->getFreeItemsLimit();
-        $itemPrice = $settings->getItemPrice();
+        $freeItemsLimit = $settings ? $settings->getFreeItemsLimit() : 3;
+        $itemPrice = $settings ? $settings->getItemPrice() : 5000;
         
         $user = $quote->getUser();
         $itemCount = count($quote->getItems());
@@ -33,6 +34,9 @@ class QuoteFeeCalculator
         if ($this->isFirstQuote($user)) {
             // Les premiers X articles sont gratuits
             if ($itemCount <= $freeItemsLimit) {
+                // Pas de frais à payer
+                $quote->setPaymentStatus('not_required');
+                
                 return [
                     'totalFee' => 0,
                     'itemCount' => $itemCount,
@@ -40,12 +44,22 @@ class QuoteFeeCalculator
                     'paidItems' => 0,
                     'itemPrice' => $itemPrice,
                     'isFirstQuote' => true,
-                    'freeItemsLimit' => $freeItemsLimit
+                    'freeItemsLimit' => $freeItemsLimit,
+                    'paymentRequired' => false
                 ];
             } else {
                 // Au-delà du plafond, les articles supplémentaires sont payants
                 $paidItems = $itemCount - $freeItemsLimit;
                 $totalFee = $paidItems * $itemPrice;
+                
+                // Des frais sont à payer
+                // Important : s'assurer que le statut de paiement est correctement défini
+                if ($quote->getPaymentStatus() === 'completed') {
+                    // Conserver le statut "completed" si le paiement a déjà été confirmé
+                    // Ne pas changer vers "pending"
+                } else {
+                    $quote->setPaymentStatus('pending');
+                }
                 
                 return [
                     'totalFee' => $totalFee,
@@ -54,12 +68,28 @@ class QuoteFeeCalculator
                     'paidItems' => $paidItems,
                     'itemPrice' => $itemPrice,
                     'isFirstQuote' => true,
-                    'freeItemsLimit' => $freeItemsLimit
+                    'freeItemsLimit' => $freeItemsLimit,
+                    'paymentRequired' => true
                 ];
             }
         } else {
             // Pour tous les autres devis, tous les articles sont payants
             $totalFee = $itemCount * $itemPrice;
+            
+            // Des frais sont à payer si le montant est supérieur à zéro
+            if ($totalFee > 0) {
+                // Important : s'assurer que le statut de paiement est correctement défini
+                if ($quote->getPaymentStatus() === 'completed') {
+                    // Conserver le statut "completed" si le paiement a déjà été confirmé
+                    // Ne pas changer vers "pending"
+                } else {
+                    $quote->setPaymentStatus('pending');
+                }
+                $paymentRequired = true;
+            } else {
+                $quote->setPaymentStatus('not_required');
+                $paymentRequired = false;
+            }
             
             return [
                 'totalFee' => $totalFee,
@@ -68,7 +98,8 @@ class QuoteFeeCalculator
                 'paidItems' => $itemCount,
                 'itemPrice' => $itemPrice,
                 'isFirstQuote' => false,
-                'freeItemsLimit' => $freeItemsLimit
+                'freeItemsLimit' => $freeItemsLimit,
+                'paymentRequired' => $paymentRequired
             ];
         }
     }

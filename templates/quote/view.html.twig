@@ -15,21 +15,31 @@
         <h1>Détails du devis #{{ quote.id }}</h1>
         <div class="btn-group">
             {% if quote.status == 'pending' %}
-                <a href="{{ path('app_quote_process', {'id': quote.id}) }}" class="btn btn-info">
-                    <i class="fas fa-play me-2"></i> Traiter
-                </a>
+                {% if quote.isPaymentRequired and not quote.isPaid %}
+                    <a href="{{ path('app_quote_mark_as_paid', {'id': quote.id}) }}" class="btn btn-success" onclick="return confirm('Confirmez-vous que le paiement a été reçu ?');">
+                        <i data-lucide="credit-card" class="me-2"></i> Confirmer paiement
+                    </a>
+                    <button type="button" class="btn btn-info" disabled>
+                        <i data-lucide="play" class="me-2"></i> Traiter
+                    </button>
+                    <span class="d-none d-md-inline-block ms-2 small text-muted align-self-center">Le paiement est requis pour traiter ce devis</span>
+                {% else %}
+                    <a href="{{ path('app_quote_process', {'id': quote.id}) }}" class="btn btn-info">
+                        <i data-lucide="play" class="me-2"></i> Traiter
+                    </a>
+                {% endif %}
             {% elseif quote.status == 'in_progress' %}
                 <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'completed'}) }}" class="btn btn-success">
-                    <i class="fas fa-check me-2"></i> Marquer comme complété
+                    <i data-lucide="check" class="me-2"></i> Marquer comme complété
                 </a>
             {% endif %}
             {% if quote.status != 'rejected' %}
                 <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
-                    <i class="fas fa-times me-2"></i> Rejeter
+                    <i data-lucide="x" class="me-2"></i> Rejeter
                 </a>
             {% endif %}
             <a href="{{ path('app_quote_dashboard') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-2"></i> Retour
+                <i data-lucide="arrow-left" class="me-2"></i> Retour
             </a>
         </div>
     </div>
@@ -39,15 +49,25 @@
             <div class="admin-card mb-4">
                 <div class="admin-card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Informations du devis</h5>
-                    {% if quote.status == 'pending' %}
-                        <span class="badge bg-warning text-dark">En attente</span>
-                    {% elseif quote.status == 'in_progress' %}
-                        <span class="badge bg-info">En cours</span>
-                    {% elseif quote.status == 'completed' %}
-                        <span class="badge bg-success">Complété</span>
-                    {% elseif quote.status == 'rejected' %}
-                        <span class="badge bg-danger">Rejeté</span>
-                    {% endif %}
+                    <div class="d-flex gap-2 align-items-center">
+                        {% if quote.isPaymentRequired %}
+                            {% if quote.isPaid %}
+                                <span class="badge bg-success">Payé</span>
+                            {% else %}
+                                <span class="badge bg-danger">Paiement requis</span>
+                            {% endif %}
+                        {% endif %}
+                        
+                        {% if quote.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">En attente</span>
+                        {% elseif quote.status == 'in_progress' %}
+                            <span class="badge bg-info">En cours</span>
+                        {% elseif quote.status == 'completed' %}
+                            <span class="badge bg-success">Complété</span>
+                        {% elseif quote.status == 'rejected' %}
+                            <span class="badge bg-danger">Rejeté</span>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="admin-card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -74,6 +94,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Type de produit</th>
+                                    <th>Image</th>
                                     <th>Description</th>
                                     <th>Quantité</th>
                                     <th>Budget unitaire</th>
@@ -84,7 +105,32 @@
                                     <tr>
                                         <td>{{ loop.index }}</td>
                                         <td>{{ item.productType }}</td>
-                                        <td>{{ item.description }}</td>
+                                        <td>
+                                            {% if item.photoFilename %}
+                                                <a href="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" target="_blank" class="product-thumbnail">
+                                                    <img src="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" alt="Image du produit" class="img-thumbnail" style="max-width: 100px; max-height: 80px;">
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted"><i data-lucide="image-off" class="icon-sm"></i></span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% set description = item.description %}
+                                            {% if description|length > 100 %}
+                                                <div class="position-relative">
+                                                    <div class="description-preview">
+                                                        <span class="description-short">{{ description|slice(0, 100)|nl2br|autolink|raw }}...</span>
+                                                        <span class="description-full d-none">{{ description|nl2br|autolink|raw }}</span>
+                                                    </div>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary description-expand-btn mt-2">
+                                                        <span class="expand-text">Voir plus</span>
+                                                        <span class="collapse-text d-none">Voir moins</span>
+                                                    </button>
+                                                </div>
+                                            {% else %}
+                                                {{ description|nl2br|autolink|raw }}
+                                            {% endif %}
+                                        </td>
                                         <td>{{ item.quantity }}</td>
                                         <td>
                                             {% if item.budget %}
@@ -148,6 +194,76 @@
                     {% endif %}
                 </div>
             </div>
+            
+            {% if quote.isPaymentRequired or is_granted('ROLE_ADMIN') %}
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Informations de paiement</h5>
+                </div>
+                <div class="admin-card-body">
+                    {% set feeDetails = feeDetails is defined ? feeDetails : {} %}
+                    {% set isFirstQuote = feeDetails.isFirstQuote ?? (quote.user ? (quote.user.quotes|length <= 1) : true) %}
+                    
+                    <div class="mb-3">
+                        <p class="mb-2">
+                            <strong>Statut:</strong> 
+                            {% if quote.isPaymentRequired %}
+                                {% if quote.isPaid %}
+                                    <span class="badge bg-success">Payé</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Paiement requis</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Non requis</span>
+                            {% endif %}
+                        </p>
+                        
+                        {% if isFirstQuote %}
+                            <div class="alert alert-info mb-3">
+                                <i data-lucide="info" class="icon-sm me-2"></i>
+                                <strong>Premier devis</strong> - Les {{ feeDetails.freeItemsLimit|default(3) }} premiers produits sont gratuits.
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <span>Nombre total de produits:</span>
+                            <strong>{{ feeDetails.itemCount|default(quote.items|length) }}</strong>
+                        </div>
+                        
+                        {% if feeDetails.freeItems|default(0) > 0 %}
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <span>Produits gratuits:</span>
+                                <strong>{{ feeDetails.freeItems|default(0) }}</strong>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between border-bottom py-2">
+                            <span>Produits payants:</span>
+                            <strong>{{ feeDetails.paidItems|default(quote.items|length) }}</strong>
+                        </div>
+                        
+                        {% if feeDetails.paidItems|default(0) > 0 %}
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <span>Prix par produit:</span>
+                                <strong>{{ feeDetails.itemPrice|default(5000)|number_format(0, ',', ' ') }} Ar</strong>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between py-2">
+                                <span>Montant total:</span>
+                                <strong>{{ feeDetails.totalFee|default(feeDetails.paidItems|default(quote.items|length) * feeDetails.itemPrice|default(5000))|number_format(0, ',', ' ') }} Ar</strong>
+                            </div>
+                            
+                            {% if not quote.isPaid and quote.isPaymentRequired %}
+                                <div class="alert alert-warning mt-3 mb-0">
+                                    <i data-lucide="alert-triangle" class="icon-sm me-2"></i>
+                                    Le paiement doit être confirmé avant de traiter ce devis.
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
             
             <div class="admin-card">
                 <div class="admin-card-header">
@@ -224,6 +340,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Type de produit</th>
+                                    <th>Image</th>
                                     <th>Description</th>
                                     <th>Quantité</th>
                                     <th>Budget unitaire</th>
@@ -234,7 +351,32 @@
                                     <tr>
                                         <td>{{ loop.index }}</td>
                                         <td>{{ item.productType }}</td>
-                                        <td>{{ item.description }}</td>
+                                        <td>
+                                            {% if item.photoFilename %}
+                                                <a href="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" target="_blank" class="product-thumbnail">
+                                                    <img src="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" alt="Image du produit" class="img-thumbnail" style="max-width: 100px; max-height: 80px;">
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted"><i data-lucide="image-off" class="icon-sm"></i></span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% set description = item.description %}
+                                            {% if description|length > 100 %}
+                                                <div class="position-relative">
+                                                    <div class="description-preview">
+                                                        <span class="description-short">{{ description|slice(0, 100)|nl2br|autolink|raw }}...</span>
+                                                        <span class="description-full d-none">{{ description|nl2br|autolink|raw }}</span>
+                                                    </div>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary description-expand-btn mt-2">
+                                                        <span class="expand-text">Voir plus</span>
+                                                        <span class="collapse-text d-none">Voir moins</span>
+                                                    </button>
+                                                </div>
+                                            {% else %}
+                                                {{ description|nl2br|autolink|raw }}
+                                            {% endif %}
+                                        </td>
                                         <td>{{ item.quantity }}</td>
                                         <td>
                                             {% if item.budget %}
@@ -311,4 +453,30 @@
     }
 </style>
 {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestionnaire pour le bouton d'expansion de la description
+        document.querySelectorAll('.description-expand-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const container = this.closest('.position-relative');
+                const shortText = container.querySelector('.description-short');
+                const fullText = container.querySelector('.description-full');
+                const expandText = this.querySelector('.expand-text');
+                const collapseText = this.querySelector('.collapse-text');
+                
+                // Toggle texte court/complet
+                shortText.classList.toggle('d-none');
+                fullText.classList.toggle('d-none');
+                
+                // Toggle texte du bouton
+                expandText.classList.toggle('d-none');
+                collapseText.classList.toggle('d-none');
+            });
+        });
+    });
+</script>
 {% endblock %} 

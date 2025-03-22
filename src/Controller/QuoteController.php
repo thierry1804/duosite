@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Quote;
+use App\Entity\QuoteSettings;
 use App\Entity\User;
 use App\Entity\QuoteItem;
 use App\Form\QuoteType;
@@ -261,7 +262,7 @@ class QuoteController extends AbstractController
     }
     
     #[Route('/quote/dashboard', name: 'app_quote_dashboard')]
-    public function dashboard(EntityManagerInterface $entityManager): Response
+    public function dashboard(EntityManagerInterface $entityManager, QuoteFeeCalculator $feeCalculator): Response
     {
         // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -272,6 +273,18 @@ class QuoteController extends AbstractController
         $inProgressQuotes = $quoteRepository->findBy(['status' => 'in_progress'], ['createdAt' => 'DESC']);
         $completedQuotes = $quoteRepository->findBy(['status' => 'completed'], ['createdAt' => 'DESC']);
         $rejectedQuotes = $quoteRepository->findBy(['status' => 'rejected'], ['createdAt' => 'DESC']);
+
+        // Récupérer freeItemsLimit
+        $quoteSettings = $entityManager->getRepository(QuoteSettings::class)->findOneBy([]);
+        $freeItemsLimit = $quoteSettings->getFreeItemsLimit();
+        
+        // Recalculer les frais pour tous les devis pour s'assurer que le statut de paiement est à jour
+        foreach (array_merge($pendingQuotes, $inProgressQuotes, $completedQuotes, $rejectedQuotes) as $quote) {
+            $feeCalculator->calculateFee($quote);
+        }
+        
+        // Sauvegarder les mises à jour potentielles du statut de paiement
+        $entityManager->flush();
         
         return $this->render('quote/dashboard.html.twig', [
             'pendingQuotes' => $pendingQuotes,
@@ -279,6 +292,7 @@ class QuoteController extends AbstractController
             'completedQuotes' => $completedQuotes,
             'rejectedQuotes' => $rejectedQuotes,
             'processedQuotes' => array_merge($completedQuotes, $rejectedQuotes),
+            'freeItemsLimit' => $freeItemsLimit,
         ]);
     }
 
@@ -309,7 +323,7 @@ class QuoteController extends AbstractController
     }
 
     #[Route('/quote/{id}/view', name: 'app_quote_view')]
-    public function viewQuote(Quote $quote): Response
+    public function viewQuote(Quote $quote, QuoteFeeCalculator $feeCalculator, EntityManagerInterface $entityManager): Response
     {
         // Vérifier que l'utilisateur a le droit de voir ce devis
         $user = $this->getUser();
@@ -319,8 +333,15 @@ class QuoteController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande de devis.');
         }
         
+        // Calculer les frais de devis pour avoir les informations détaillées
+        $feeDetails = $feeCalculator->calculateFee($quote);
+        
+        // Sauvegarder les changements potentiels de statut de paiement
+        $entityManager->flush();
+        
         return $this->render('quote/view.html.twig', [
             'quote' => $quote,
+            'feeDetails' => $feeDetails
         ]);
     }
 
@@ -330,6 +351,15 @@ class QuoteController extends AbstractController
         // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
+        // Vérifier si un paiement est requis
+        if ($quote->isPaymentRequired()) {
+            // Si le paiement est requis mais pas encore effectué
+            if (!$quote->isPaid()) {
+                $this->addFlash('error', 'Ce devis nécessite un paiement avant de pouvoir être traité. Veuillez confirmer le paiement d\'abord.');
+                return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+            }
+        }
+        
         // Mettre à jour le statut du devis à "in_progress"
         $quote->setStatus('in_progress');
         $entityManager->flush();
@@ -337,6 +367,32 @@ class QuoteController extends AbstractController
         $this->addFlash('success', 'Le devis a été marqué comme "En cours de traitement".');
         
         // Rediriger vers la page de détail du devis
+        return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+    }
+
+    #[Route('/quote/{id}/mark-as-paid', name: 'app_quote_mark_as_paid')]
+    public function markAsPaid(Quote $quote, EntityManagerInterface $entityManager): Response
+    {
+        // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        // Vérifier si le paiement est requis
+        if (!$quote->isPaymentRequired()) {
+            $this->addFlash('warning', 'Ce devis ne nécessite pas de paiement.');
+            return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+        }
+        
+        // Vérifier si le devis est déjà payé
+        if ($quote->isPaid()) {
+            $this->addFlash('info', 'Ce devis a déjà été marqué comme payé.');
+            return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+        }
+        
+        // Marquer le devis comme payé
+        $quote->setPaymentStatus('completed');
+        $entityManager->flush();
+        
+        $this->addFlash('success', 'Le paiement du devis a été confirmé. Vous pouvez maintenant le traiter.');
         return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
     }
 } 
