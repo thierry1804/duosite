@@ -94,25 +94,41 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <div class="btn-group" role="group">
-                                                    <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
-                                                        <i data-lucide="eye"></i>
-                                                    </a>
-                                                    {% if quote.isPaymentRequired and not quote.isPaid %}
-                                                        <a href="{{ path('app_quote_mark_as_paid', {'id': quote.id}) }}" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Confirmer paiement">
-                                                            <i data-lucide="credit-card"></i>
-                                                        </a>
-                                                        <button class="btn btn-sm btn-outline-info" disabled data-bs-toggle="tooltip" title="Paiement requis pour traiter">
-                                                            <i data-lucide="play"></i>
-                                                        </button>
-                                                    {% else %}
-                                                        <a href="{{ path('app_quote_process', {'id': quote.id}) }}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="Traiter">
-                                                            <i data-lucide="play"></i>
-                                                        </a>
-                                                    {% endif %}
-                                                    <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Rejeter" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
-                                                        <i data-lucide="x"></i>
-                                                    </a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle p-1" type="button" id="dropdownActions{{ quote.id }}" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem;">
+                                                        <i data-lucide="more-vertical" class="icon-sm"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end position-fixed" aria-labelledby="dropdownActions{{ quote.id }}">
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ path('app_quote_view', {'id': quote.id}) }}">
+                                                                <i data-lucide="eye" class="icon-sm me-2"></i> Voir le détail
+                                                            </a>
+                                                        </li>
+                                                        {% if quote.isPaymentRequired and not quote.isPaid %}
+                                                            <li>
+                                                                <a class="dropdown-item" href="{{ path('app_quote_mark_as_paid', {'id': quote.id}) }}">
+                                                                    <i data-lucide="credit-card" class="icon-sm me-2"></i> Confirmer paiement
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <span class="dropdown-item text-muted">
+                                                                    <i data-lucide="play" class="icon-sm me-2"></i> Traiter (paiement requis)
+                                                                </span>
+                                                            </li>
+                                                        {% else %}
+                                                            <li>
+                                                                <a class="dropdown-item" href="{{ path('app_quote_process', {'id': quote.id}) }}">
+                                                                    <i data-lucide="play" class="icon-sm me-2"></i> Traiter
+                                                                </a>
+                                                            </li>
+                                                        {% endif %}
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <a class="dropdown-item text-danger" href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
+                                                                <i data-lucide="x" class="icon-sm me-2"></i> Rejeter
+                                                            </a>
+                                                        </li>
+                                                    </ul>
                                                 </div>
                                             </td>
                                         </tr>
@@ -167,16 +183,28 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <div class="btn-group" role="group">
-                                                    <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
-                                                        <i data-lucide="eye"></i>
-                                                    </a>
-                                                    <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'completed'}) }}" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" title="Marquer comme complété">
-                                                        <i data-lucide="check"></i>
-                                                    </a>
-                                                    <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Rejeter" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
-                                                        <i data-lucide="x"></i>
-                                                    </a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle p-1" type="button" id="dropdownActionsInProgress{{ quote.id }}" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem;">
+                                                        <i data-lucide="more-vertical" class="icon-sm"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end position-fixed" aria-labelledby="dropdownActionsInProgress{{ quote.id }}">
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ path('app_quote_view', {'id': quote.id}) }}">
+                                                                <i data-lucide="eye" class="icon-sm me-2"></i> Voir le détail
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item text-success" href="{{ path('app_quote_status', {'id': quote.id, 'status': 'completed'}) }}">
+                                                                <i data-lucide="check" class="icon-sm me-2"></i> Marquer comme complété
+                                                            </a>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <a class="dropdown-item text-danger" href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
+                                                                <i data-lucide="x" class="icon-sm me-2"></i> Rejeter
+                                                            </a>
+                                                        </li>
+                                                    </ul>
                                                 </div>
                                             </td>
                                         </tr>
@@ -231,9 +259,18 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
-                                                    <i data-lucide="eye"></i>
-                                                </a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle p-1" type="button" id="dropdownActionsCompleted{{ quote.id }}" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem;">
+                                                        <i data-lucide="more-vertical" class="icon-sm"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end position-fixed" aria-labelledby="dropdownActionsCompleted{{ quote.id }}">
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ path('app_quote_view', {'id': quote.id}) }}">
+                                                                <i data-lucide="eye" class="icon-sm me-2"></i> Voir le détail
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -287,9 +324,18 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Voir le détail">
-                                                    <i data-lucide="eye"></i>
-                                                </a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle p-1" type="button" id="dropdownActionsRejected{{ quote.id }}" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem;">
+                                                        <i data-lucide="more-vertical" class="icon-sm"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end position-fixed" aria-labelledby="dropdownActionsRejected{{ quote.id }}">
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ path('app_quote_view', {'id': quote.id}) }}">
+                                                                <i data-lucide="eye" class="icon-sm me-2"></i> Voir le détail
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -301,4 +347,53 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+<style>
+    /* Assurer que les menus déroulants ne sont pas coupés */
+    .table-responsive {
+        overflow: visible !important;
+    }
+    
+    /* Pour les petits écrans, revenir à l'affichage normal avec défilement */
+    @media (max-width: 768px) {
+        .table-responsive {
+            overflow: auto !important;
+        }
+    }
+    
+    /* Style pour les boutons d'action */
+    .dropdown .dropdown-toggle.btn-sm {
+        padding: 0.15rem 0.4rem !important;
+        font-size: 0.75rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* Réduire la taille de l'icône */
+    .dropdown .dropdown-toggle .icon-sm {
+        width: 16px !important;
+        height: 16px !important;
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialisation des tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Initialisation des boutons dropdown (bien que Bootstrap le fasse automatiquement)
+        var dropdownTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+        var dropdownList = dropdownTriggerList.map(function (dropdownTriggerEl) {
+            return new bootstrap.Dropdown(dropdownTriggerEl);
+        });
+        
+        // Initialisation des icônes Lucide 
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+</script>
 {% endblock %} 

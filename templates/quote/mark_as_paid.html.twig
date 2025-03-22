@@ -1,0 +1,63 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Confirmer le paiement du devis #{{ quote.id }}{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_quote_dashboard') }}">Gestion des devis</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_quote_view', {'id': quote.id}) }}">Détails du devis #{{ quote.id }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Confirmer le paiement</li>
+{% endblock %}
+
+{% block body %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Confirmer le paiement du devis #{{ quote.id }}</h5>
+            <span class="badge bg-primary ms-2">{{ quote.quoteNumber }}</span>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <p><strong>Client :</strong> {{ quote.firstName }} {{ quote.lastName }}</p>
+                <p><strong>Email :</strong> {{ quote.email }}</p>
+                <p><strong>Téléphone :</strong> {{ quote.phone }}</p>
+                {% if quote.company %}
+                    <p><strong>Entreprise :</strong> {{ quote.company }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="alert alert-info">
+                <i data-lucide="info" class="me-2"></i> Veuillez saisir les informations de paiement pour confirmer que ce devis a été payé.
+            </div>
+            
+            <div class="mt-4">
+                {{ form_start(form) }}
+                    <div class="mb-3">
+                        {{ form_label(form.transactionReference) }}
+                        {{ form_widget(form.transactionReference) }}
+                        <div class="form-text">Référence de la transaction bancaire ou du paiement mobile</div>
+                        {{ form_errors(form.transactionReference) }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.paymentDate) }}
+                        {{ form_widget(form.paymentDate) }}
+                        <div class="form-text">Date à laquelle le paiement a été effectué</div>
+                        {{ form_errors(form.paymentDate) }}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        {{ form_widget(form.submit) }}
+                        <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Initialisation des icônes Lucide
+        lucide.createIcons();
+    </script>
+{% endblock %} 

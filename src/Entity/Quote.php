@@ -84,6 +84,12 @@ class Quote
     #[ORM\Column(type: 'string', length: 20, options: ['default' => 'not_required'])]
     private string $paymentStatus = 'not_required';
 
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $transactionReference = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $paymentDate = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -345,5 +351,27 @@ class Quote
     public function isPaid(): bool
     {
         return $this->paymentStatus === 'completed';
+    }
+
+    public function getTransactionReference(): ?string
+    {
+        return $this->transactionReference;
+    }
+
+    public function setTransactionReference(?string $transactionReference): self
+    {
+        $this->transactionReference = $transactionReference;
+        return $this;
+    }
+
+    public function getPaymentDate(): ?\DateTimeInterface
+    {
+        return $this->paymentDate;
+    }
+
+    public function setPaymentDate(?\DateTimeInterface $paymentDate): self
+    {
+        $this->paymentDate = $paymentDate;
+        return $this;
     }
 } 

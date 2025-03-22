@@ -35,7 +35,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ path('app_quote_dashboard') }}" class="{{ app.request.get('_route') == 'app_quote_dashboard' ? 'active' : '' }}">
+                    <a href="{{ path('app_quote_dashboard') }}" class="{{ app.request.get('_route') starts with 'app_quote' ? 'active' : '' }}">
                         <i data-lucide="file-text"></i> <span>Devis</span>
                     </a>
                 </li>

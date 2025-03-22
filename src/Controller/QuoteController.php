@@ -22,6 +22,9 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Address;
 use App\Service\QuoteFeeCalculator;
 use App\Service\UserIdentityTracker;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 class QuoteController extends AbstractController
 {
@@ -371,7 +374,7 @@ class QuoteController extends AbstractController
     }
 
     #[Route('/quote/{id}/mark-as-paid', name: 'app_quote_mark_as_paid')]
-    public function markAsPaid(Quote $quote, EntityManagerInterface $entityManager): Response
+    public function markAsPaid(Request $request, Quote $quote, EntityManagerInterface $entityManager): Response
     {
         // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -388,11 +391,40 @@ class QuoteController extends AbstractController
             return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
         }
         
-        // Marquer le devis comme payé
-        $quote->setPaymentStatus('completed');
-        $entityManager->flush();
+        // Créer un formulaire pour les informations de paiement
+        $form = $this->createFormBuilder($quote)
+            ->add('transactionReference', TextType::class, [
+                'label' => 'Référence de transaction',
+                'required' => true,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('paymentDate', DateTimeType::class, [
+                'label' => 'Date de paiement',
+                'required' => true,
+                'widget' => 'single_text',
+                'attr' => ['class' => 'form-control'],
+                'data' => new \DateTime()
+            ])
+            ->add('submit', SubmitType::class, [
+                'label' => 'Confirmer le paiement',
+                'attr' => ['class' => 'btn btn-success']
+            ])
+            ->getForm();
         
-        $this->addFlash('success', 'Le paiement du devis a été confirmé. Vous pouvez maintenant le traiter.');
-        return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+        $form->handleRequest($request);
+        
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Marquer le devis comme payé
+            $quote->setPaymentStatus('completed');
+            $entityManager->flush();
+            
+            $this->addFlash('success', 'Le paiement du devis a été confirmé. Vous pouvez maintenant le traiter.');
+            return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+        }
+        
+        return $this->render('quote/mark_as_paid.html.twig', [
+            'quote' => $quote,
+            'form' => $form->createView()
+        ]);
     }
 } 
