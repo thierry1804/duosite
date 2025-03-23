@@ -1,0 +1,359 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Créer une nouvelle offre | {{ parent() }}{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_quote_dashboard') }}">Gestion des devis</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_quote_view', {'id': quote.id}) }}">Détails du devis #{{ quote.id }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Créer une offre</li>
+{% endblock %}
+
+{# Filtre personnalisé pour rendre les liens cliquables #}
+{% if false %}
+    {# Cette approche ne fonctionne pas dans Twig standard, à implémenter avec une extension Twig #}
+{% endif %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Créer une offre pour le devis #{{ quote.id }}</h1>
+        <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-secondary">
+            <i data-lucide="arrow-left" class="me-2"></i> Retour au devis
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Informations client</h5>
+                </div>
+                <div class="admin-card-body">
+                    <p><strong>Client:</strong> {{ quote.fullName }}</p>
+                    <p><strong>Email:</strong> {{ quote.email }}</p>
+                    <p><strong>Téléphone:</strong> {{ quote.phone }}</p>
+                    {% if quote.company %}
+                        <p><strong>Société:</strong> {{ quote.company }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Produits demandés</h5>
+                </div>
+                <div class="admin-card-body">
+                    <ul class="list-group">
+                        {% for item in quote.items %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ item.productType }}</strong>
+                                        {% if item.quantity %}
+                                            <span class="badge bg-primary ms-2">{{ item.quantity }} pcs</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex">
+                                        {% if item.budget %}
+                                            <span class="me-2" title="Budget: {{ item.budget }} €">
+                                                <i data-lucide="wallet" class="icon-sm text-success"></i>
+                                            </span>
+                                        {% endif %}
+                                        {% if item.description %}
+                                            <a href="#" class="me-2 toggle-description" data-target="description-{{ loop.index }}">
+                                                <i data-lucide="file-text" class="icon-sm text-primary"></i>
+                                            </a>
+                                        {% endif %}
+                                        {% if item.photoFilename %}
+                                            <a href="#" class="me-2" data-bs-toggle="modal" data-bs-target="#imageModal{{ loop.index }}">
+                                                <i data-lucide="image" class="icon-sm text-primary"></i>
+                                            </a>
+                                        {% else %}
+                                            <span class="me-2" title="Pas d'image disponible">
+                                                <i data-lucide="image-off" class="icon-sm text-muted"></i>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div id="description-{{ loop.index }}" class="mt-2 description-content" style="display: none;">
+                                    <p class="text-muted small mb-0" style="word-break: break-word; overflow-wrap: break-word;">{{ item.description|nl2br }}</p>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Détails de l'offre</h5>
+                </div>
+                <div class="admin-card-body">
+                    {{ form_start(form) }}
+                    <div class="row">
+                        <div class="col-md-4">
+                            {{ form_row(form.title) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.status) }}
+                        </div>
+                        <div class="col-md-4">
+                            <!-- Champ retiré -->
+                        </div>
+                    </div>
+                    
+                    {{ form_row(form.description) }}
+
+                    <div class="admin-card mt-4 mb-4">
+                        <div class="admin-card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Propositions de produits</h5>
+                            <button type="button" class="btn btn-success rounded-circle p-0" id="add-product-proposal" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                            </button>
+                        </div>
+                        <div class="admin-card-body">
+                            <!-- Conteneur pour les propositions de produits -->
+                            <div class="product-proposals-container" data-prototype="{{ form_widget(form.productProposals.vars.prototype)|e('html_attr') }}" data-index="{{ form.productProposals|length }}">
+                                {% if form.productProposals|length > 0 %}
+                                    {% for productProposalForm in form.productProposals %}
+                                        <div class="product-proposal-item admin-card mb-3">
+                                            <div class="admin-card-header bg-light d-flex justify-content-between">
+                                                <h6 class="mb-0">Proposition #{{ loop.index }}</h6>
+                                                <button type="button" class="btn btn-sm btn-danger remove-product-proposal">
+                                                    <i data-lucide="trash-2"></i> Supprimer
+                                                </button>
+                                            </div>
+                                            <div class="admin-card-body">
+                                                {{ form_widget(productProposalForm) }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-card mb-4">
+                        <div class="admin-card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Options d'expédition</h5>
+                            <button type="button" class="btn btn-success rounded-circle p-0" id="add-shipping-option" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                            </button>
+                        </div>
+                        <div class="admin-card-body">
+                            <!-- Conteneur pour les options d'expédition -->
+                            <div class="shipping-options-container" data-prototype="{{ form_widget(form.shippingOptions.vars.prototype)|e('html_attr') }}" data-index="{{ form.shippingOptions|length }}">
+                                {% if form.shippingOptions|length > 0 %}
+                                    {% for shippingOptionForm in form.shippingOptions %}
+                                        <div class="shipping-option-item admin-card mb-3">
+                                            <div class="admin-card-header bg-light d-flex justify-content-between">
+                                                <h6 class="mb-0">Option d'expédition #{{ loop.index }}</h6>
+                                                <button type="button" class="btn btn-sm btn-danger remove-shipping-option">
+                                                    <i data-lucide="trash-2"></i> Supprimer
+                                                </button>
+                                            </div>
+                                            <div class="admin-card-body">
+                                                {{ form_widget(shippingOptionForm) }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        Aucune option d'expédition ajoutée. Cliquez sur le bouton + pour commencer.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="save" class="me-2"></i> Enregistrer l'offre
+                        </button>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for item in quote.items %}
+    {% if item.photoFilename %}
+        <div class="modal fade" id="imageModal{{ loop.index }}" tabindex="-1" aria-labelledby="imageModalLabel{{ loop.index }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="imageModalLabel{{ loop.index }}">{{ item.productType }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img src="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" class="img-fluid" alt="{{ item.productType }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Rendre les liens cliquables dans les descriptions
+    document.querySelectorAll('.description-content p').forEach(function(paragraph) {
+        const content = paragraph.innerHTML;
+        const linkedContent = content.replace(
+            /(https?:\/\/[^\s<]+)/g, 
+            '<a href="$1" target="_blank" class="text-primary">$1</a>'
+        );
+        paragraph.innerHTML = linkedContent;
+    });
+    
+    // Gestion des propositions de produits
+    const proposalsContainer = document.querySelector('.product-proposals-container');
+    let proposalIndex = parseInt(proposalsContainer.dataset.index);
+    
+    // Événements pour afficher/masquer les descriptions
+    document.querySelectorAll('.toggle-description').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('data-target');
+            const descriptionElement = document.getElementById(targetId);
+            if (descriptionElement.style.display === 'none') {
+                descriptionElement.style.display = 'block';
+            } else {
+                descriptionElement.style.display = 'none';
+            }
+        });
+    });
+    
+    document.getElementById('add-product-proposal').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Obtenir et préparer le prototype
+        let prototype = proposalsContainer.dataset.prototype;
+        prototype = prototype.replace(/__name__/g, proposalIndex);
+        
+        // Créer l'élément de proposition
+        const proposalItem = document.createElement('div');
+        proposalItem.className = 'product-proposal-item card mb-3';
+        proposalItem.innerHTML = `
+            <div class="card-header bg-light d-flex justify-content-between">
+                <h6 class="mb-0">Proposition #${proposalIndex + 1}</h6>
+                <button type="button" class="btn btn-sm btn-danger remove-product-proposal">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+            <div class="card-body">
+                ${prototype}
+            </div>
+        `;
+        
+        // Ajouter l'élément à la liste
+        if (proposalsContainer.querySelector('.alert')) {
+            proposalsContainer.innerHTML = '';
+        }
+        proposalsContainer.appendChild(proposalItem);
+        
+        // Ajouter l'événement de suppression
+        proposalItem.querySelector('.remove-product-proposal').addEventListener('click', function() {
+            proposalItem.remove();
+            if (proposalsContainer.children.length === 0) {
+                proposalsContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
+                    </div>
+                `;
+            }
+        });
+        
+        proposalIndex++;
+    });
+    
+    // Ajouter des événements de suppression pour les propositions existantes
+    document.querySelectorAll('.remove-product-proposal').forEach(button => {
+        button.addEventListener('click', function() {
+            const item = this.closest('.product-proposal-item');
+            item.remove();
+            if (proposalsContainer.children.length === 0) {
+                proposalsContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
+                    </div>
+                `;
+            }
+        });
+    });
+    
+    // Gestion des options d'expédition
+    const shippingContainer = document.querySelector('.shipping-options-container');
+    let shippingIndex = parseInt(shippingContainer.dataset.index);
+    
+    document.getElementById('add-shipping-option').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Obtenir et préparer le prototype
+        let prototype = shippingContainer.dataset.prototype;
+        prototype = prototype.replace(/__name__/g, shippingIndex);
+        
+        // Créer l'élément d'option d'expédition
+        const shippingItem = document.createElement('div');
+        shippingItem.className = 'shipping-option-item card mb-3';
+        shippingItem.innerHTML = `
+            <div class="card-header bg-light d-flex justify-content-between">
+                <h6 class="mb-0">Option d'expédition #${shippingIndex + 1}</h6>
+                <button type="button" class="btn btn-sm btn-danger remove-shipping-option">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+            <div class="card-body">
+                ${prototype}
+            </div>
+        `;
+        
+        // Ajouter l'élément à la liste
+        if (shippingContainer.querySelector('.alert')) {
+            shippingContainer.innerHTML = '';
+        }
+        shippingContainer.appendChild(shippingItem);
+        
+        // Ajouter l'événement de suppression
+        shippingItem.querySelector('.remove-shipping-option').addEventListener('click', function() {
+            shippingItem.remove();
+            if (shippingContainer.children.length === 0) {
+                shippingContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        Aucune option d'expédition ajoutée. Cliquez sur le bouton + pour commencer.
+                    </div>
+                `;
+            }
+        });
+        
+        shippingIndex++;
+    });
+    
+    // Ajouter des événements de suppression pour les options d'expédition existantes
+    document.querySelectorAll('.remove-shipping-option').forEach(button => {
+        button.addEventListener('click', function() {
+            const item = this.closest('.shipping-option-item');
+            item.remove();
+            if (shippingContainer.children.length === 0) {
+                shippingContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        Aucune option d'expédition ajoutée. Cliquez sur le bouton + pour commencer.
+                    </div>
+                `;
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

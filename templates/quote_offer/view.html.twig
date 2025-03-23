@@ -1,0 +1,320 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Détails de l'offre | {{ parent() }}{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_quote_dashboard') }}">Gestion des devis</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_quote_view', {'id': offer.quote.id}) }}">Détails du devis #{{ offer.quote.id }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Offre #{{ offer.id }}</li>
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Offre #{{ offer.id }}: {{ offer.title }}</h1>
+        <div>
+            <a href="{{ path('app_quote_view', {'id': offer.quote.id}) }}" class="btn btn-secondary">
+                <i data-lucide="arrow-left" class="me-2"></i> Retour au devis
+            </a>
+            {% if offer.status == 'draft' %}
+                <form method="post" action="{{ path('app_quote_offer_send', {'id': offer.id}) }}" style="display: inline-block">
+                    <input type="hidden" name="_token" value="{{ csrf_token('send' ~ offer.id) }}">
+                    <button type="submit" class="btn btn-success">
+                        <i data-lucide="send" class="me-2"></i> Envoyer au client
+                    </button>
+                </form>
+            {% endif %}
+            <a href="{{ path('app_quote_offer_edit', {'id': offer.id}) }}" class="btn btn-primary">
+                <i data-lucide="edit-3" class="me-2"></i> Modifier
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Informations client</h5>
+                </div>
+                <div class="admin-card-body">
+                    <p><strong>Client:</strong> {{ offer.quote.fullName }}</p>
+                    <p><strong>Email:</strong> {{ offer.quote.email }}</p>
+                    <p><strong>Téléphone:</strong> {{ offer.quote.phone }}</p>
+                    {% if offer.quote.company %}
+                        <p><strong>Société:</strong> {{ offer.quote.company }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Informations de l'offre</h5>
+                </div>
+                <div class="admin-card-body">
+                    <p><strong>Titre:</strong> {{ offer.title }}</p>
+                    <p><strong>Statut:</strong> <span class="badge {{ offer.statusBadgeClass }}">{{ offer.statusLabel }}</span></p>
+                    <p><strong>Date de création:</strong> {{ offer.createdAt|date('d/m/Y H:i') }}</p>
+                    <p><strong>Prix total:</strong> <span class="text-primary fw-bold">{{ offer.totalPrice|number_format(2, ',', ' ') }} €</span></p>
+                </div>
+            </div>
+            
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Produits demandés</h5>
+                </div>
+                <div class="admin-card-body">
+                    <ul class="list-group">
+                        {% for item in offer.quote.items %}
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ item.productType }}</strong>
+                                        {% if item.quantity %}
+                                            <span class="badge bg-primary ms-2">{{ item.quantity }} pcs</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex">
+                                        {% if item.budget %}
+                                            <span class="me-2" title="Budget: {{ item.budget }} €">
+                                                <i data-lucide="wallet" class="icon-sm text-success"></i>
+                                            </span>
+                                        {% endif %}
+                                        {% if item.description %}
+                                            <a href="#" class="me-2 toggle-description" data-target="description-{{ loop.index }}">
+                                                <i data-lucide="file-text" class="icon-sm text-primary"></i>
+                                            </a>
+                                        {% endif %}
+                                        {% if item.photoFilename %}
+                                            <a href="#" class="me-2" data-bs-toggle="modal" data-bs-target="#imageModal{{ loop.index }}">
+                                                <i data-lucide="image" class="icon-sm text-primary"></i>
+                                            </a>
+                                        {% else %}
+                                            <span class="me-2" title="Pas d'image disponible">
+                                                <i data-lucide="image-off" class="icon-sm text-muted"></i>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div id="description-{{ loop.index }}" class="mt-2 description-content" style="display: none;">
+                                    <p class="text-muted small mb-0" style="word-break: break-word; overflow-wrap: break-word;">{{ item.description|nl2br }}</p>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            {% if offer.description %}
+                <div class="admin-card mb-4">
+                    <div class="admin-card-header">
+                        <h5 class="mb-0">Description de l'offre</h5>
+                    </div>
+                    <div class="admin-card-body">
+                        {{ offer.description|nl2br }}
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Propositions de produits</h5>
+                </div>
+                <div class="admin-card-body">
+                    {% if offer.productProposals|length > 0 %}
+                        {% for proposal in offer.productProposals %}
+                            <div class="admin-card mb-3">
+                                <div class="admin-card-header bg-light">
+                                    <h6 class="mb-0">
+                                        {% if proposal.quoteItem %}
+                                            Proposition pour: {{ proposal.quoteItem.productType }}
+                                        {% else %}
+                                            Proposition #{{ loop.index }}
+                                        {% endif %}
+                                    </h6>
+                                </div>
+                                <div class="admin-card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <p><strong>Prix min:</strong> {{ proposal.minPrice|number_format(2, ',', ' ') }} €</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Prix max:</strong> {{ proposal.maxPrice|number_format(2, ',', ' ') }} €</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <p><strong>Dimensions:</strong> {{ proposal.dimensions ?: 'Non spécifié' }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Poids:</strong> {{ proposal.weight ?: 'Non spécifié' }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if proposal.comments %}
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <p><strong>Commentaires:</strong></p>
+                                                <p>{{ proposal.comments|nl2br }}</p>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if proposal.images|length > 0 %}
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <p><strong>Images:</strong></p>
+                                                <div class="d-flex flex-wrap">
+                                                    {% for image in proposal.images %}
+                                                        <div class="me-2 mb-2">
+                                                            <a href="#" data-bs-toggle="modal" data-bs-target="#proposalImageModal{{ proposal.id }}_{{ loop.index }}">
+                                                                <img src="{{ asset('uploads/product_proposals/' ~ image.filename) }}" 
+                                                                     alt="Image proposition" 
+                                                                     class="img-thumbnail" 
+                                                                     style="width: 100px; height: 100px; object-fit: cover;">
+                                                            </a>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            Aucune proposition de produit n'a été ajoutée à cette offre.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Options d'expédition</h5>
+                </div>
+                <div class="admin-card-body">
+                    {% if offer.shippingOptions|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Méthode</th>
+                                        <th>Prix</th>
+                                        <th>Délai estimé</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for option in offer.shippingOptions %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ option.name }}</strong>
+                                                {% if option.description %}
+                                                    <p class="small text-muted mb-0">{{ option.description }}</p>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ option.price|number_format(2, ',', ' ') }} €</td>
+                                            <td>
+                                                {% if option.estimatedDeliveryDays %}
+                                                    {{ option.estimatedDeliveryDays }} jour{% if option.estimatedDeliveryDays > 1 %}s{% endif %}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            Aucune option d'expédition n'a été ajoutée à cette offre.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-end">
+                <form method="post" action="{{ path('app_quote_offer_delete', {'id': offer.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette offre?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i data-lucide="trash-2" class="me-2"></i> Supprimer l'offre
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for item in offer.quote.items %}
+    {% if item.photoFilename %}
+        <div class="modal fade" id="imageModal{{ loop.index }}" tabindex="-1" aria-labelledby="imageModalLabel{{ loop.index }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="imageModalLabel{{ loop.index }}">{{ item.productType }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img src="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" class="img-fluid" alt="{{ item.productType }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+
+{% for proposal in offer.productProposals %}
+    {% if proposal.images|length > 0 %}
+        {% for image in proposal.images %}
+            <div class="modal fade" id="proposalImageModal{{ proposal.id }}_{{ loop.index }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Image de proposition</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img src="{{ asset('uploads/product_proposals/' ~ image.filename) }}" class="img-fluid" alt="Image de proposition">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endfor %}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Rendre les liens cliquables dans les descriptions
+        document.querySelectorAll('.description-content p').forEach(function(paragraph) {
+            const content = paragraph.innerHTML;
+            const linkedContent = content.replace(
+                /(https?:\/\/[^\s<]+)/g, 
+                '<a href="$1" target="_blank" class="text-primary">$1</a>'
+            );
+            paragraph.innerHTML = linkedContent;
+        });
+        
+        // Événements pour afficher/masquer les descriptions
+        document.querySelectorAll('.toggle-description').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-target');
+                const descriptionElement = document.getElementById(targetId);
+                if (descriptionElement.style.display === 'none') {
+                    descriptionElement.style.display = 'block';
+                } else {
+                    descriptionElement.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

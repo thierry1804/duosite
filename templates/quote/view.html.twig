@@ -165,6 +165,45 @@
                             {{ quote.additionalInfo|nl2br }}
                         </div>
                     {% endif %}
+
+                    {% if quote.services|length > 0 %}
+                        <h6 class="mt-4 mb-3">Services souhaités</h6>
+                        <div class="mb-4">
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for service in quote.services %}
+                                    <span class="badge bg-light text-dark p-2 d-flex align-items-center">
+                                        <i data-lucide="check-circle" class="icon-sm text-success me-1"></i>
+                                        {{ service }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if quote.shippingMethod|length > 0 %}
+                        <h6 class="mt-4 mb-3">Choix d'envoi</h6>
+                        <div class="mb-4">
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for method in quote.shippingMethod %}
+                                    <span class="badge bg-light text-dark p-2 d-flex align-items-center">
+                                        {% if method == 'maritime' %}
+                                            <i data-lucide="ship" class="icon-sm text-primary me-1"></i>
+                                            Envoi maritime (délai estimé: 50-70 jours)
+                                        {% elseif method == 'air_express' or method == 'aerien_express' %}
+                                            <i data-lucide="plane-takeoff" class="icon-sm text-primary me-1"></i>
+                                            Envoi aérien express (délai estimé: 3-7 jours)
+                                        {% elseif method == 'air_normal' or method == 'aerien_normal' %}
+                                            <i data-lucide="plane" class="icon-sm text-primary me-1"></i>
+                                            Envoi aérien normal (délai estimé: 15-30 jours)
+                                        {% else %}
+                                            <i data-lucide="package" class="icon-sm text-primary me-1"></i>
+                                            {{ method }}
+                                        {% endif %}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -309,7 +348,7 @@
                                 <div class="timeline-marker bg-info"></div>
                                 <div class="timeline-content">
                                     <h6 class="mb-0">Mise en traitement</h6>
-                                    <p class="text-muted mb-0">{{ quote.updatedAt|date('d/m/Y H:i') }}</p>
+                                    <p class="text-muted mb-0">{{ quote.createdAt|date('d/m/Y H:i') }}</p>
                                 </div>
                             </li>
                         {% endif %}
@@ -318,7 +357,7 @@
                                 <div class="timeline-marker {{ quote.status == 'completed' ? 'bg-success' : 'bg-danger' }}"></div>
                                 <div class="timeline-content">
                                     <h6 class="mb-0">{{ quote.status == 'completed' ? 'Devis complété' : 'Devis rejeté' }}</h6>
-                                    <p class="text-muted mb-0">{{ quote.updatedAt|date('d/m/Y H:i') }}</p>
+                                    <p class="text-muted mb-0">{{ quote.createdAt|date('d/m/Y H:i') }}</p>
                                 </div>
                             </li>
                         {% endif %}
@@ -327,6 +366,82 @@
             </div>
         </div>
     </div>
+
+    {# Ajout de la section des offres #}
+    {% if quote.status == 'in_progress' and (app.request.get('_route') starts with 'app_admin' or is_granted('ROLE_ADMIN')) %}
+    <div class="admin-card mb-4">
+        <div class="admin-card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Offres</h5>
+            <a href="{{ path('app_quote_offer_create', {'id': quote.id}) }}" class="btn btn-success rounded-circle p-0" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+            </a>
+        </div>
+        <div class="admin-card-body">
+            {% if (quote.offers is defined ? quote.offers : [])|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Titre</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Statut</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Prix total</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Créée le</th>
+                                <th class="text-secondary opacity-7"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for offer in (quote.offers is defined ? quote.offers : []) %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1">
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm">{{ offer.title }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-sm bg-gradient-{{ offer.status == 'draft' ? 'secondary' : (offer.status == 'sent' ? 'info' : (offer.status == 'accepted' ? 'success' : 'danger')) }}">
+                                            {{ offer.status == 'draft' ? 'Brouillon' : (offer.status == 'sent' ? 'Envoyée' : (offer.status == 'accepted' ? 'Acceptée' : 'Refusée')) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ offer.totalPrice|number_format(2, ',', ' ') }} €</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-sm font-weight-bold mb-0">{{ offer.createdAt|date('d/m/Y') }}</p>
+                                    </td>
+                                    <td class="align-middle">
+                                        <a href="{{ path('app_quote_offer_edit', {'id': offer.id}) }}" class="btn btn-sm btn-info" data-toggle="tooltip" data-original-title="Modifier l'offre">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if offer.status == 'draft' %}
+                                            <form method="post" action="{{ path('app_quote_offer_send', {'id': offer.id}) }}" style="display: inline-block">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('send' ~ offer.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-success" data-toggle="tooltip" data-original-title="Envoyer l'offre">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        <form method="post" action="{{ path('app_quote_offer_delete', {'id': offer.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette offre?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-danger" data-toggle="tooltip" data-original-title="Supprimer l'offre">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Aucune offre n'a été créée pour ce devis. Cliquez sur le bouton + pour commencer.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 {% else %}
 <div class="container my-5">
     <div class="row">

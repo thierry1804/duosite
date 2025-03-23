@@ -62,6 +62,9 @@ class Quote
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
     #[ORM\Column(options: ["default" => false])]
     private bool $processed = false;
 
@@ -90,11 +93,15 @@ class Quote
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $paymentDate = null;
 
+    #[ORM\OneToMany(mappedBy: 'quote', targetEntity: QuoteOffer::class, orphanRemoval: true)]
+    private Collection $offers;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->generateQuoteNumber();
         $this->items = new ArrayCollection();
+        $this->offers = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -107,6 +114,12 @@ class Quote
             $uniqueId = substr(uniqid(), -4); // Prend les 4 derniers caractères de l'ID unique
             $this->quoteNumber = sprintf('DUO-%s-%s', $date, strtoupper($uniqueId));
         }
+    }
+
+    #[ORM\PreUpdate]
+    private function updateTimestamp(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -240,6 +253,17 @@ class Quote
         return $this;
     }
 
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
     public function getFullName(): string
     {
         return trim($this->firstName . ' ' . $this->lastName);
@@ -283,6 +307,10 @@ class Quote
      */
     public function getItems(): Collection
     {
+        // Initialiser la collection si elle n'est pas encore initialisée
+        if (!isset($this->items)) {
+            $this->items = new ArrayCollection();
+        }
         return $this->items;
     }
 
@@ -372,6 +400,40 @@ class Quote
     public function setPaymentDate(?\DateTimeInterface $paymentDate): self
     {
         $this->paymentDate = $paymentDate;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, QuoteOffer>
+     */
+    public function getOffers(): Collection
+    {
+        // Initialiser la collection si elle n'est pas encore initialisée
+        if (!isset($this->offers)) {
+            $this->offers = new ArrayCollection();
+        }
+        return $this->offers;
+    }
+
+    public function addOffer(QuoteOffer $offer): self
+    {
+        if (!$this->offers->contains($offer)) {
+            $this->offers->add($offer);
+            $offer->setQuote($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOffer(QuoteOffer $offer): self
+    {
+        if ($this->offers->removeElement($offer)) {
+            // set the owning side to null (unless already changed)
+            if ($offer->getQuote() === $this) {
+                $offer->setQuote(null);
+            }
+        }
+
         return $this;
     }
 } 
