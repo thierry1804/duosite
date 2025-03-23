@@ -30,7 +30,7 @@ class ShippingOption
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
     #[Assert\NotBlank(message: 'Le prix de l\'option d\'expédition est obligatoire')]
     #[Assert\PositiveOrZero(message: 'Le prix doit être positif ou nul')]
-    private ?float $price = null;
+    private ?string $price = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $estimatedDeliveryDays = null;
@@ -90,12 +90,12 @@ class ShippingOption
         return $this;
     }
 
-    public function getPrice(): ?float
+    public function getPrice(): ?string
     {
         return $this->price;
     }
 
-    public function setPrice(float $price): self
+    public function setPrice(string $price): self
     {
         $this->price = $price;
         return $this;

@@ -44,10 +44,10 @@ class QuoteOffer
     private ?string $status = 'draft';
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    private ?float $totalPrice = null;
+    private ?string $totalPrice = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 6, nullable: true)]
-    private ?float $rmbMgaExchangeRate = null;
+    private ?string $rmbMgaExchangeRate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $pdfFilePath = null;
@@ -202,23 +202,23 @@ class QuoteOffer
         return $this;
     }
 
-    public function getTotalPrice(): ?float
+    public function getTotalPrice(): ?string
     {
         return $this->totalPrice;
     }
 
-    public function setTotalPrice(?float $totalPrice): self
+    public function setTotalPrice(?string $totalPrice): self
     {
         $this->totalPrice = $totalPrice;
         return $this;
     }
 
-    public function getRmbMgaExchangeRate(): ?float
+    public function getRmbMgaExchangeRate(): ?string
     {
         return $this->rmbMgaExchangeRate;
     }
 
-    public function setRmbMgaExchangeRate(?float $rmbMgaExchangeRate): self
+    public function setRmbMgaExchangeRate(?string $rmbMgaExchangeRate): self
     {
         $this->rmbMgaExchangeRate = $rmbMgaExchangeRate;
         return $this;

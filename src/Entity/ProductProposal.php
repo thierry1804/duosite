@@ -29,10 +29,10 @@ class ProductProposal
     private ?QuoteItem $quoteItem = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    private ?float $minPrice = null;
+    private ?string $minPrice = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    private ?float $maxPrice = null;
+    private ?string $maxPrice = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $comments = null;
@@ -50,7 +50,7 @@ class ProductProposal
     private ?string $dimensions = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    private ?float $weight = null;
+    private ?string $weight = null;
 
     /**
      * @var array<\Symfony\Component\HttpFoundation\File\UploadedFile>|null
@@ -108,23 +108,23 @@ class ProductProposal
         return $this;
     }
 
-    public function getMinPrice(): ?float
+    public function getMinPrice(): ?string
     {
         return $this->minPrice;
     }
 
-    public function setMinPrice(?float $minPrice): self
+    public function setMinPrice(?string $minPrice): self
     {
         $this->minPrice = $minPrice;
         return $this;
     }
 
-    public function getMaxPrice(): ?float
+    public function getMaxPrice(): ?string
     {
         return $this->maxPrice;
     }
 
-    public function setMaxPrice(?float $maxPrice): self
+    public function setMaxPrice(?string $maxPrice): self
     {
         $this->maxPrice = $maxPrice;
         return $this;
@@ -203,12 +203,12 @@ class ProductProposal
         return $this;
     }
 
-    public function getWeight(): ?float
+    public function getWeight(): ?string
     {
         return $this->weight;
     }
 
-    public function setWeight(?float $weight): self
+    public function setWeight(?string $weight): self
     {
         $this->weight = $weight;
         return $this;

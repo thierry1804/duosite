@@ -336,6 +336,9 @@ class QuoteController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande de devis.');
         }
         
+        // Forcer le chargement des offres
+        $quote->getOffers()->initialize();
+        
         // Calculer les frais de devis pour avoir les informations détaillées
         $feeDetails = $feeCalculator->calculateFee($quote);
         

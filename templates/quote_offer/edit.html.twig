@@ -317,39 +317,6 @@
         if (rmbRateField && !rmbRateField.value) {
             fetchExchangeRate();
         }
-        
-        // Ajouter un bouton de rafraîchissement à côté du champ
-        if (rmbRateField) {
-            const refreshButton = document.createElement('button');
-            refreshButton.type = 'button';
-            refreshButton.className = 'btn btn-sm btn-outline-primary ms-2';
-            refreshButton.innerHTML = '<i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Actualiser';
-            refreshButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                rmbRateField.value = '';
-                fetchExchangeRate();
-            });
-            
-            const formGroup = rmbRateField.closest('.form-group');
-            const inputWrapper = rmbRateField.parentNode;
-            
-            // Créer un conteneur flex pour aligner le champ et le bouton
-            const flexContainer = document.createElement('div');
-            flexContainer.className = 'd-flex align-items-center';
-            
-            // Retirer le champ du DOM et l'ajouter au conteneur flex
-            inputWrapper.removeChild(rmbRateField);
-            flexContainer.appendChild(rmbRateField);
-            flexContainer.appendChild(refreshButton);
-            
-            // Ajouter le conteneur flex au formulaire
-            inputWrapper.appendChild(flexContainer);
-            
-            // Initialiser les icônes Lucide
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        }
 
         // Remplacer toutes les options des selects quoteItem par une version avec numéro de badge
         function addNumbersToSelect(select) {
@@ -456,7 +423,34 @@
             $header.append('<h6 class="mb-0">' + titleText + '</h6>');
             $header.append('<button type="button" class="btn btn-sm btn-danger remove-product-proposal"><i data-lucide="trash-2"></i> Supprimer</button>');
             
-            $body.append(newForm);
+            // Créer une structure personnalisée pour le formulaire
+            let $formContent = $('<div></div>');
+            
+            // Ajouter le select pour le produit
+            let $quoteItemDiv = $('<div class="mb-3"></div>');
+            $quoteItemDiv.append($(newForm).find('select[id$="_quoteItem"]').parent());
+            $formContent.append($quoteItemDiv);
+            
+            // Créer une ligne pour les prix min et max
+            let $priceRow = $('<div class="row mb-3"></div>');
+            let $minPriceDiv = $('<div class="col-md-6"></div>').append($(newForm).find('input[id$="_minPrice"]').parent());
+            let $maxPriceDiv = $('<div class="col-md-6"></div>').append($(newForm).find('input[id$="_maxPrice"]').parent());
+            $priceRow.append($minPriceDiv).append($maxPriceDiv);
+            $formContent.append($priceRow);
+            
+            // Ajouter les commentaires
+            let $commentsDiv = $('<div class="mb-3"></div>');
+            $commentsDiv.append($(newForm).find('textarea[id$="_comments"]').parent());
+            $formContent.append($commentsDiv);
+            
+            // Créer une ligne pour les dimensions et le poids
+            let $dimensionsRow = $('<div class="row mb-3"></div>');
+            let $dimensionsDiv = $('<div class="col-md-6"></div>').append($(newForm).find('input[id$="_dimensions"]').parent());
+            let $weightDiv = $('<div class="col-md-6"></div>').append($(newForm).find('input[id$="_weight"]').parent());
+            $dimensionsRow.append($dimensionsDiv).append($weightDiv);
+            $formContent.append($dimensionsRow);
+            
+            $body.append($formContent);
             $newFormWrapper.append($header);
             $newFormWrapper.append($body);
             
