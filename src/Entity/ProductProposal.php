@@ -6,6 +6,7 @@ use App\Repository\ProductProposalRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
@@ -52,8 +53,21 @@ class ProductProposal
     private ?float $weight = null;
 
     /**
-     * @var array<File>|null
+     * @var array<\Symfony\Component\HttpFoundation\File\UploadedFile>|null
+     * Propriété non-persistée, utilisée uniquement pour le formulaire et le transfert de fichiers
      */
+    #[Assert\All([
+        new Assert\Image([
+            'maxSize' => '5M',
+            'mimeTypes' => [
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp'
+            ],
+            'mimeTypesMessage' => 'Formats autorisés : JPG, PNG, GIF, WEBP'
+        ])
+    ])]
     private $imageFiles = [];
 
     public function __construct()
@@ -201,7 +215,7 @@ class ProductProposal
     }
 
     /**
-     * @return array<File>|null
+     * @return array<\Symfony\Component\HttpFoundation\File\UploadedFile>|null
      */
     public function getImageFiles(): ?array
     {
@@ -209,7 +223,7 @@ class ProductProposal
     }
 
     /**
-     * @param array<File>|null $imageFiles
+     * @param array<\Symfony\Component\HttpFoundation\File\UploadedFile>|null $imageFiles
      */
     public function setImageFiles(?array $imageFiles): self
     {

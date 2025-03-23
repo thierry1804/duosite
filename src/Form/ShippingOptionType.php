@@ -10,6 +10,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\FormView;
 
 class ShippingOptionType extends AbstractType
 {
@@ -32,24 +34,40 @@ class ShippingOptionType extends AbstractType
                     'placeholder' => 'Description détaillée du mode d\'expédition'
                 ]
             ])
-            ->add('price', MoneyType::class, [
-                'label' => 'Prix',
-                'currency' => 'EUR',
-                'attr' => [
-                    'class' => 'form-control',
-                    'placeholder' => 'Prix'
-                ]
-            ])
             ->add('estimatedDeliveryDays', IntegerType::class, [
-                'label' => 'Délai de livraison estimé (jours)',
+                'label' => 'Délai max de livraison (jours)',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'Délai en jours',
                     'min' => 1
+                ],
+                'row_attr' => [
+                    'class' => 'col-md-6 mb-3'
+                ]
+            ])
+            ->add('price', MoneyType::class, [
+                'label' => 'Tarif en MGA',
+                'currency' => ' MGA',
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Tarif en MGA'
+                ],
+                'row_attr' => [
+                    'class' => 'col-md-6 mb-3'
                 ]
             ])
         ;
+    }
+
+    public function buildView(FormView $view, FormInterface $form, array $options)
+    {
+        parent::buildView($view, $form, $options);
+        
+        // Ajouter une classe row pour permettre l'alignement horizontal
+        $view->vars['attr']['class'] = isset($view->vars['attr']['class']) 
+            ? $view->vars['attr']['class'] . ' row' 
+            : 'row';
     }
 
     public function configureOptions(OptionsResolver $resolver): void

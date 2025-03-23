@@ -377,7 +377,7 @@
             </a>
         </div>
         <div class="admin-card-body">
-            {% if (quote.offers is defined ? quote.offers : [])|length > 0 %}
+            {% if quote.offers|length > 0 %}
                 <div class="table-responsive">
                     <table class="table align-items-center mb-0">
                         <thead>
@@ -390,7 +390,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for offer in (quote.offers is defined ? quote.offers : []) %}
+                            {% for offer in quote.offers %}
                                 <tr>
                                     <td>
                                         <div class="d-flex px-2 py-1">
@@ -422,6 +422,13 @@
                                                 </button>
                                             </form>
                                         {% endif %}
+                                        
+                                        {% if offer.pdfFilePath %}
+                                            <a href="{{ asset(offer.pdfFilePath) }}" class="btn btn-sm btn-primary" target="_blank" data-toggle="tooltip" data-original-title="Télécharger le PDF">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                        {% endif %}
+                                        
                                         <form method="post" action="{{ path('app_quote_offer_delete', {'id': offer.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette offre?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
                                             <button type="submit" class="btn btn-sm btn-danger" data-toggle="tooltip" data-original-title="Supprimer l'offre">

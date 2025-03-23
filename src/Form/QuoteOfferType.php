@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 
 class QuoteOfferType extends AbstractType
 {
@@ -42,6 +43,19 @@ class QuoteOfferType extends AbstractType
                     'Refusée' => 'declined'
                 ],
                 'attr' => ['class' => 'form-select']
+            ])
+            ->add('rmbMgaExchangeRate', NumberType::class, [
+                'label' => 'Taux de change RMB/MGA <a href="javascript(void);" title="Taux de change RMB/MGA au moment de la création de l\'offre."><i data-lucide="help-circle" class="text-info" style="width: 16px; height: 16px;" data-bs-toggle="tooltip" data-bs-placement="top" title="Taux de conversion entre le Yuan chinois (RMB) et l\'Ariary malgache (MGA). Ce taux est utilisé pour les calculs de conversion dans l\'offre."></i></a>',
+                'label_html' => true,
+                'required' => false,
+                'scale' => 6,
+                'html5' => true,
+                'attr' => [
+                    'class' => 'form-control exchange-rate-field',
+                    'placeholder' => 'Ex: 556.123456',
+                    'step' => '0.000001',
+                    'data-api-url' => 'https://open.er-api.com/v6/latest/CNY'
+                ],
             ])
             ->add('productProposals', CollectionType::class, [
                 'entry_type' => ProductProposalType::class,

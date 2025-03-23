@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Offre de devis #{{ offer.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 20px;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 24px;
+            margin: 0 0 5px 0;
+            color: #0d6efd;
+        }
+        h2 {
+            font-size: 18px;
+            margin: 0 0 20px 0;
+            font-weight: normal;
+        }
+        h3 {
+            font-size: 16px;
+            margin: 20px 0 10px 0;
+            color: #0d6efd;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .info-section {
+            margin-bottom: 20px;
+        }
+        .info-row {
+            margin-bottom: 5px;
+        }
+        .label {
+            font-weight: bold;
+            display: inline-block;
+            width: 150px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .footer {
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 7px;
+            font-size: 12px;
+            border-radius: 3px;
+            color: white;
+            background-color: #6c757d;
+        }
+        .badge-secondary { background-color: #6c757d; }
+        .badge-info { background-color: #0dcaf0; }
+        .badge-success { background-color: #198754; }
+        .badge-danger { background-color: #dc3545; }
+        
+        .price-total {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-top: 2px solid #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="{{ absolute_url(asset('images/logo.png')) }}" alt="Logo" class="logo">
+            <h1>Offre de devis #{{ offer.id }}</h1>
+            <h2>{{ offer.title }}</h2>
+        </div>
+        
+        <div class="info-section">
+            <h3>Informations générales</h3>
+            <div class="info-row">
+                <span class="label">Référence:</span>
+                <span>{{ offer.quote.quoteNumber }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Date de création:</span>
+                <span>{{ offer.createdAt|date('d/m/Y') }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Statut:</span>
+                <span class="badge badge-{{ offer.status == 'draft' ? 'secondary' : (offer.status == 'sent' ? 'info' : (offer.status == 'accepted' ? 'success' : 'danger')) }}">
+                    {{ offer.status == 'draft' ? 'Brouillon' : (offer.status == 'sent' ? 'Envoyée' : (offer.status == 'accepted' ? 'Acceptée' : 'Refusée')) }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <h3>Informations client</h3>
+            <div class="info-row">
+                <span class="label">Nom complet:</span>
+                <span>{{ offer.quote.fullName }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Email:</span>
+                <span>{{ offer.quote.email }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Téléphone:</span>
+                <span>{{ offer.quote.phone }}</span>
+            </div>
+            {% if offer.quote.company %}
+            <div class="info-row">
+                <span class="label">Société:</span>
+                <span>{{ offer.quote.company }}</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if offer.description %}
+        <div class="info-section">
+            <h3>Description de l'offre</h3>
+            <p>{{ offer.description|nl2br }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="info-section">
+            <h3>Produits proposés</h3>
+            {% if offer.productProposals|length > 0 %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produit demandé</th>
+                        <th>Fourchette de prix</th>
+                        <th>Quantité</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proposal in offer.productProposals %}
+                    <tr>
+                        <td>
+                            {% if proposal.quoteItem %}
+                                {{ proposal.quoteItem.productType }} - 
+                                {{ proposal.quoteItem.description|length > 50 ? proposal.quoteItem.description|slice(0, 50) ~ '...' : proposal.quoteItem.description }}
+                            {% else %}
+                                Produit sans référence
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if proposal.minPrice and proposal.maxPrice %}
+                                {{ proposal.minPrice|number_format(2, ',', ' ') }} RMB - {{ proposal.maxPrice|number_format(2, ',', ' ') }} RMB
+                            {% elseif proposal.minPrice %}
+                                {{ proposal.minPrice|number_format(2, ',', ' ') }} RMB
+                            {% elseif proposal.maxPrice %}
+                                {{ proposal.maxPrice|number_format(2, ',', ' ') }} RMB
+                            {% else %}
+                                Non défini
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if proposal.quoteItem %}
+                                {{ proposal.quoteItem.quantity }}
+                            {% else %}
+                                1
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if proposal.minPrice and proposal.maxPrice %}
+                                {% set avgPrice = (proposal.minPrice + proposal.maxPrice) / 2 %}
+                                {% set quantity = proposal.quoteItem ? (proposal.quoteItem.quantity ?: 1) : 1 %}
+                                {{ (avgPrice * quantity)|number_format(2, ',', ' ') }} RMB
+                            {% else %}
+                                Non défini
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% if proposal.comments %}
+                    <tr>
+                        <td colspan="4" style="background-color: #f8f9fa; font-style: italic;">
+                            Commentaires: {{ proposal.comments }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Aucun produit proposé pour cette offre.</p>
+            {% endif %}
+        </div>
+        
+        <div class="info-section">
+            <h3>Options d'expédition</h3>
+            {% if offer.shippingOptions|length > 0 %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mode d'expédition</th>
+                        <th>Description</th>
+                        <th>Délai estimé</th>
+                        <th>Prix</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for option in offer.shippingOptions %}
+                    <tr>
+                        <td>{{ option.name }}</td>
+                        <td>{{ option.description ?: 'Aucune description' }}</td>
+                        <td>{{ option.estimatedDeliveryDays ? option.estimatedDeliveryDays ~ ' jours' : 'Non défini' }}</td>
+                        <td>{{ option.price|number_format(2, ',', ' ') }} €</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Aucune option d'expédition pour cette offre.</p>
+            {% endif %}
+        </div>
+        
+        <div class="price-total">
+            Prix total de l'offre: {{ offer.totalPrice|number_format(2, ',', ' ') }} €
+            {% if offer.rmbMgaExchangeRate %}
+            <br>
+            <span style="font-size: 12px; font-weight: normal;">
+                * Taux de change RMB/MGA utilisé: {{ offer.rmbMgaExchangeRate }}
+            </span>
+            {% endif %}
+        </div>
+        
+        <div class="footer">
+            <p>Ce document a été généré automatiquement le {{ 'now'|date('d/m/Y H:i:s') }}</p>
+            <p>Duo Import MDG - www.duoimport.mg</p>
+        </div>
+    </div>
+</body>
+</html> 

@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Service\ExchangeRateService;
+use App\Service\PdfGenerator;
 
 #[Route('/admin/quote-offer')]
 class QuoteOfferController extends AbstractController
@@ -26,7 +28,8 @@ class QuoteOfferController extends AbstractController
         Request $request,
         Quote $quote,
         EntityManagerInterface $entityManager,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        ExchangeRateService $exchangeRateService
     ): Response
     {
         // Vérifier les permissions
@@ -46,6 +49,39 @@ class QuoteOfferController extends AbstractController
         // Obtenir les éléments du devis à proposer
         $quoteItems = $quote->getItems();
         
+        // Récupérer le taux de change RMB du jour (ne pas l'enregistrer directement, le laisser au formulaire)
+        $rmbRate = $exchangeRateService->getRmbMgaRate();
+        
+        // Ajouter automatiquement les options d'expédition basées sur les choix d'envoi du client
+        if (!empty($quote->getShippingMethod())) {
+            $shippingMethods = $quote->getShippingMethod();
+            $shippingNames = [
+                'maritime' => 'Maritime',
+                'aerien_express' => 'Aérien Express',
+                'aerien_normal' => 'Aérien Standard'
+            ];
+            $deliveryDays = [
+                'maritime' => 45,
+                'aerien_express' => 7,
+                'aerien_normal' => 15
+            ];
+            
+            foreach ($shippingMethods as $methodCode) {
+                if (isset($shippingNames[$methodCode])) {
+                    $shippingOption = new ShippingOption();
+                    $shippingOption->setName($shippingNames[$methodCode]);
+                    $shippingOption->setDescription('Option d\'expédition choisie par le client');
+                    $shippingOption->setPrice(0); // Prix à définir par l'administrateur
+                    
+                    if (isset($deliveryDays[$methodCode])) {
+                        $shippingOption->setEstimatedDeliveryDays($deliveryDays[$methodCode]);
+                    }
+                    
+                    $offer->addShippingOption($shippingOption);
+                }
+            }
+        }
+        
         // Créer le formulaire
         $form = $this->createForm(QuoteOfferType::class, $offer, [
             'quote_items' => $quoteItems->toArray(),
@@ -54,37 +90,38 @@ class QuoteOfferController extends AbstractController
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
+            // Assurer que le répertoire d'upload existe
+            $uploadDir = $this->getParameter('product_proposal_images_directory');
+            if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $uploadDir));
+            }
+            
             // Traiter chaque proposition de produit
             foreach ($offer->getProductProposals() as $proposal) {
-                // Traiter les images téléchargées
-                $filesData = $request->files->get('quote_offer');
-                if (isset($filesData['productProposals'])) {
-                    foreach ($filesData['productProposals'] as $index => $proposalData) {
-                        if (isset($proposalData['imageFiles']) && $proposalData['imageFiles']) {
-                            $imageFiles = $proposalData['imageFiles'];
+                // Récupérer les fichiers téléchargés directement de l'entité productProposal
+                $imageFiles = $proposal->getImageFiles();
+                
+                if ($imageFiles) {
+                    foreach ($imageFiles as $imageFile) {
+                        if ($imageFile) {
+                            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                            // Sécuriser le nom du fichier
+                            $safeFilename = $slugger->slug($originalFilename);
+                            $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
                             
-                            // Traiter chaque image
-                            foreach ($imageFiles as $imageFile) {
-                                if ($imageFile) {
-                                    $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                                    // Sécuriser le nom du fichier
-                                    $safeFilename = $slugger->slug($originalFilename);
-                                    $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
-                                    
-                                    try {
-                                        // Déplacer le fichier dans le répertoire final
-                                        $imageFile->move(
-                                            $this->getParameter('product_proposal_images_directory'),
-                                            $newFilename
-                                        );
-                                        
-                                        // Ajouter l'image à la proposition
-                                        $proposal->addImage($newFilename);
-                                    } catch (FileException $e) {
-                                        // Log l'erreur mais continuer le traitement
-                                        error_log('Erreur lors du téléchargement de l\'image: ' . $e->getMessage());
-                                    }
-                                }
+                            try {
+                                // Déplacer le fichier dans le répertoire final
+                                $imageFile->move(
+                                    $this->getParameter('product_proposal_images_directory'),
+                                    $newFilename
+                                );
+                                
+                                // Ajouter l'image à la proposition
+                                $proposal->addImage($newFilename);
+                            } catch (FileException $e) {
+                                // Log l'erreur mais continuer le traitement
+                                error_log('Erreur lors du téléchargement de l\'image: ' . $e->getMessage());
+                                $this->addFlash('error', 'Erreur lors du téléchargement d\'une image: ' . $e->getMessage());
                             }
                         }
                     }
@@ -106,6 +143,7 @@ class QuoteOfferController extends AbstractController
         return $this->render('quote_offer/create.html.twig', [
             'quote' => $quote,
             'form' => $form->createView(),
+            'rmb_rate' => $rmbRate,
         ]);
     }
     
@@ -114,7 +152,8 @@ class QuoteOfferController extends AbstractController
         Request $request,
         QuoteOffer $offer,
         EntityManagerInterface $entityManager,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        ExchangeRateService $exchangeRateService
     ): Response
     {
         // Vérifier les permissions
@@ -132,6 +171,9 @@ class QuoteOfferController extends AbstractController
         // Obtenir les éléments du devis
         $quoteItems = $quote->getItems();
         
+        // Récupérer le taux de change RMB du jour
+        $rmbRate = $exchangeRateService->getRmbMgaRate();
+        
         // Créer le formulaire
         $form = $this->createForm(QuoteOfferType::class, $offer, [
             'quote_items' => $quoteItems->toArray(),
@@ -140,37 +182,38 @@ class QuoteOfferController extends AbstractController
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
+            // Assurer que le répertoire d'upload existe
+            $uploadDir = $this->getParameter('product_proposal_images_directory');
+            if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $uploadDir));
+            }
+            
             // Traiter chaque proposition de produit
             foreach ($offer->getProductProposals() as $proposal) {
-                // Traiter les images téléchargées
-                $filesData = $request->files->get('quote_offer');
-                if (isset($filesData['productProposals'])) {
-                    foreach ($filesData['productProposals'] as $index => $proposalData) {
-                        if (isset($proposalData['imageFiles']) && $proposalData['imageFiles']) {
-                            $imageFiles = $proposalData['imageFiles'];
+                // Récupérer les fichiers téléchargés directement de l'entité productProposal
+                $imageFiles = $proposal->getImageFiles();
+                
+                if ($imageFiles) {
+                    foreach ($imageFiles as $imageFile) {
+                        if ($imageFile) {
+                            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                            // Sécuriser le nom du fichier
+                            $safeFilename = $slugger->slug($originalFilename);
+                            $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
                             
-                            // Traiter chaque image
-                            foreach ($imageFiles as $imageFile) {
-                                if ($imageFile) {
-                                    $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                                    // Sécuriser le nom du fichier
-                                    $safeFilename = $slugger->slug($originalFilename);
-                                    $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
-                                    
-                                    try {
-                                        // Déplacer le fichier dans le répertoire final
-                                        $imageFile->move(
-                                            $this->getParameter('product_proposal_images_directory'),
-                                            $newFilename
-                                        );
-                                        
-                                        // Ajouter l'image à la proposition
-                                        $proposal->addImage($newFilename);
-                                    } catch (FileException $e) {
-                                        // Log l'erreur mais continuer le traitement
-                                        error_log('Erreur lors du téléchargement de l\'image: ' . $e->getMessage());
-                                    }
-                                }
+                            try {
+                                // Déplacer le fichier dans le répertoire final
+                                $imageFile->move(
+                                    $this->getParameter('product_proposal_images_directory'),
+                                    $newFilename
+                                );
+                                
+                                // Ajouter l'image à la proposition
+                                $proposal->addImage($newFilename);
+                            } catch (FileException $e) {
+                                // Log l'erreur mais continuer le traitement
+                                error_log('Erreur lors du téléchargement de l\'image: ' . $e->getMessage());
+                                $this->addFlash('error', 'Erreur lors du téléchargement d\'une image: ' . $e->getMessage());
                             }
                         }
                     }
@@ -192,6 +235,8 @@ class QuoteOfferController extends AbstractController
             'quote' => $quote,
             'offer' => $offer,
             'form' => $form->createView(),
+            'rmb_rate' => $rmbRate,
+            'current_rmb_rate' => $offer->getRmbMgaExchangeRate(),
         ]);
     }
     
@@ -230,7 +275,8 @@ class QuoteOfferController extends AbstractController
     public function sendOffer(
         Request $request,
         QuoteOffer $offer,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        PdfGenerator $pdfGenerator
     ): Response
     {
         // Vérifier les permissions
@@ -249,13 +295,53 @@ class QuoteOfferController extends AbstractController
         if ($this->isCsrfTokenValid('send'.$offer->getId(), $request->request->get('_token'))) {
             // Mettre à jour le statut de l'offre
             $offer->setStatus('sent');
-            $entityManager->flush();
             
-            // TODO: Envoyer un email au client avec l'offre
-            
-            $this->addFlash('success', 'L\'offre a été envoyée au client avec succès.');
+            // Générer le PDF et l'attacher à l'offre
+            try {
+                $pdfPath = $pdfGenerator->generateQuoteOfferPdf($offer);
+                $offer->setPdfFilePath($pdfPath);
+                
+                $entityManager->flush();
+                
+                // TODO: Envoyer un email au client avec l'offre
+                
+                $this->addFlash('success', 'L\'offre a été envoyée au client avec succès et le PDF a été généré.');
+            } catch (\Exception $e) {
+                // En cas d'erreur avec la génération du PDF
+                $this->addFlash('error', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
+                return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+            }
         }
         
         return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+    }
+    
+    #[Route('/{id}', name: 'app_quote_offer_show', methods: ['GET'])]
+    public function show(QuoteOffer $offer, ExchangeRateService $exchangeRateService): Response
+    {
+        // Récupérer le taux de change RMB du jour
+        $rmbRate = $exchangeRateService->getRmbMgaRate();
+        
+        return $this->render('quote_offer/view.html.twig', [
+            'offer' => $offer,
+            'rmb_rate' => $rmbRate,
+            'saved_rmb_rate' => $offer->getRmbMgaExchangeRate(),
+        ]);
+    }
+    
+    #[Route('/api/rmb-mga-rate', name: 'app_exchange_rate_api', methods: ['GET'])]
+    public function getRmbMgaRate(ExchangeRateService $exchangeRateService): Response
+    {
+        $rateInfo = $exchangeRateService->getExchangeRateInfo();
+        $rate = $exchangeRateService->getRmbMgaRate();
+        
+        return $this->json([
+            'success' => $rate !== null,
+            'rate' => $rate,
+            'last_update' => $rateInfo ? $rateInfo['last_update'] : null,
+            'next_update' => $rateInfo ? $rateInfo['next_update'] : null,
+            'provider' => $rateInfo ? $rateInfo['provider'] : 'exchangerate-api.com',
+            'timestamp' => (new \DateTime())->format('Y-m-d H:i:s')
+        ]);
     }
 } 

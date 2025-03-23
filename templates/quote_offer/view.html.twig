@@ -37,12 +37,28 @@
                     <h5 class="mb-0">Informations client</h5>
                 </div>
                 <div class="admin-card-body">
-                    <p><strong>Client:</strong> {{ offer.quote.fullName }}</p>
-                    <p><strong>Email:</strong> {{ offer.quote.email }}</p>
-                    <p><strong>Téléphone:</strong> {{ offer.quote.phone }}</p>
-                    {% if offer.quote.company %}
-                        <p><strong>Société:</strong> {{ offer.quote.company }}</p>
-                    {% endif %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="user" class="icon-lg text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ offer.quote.fullName }}</h6>
+                            {% if offer.quote.company %}
+                                <p class="text-muted mb-0">{{ offer.quote.company }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <a href="mailto:{{ offer.quote.email }}" class="btn btn-sm btn-light me-2" data-bs-toggle="tooltip" title="Email: {{ offer.quote.email }}">
+                                <i data-lucide="mail" class="icon-sm"></i>
+                            </a>
+                            <a href="tel:{{ offer.quote.phone }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Téléphone: {{ offer.quote.phone }}">
+                                <i data-lucide="phone" class="icon-sm"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -55,6 +71,18 @@
                     <p><strong>Statut:</strong> <span class="badge {{ offer.statusBadgeClass }}">{{ offer.statusLabel }}</span></p>
                     <p><strong>Date de création:</strong> {{ offer.createdAt|date('d/m/Y H:i') }}</p>
                     <p><strong>Prix total:</strong> <span class="text-primary fw-bold">{{ offer.totalPrice|number_format(2, ',', ' ') }} €</span></p>
+                    {% if offer.rmbMgaExchangeRate %}
+                    <p><strong>Taux de change RMB/MGA:</strong> <span class="text-info">{{ offer.rmbMgaExchangeRate|number_format(6, ',', ' ') }}</span></p>
+                    {% endif %}
+                    
+                    {% if offer.pdfFilePath %}
+                    <hr>
+                    <div class="text-center">
+                        <a href="{{ asset(offer.pdfFilePath) }}" class="btn btn-sm btn-primary" target="_blank">
+                            <i data-lucide="file-text" class="me-2"></i> Télécharger le PDF
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             
@@ -170,7 +198,7 @@
                                                     {% for image in proposal.images %}
                                                         <div class="me-2 mb-2">
                                                             <a href="#" data-bs-toggle="modal" data-bs-target="#proposalImageModal{{ proposal.id }}_{{ loop.index }}">
-                                                                <img src="{{ asset('uploads/product_proposals/' ~ image.filename) }}" 
+                                                                <img src="{{ asset('uploads/product_proposals/' ~ image) }}" 
                                                                      alt="Image proposition" 
                                                                      class="img-thumbnail" 
                                                                      style="width: 100px; height: 100px; object-fit: cover;">
@@ -278,7 +306,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                         </div>
                         <div class="modal-body text-center">
-                            <img src="{{ asset('uploads/product_proposals/' ~ image.filename) }}" class="img-fluid" alt="Image de proposition">
+                            <img src="{{ asset('uploads/product_proposals/' ~ image) }}" class="img-fluid" alt="Image de proposition">
                         </div>
                     </div>
                 </div>

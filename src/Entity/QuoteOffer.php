@@ -46,6 +46,12 @@ class QuoteOffer
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     private ?float $totalPrice = null;
 
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 6, nullable: true)]
+    private ?float $rmbMgaExchangeRate = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $pdfFilePath = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -204,6 +210,28 @@ class QuoteOffer
     public function setTotalPrice(?float $totalPrice): self
     {
         $this->totalPrice = $totalPrice;
+        return $this;
+    }
+
+    public function getRmbMgaExchangeRate(): ?float
+    {
+        return $this->rmbMgaExchangeRate;
+    }
+
+    public function setRmbMgaExchangeRate(?float $rmbMgaExchangeRate): self
+    {
+        $this->rmbMgaExchangeRate = $rmbMgaExchangeRate;
+        return $this;
+    }
+
+    public function getPdfFilePath(): ?string
+    {
+        return $this->pdfFilePath;
+    }
+
+    public function setPdfFilePath(?string $pdfFilePath): self
+    {
+        $this->pdfFilePath = $pdfFilePath;
         return $this;
     }
 

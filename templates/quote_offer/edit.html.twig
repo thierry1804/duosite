@@ -29,12 +29,28 @@
                     <h5 class="mb-0">Informations client</h5>
                 </div>
                 <div class="admin-card-body">
-                    <p><strong>Client:</strong> {{ offer.quote.fullName }}</p>
-                    <p><strong>Email:</strong> {{ offer.quote.email }}</p>
-                    <p><strong>Téléphone:</strong> {{ offer.quote.phone }}</p>
-                    {% if offer.quote.company %}
-                        <p><strong>Société:</strong> {{ offer.quote.company }}</p>
-                    {% endif %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="user" class="icon-lg text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ offer.quote.fullName }}</h6>
+                            {% if offer.quote.company %}
+                                <p class="text-muted mb-0">{{ offer.quote.company }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <a href="mailto:{{ offer.quote.email }}" class="btn btn-sm btn-light me-2" data-bs-toggle="tooltip" title="Email: {{ offer.quote.email }}">
+                                <i data-lucide="mail" class="icon-sm"></i>
+                            </a>
+                            <a href="tel:{{ offer.quote.phone }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Téléphone: {{ offer.quote.phone }}">
+                                <i data-lucide="phone" class="icon-sm"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -48,6 +64,7 @@
                             <li class="list-group-item">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
+                                        <span class="badge bg-secondary me-2">#{{ loop.index }}</span>
                                         <strong>{{ item.productType }}</strong>
                                         {% if item.quantity %}
                                             <span class="badge bg-primary ms-2">{{ item.quantity }} pcs</span>
@@ -100,7 +117,7 @@
                             {{ form_row(form.status) }}
                         </div>
                         <div class="col-md-4">
-                            <!-- Champ retiré -->
+                            {{ form_row(form.rmbMgaExchangeRate) }}
                         </div>
                     </div>
                     
@@ -109,33 +126,35 @@
                     <div class="admin-card mt-4 mb-4">
                         <div class="admin-card-header d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">Propositions de produits</h5>
-                            <button type="button" class="btn btn-success rounded-circle p-0" id="add-product-proposal" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                            </button>
-                        </div>
-                        <div class="admin-card-body">
-                            <!-- Conteneur pour les propositions de produits -->
-                            <div class="product-proposals-container" data-prototype="{{ form_widget(form.productProposals.vars.prototype)|e('html_attr') }}" data-index="{{ form.productProposals|length }}">
-                                {% if form.productProposals|length > 0 %}
-                                    {% for productProposalForm in form.productProposals %}
-                                        <div class="product-proposal-item admin-card mb-3">
-                                            <div class="admin-card-header bg-light d-flex justify-content-between">
-                                                <h6 class="mb-0">Proposition #{{ loop.index }}</h6>
-                                                <button type="button" class="btn btn-sm btn-danger remove-product-proposal">
-                                                    <i data-lucide="trash-2"></i> Supprimer
-                                                </button>
-                                            </div>
-                                            <div class="admin-card-body">
-                                                {{ form_widget(productProposalForm) }}
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="alert alert-info">
-                                        Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
-                                    </div>
-                                {% endif %}
+                            <div>
+                                <button type="button" class="btn btn-success rounded-circle p-0" id="add-product-proposal" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                                </button>
                             </div>
+                        </div>
+                    </div>
+                    <div class="admin-card-body">
+                        <!-- Conteneur pour les propositions de produits -->
+                        <div class="product-proposals-container" data-prototype="{{ form_widget(form.productProposals.vars.prototype)|e('html_attr') }}" data-index="{{ form.productProposals|length }}">
+                            {% if form.productProposals|length > 0 %}
+                                {% for productProposalForm in form.productProposals %}
+                                    <div class="product-proposal-item admin-card mb-3">
+                                        <div class="admin-card-header bg-light d-flex justify-content-between">
+                                            <h6 class="mb-0">Proposition #{{ loop.index }}</h6>
+                                            <button type="button" class="btn btn-sm btn-danger remove-product-proposal">
+                                                <i data-lucide="trash-2"></i> Supprimer
+                                            </button>
+                                        </div>
+                                        <div class="admin-card-body">
+                                            {{ form_widget(productProposalForm) }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info">
+                                    Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -147,6 +166,25 @@
                             </button>
                         </div>
                         <div class="admin-card-body">
+                            {% if quote.shippingMethod|length > 0 %}
+                                <div class="alert alert-info mb-3">
+                                    <i data-lucide="info" class="me-1" style="width: 16px; height: 16px;"></i>
+                                    Le client a sélectionné les méthodes d'envoi suivantes : 
+                                    <strong>
+                                        {% set methodLabels = {
+                                            'maritime': 'Maritime',
+                                            'aerien_express': 'Aérien Express',
+                                            'aerien_normal': 'Aérien Standard'
+                                        } %}
+                                        {% for method in quote.shippingMethod %}
+                                            {{ methodLabels[method]|default(method) }}{% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </strong>
+                                    <br>
+                                    <small>Les options d'expédition ont été pré-remplies selon ces choix. Vous pouvez ajuster les prix et détails si nécessaire.</small>
+                                </div>
+                            {% endif %}
+                            
                             <!-- Conteneur pour les options d'expédition -->
                             <div class="shipping-options-container" data-prototype="{{ form_widget(form.shippingOptions.vars.prototype)|e('html_attr') }}" data-index="{{ form.shippingOptions|length }}">
                                 {% if form.shippingOptions|length > 0 %}
@@ -213,7 +251,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                         </div>
                         <div class="modal-body text-center">
-                            <img src="{{ asset('uploads/product_proposals/' ~ image.filename) }}" class="img-fluid" alt="Image de proposition">
+                            <img src="{{ asset('uploads/product_proposals/' ~ image) }}" class="img-fluid" alt="Image de proposition">
                         </div>
                     </div>
                 </div>
@@ -225,8 +263,138 @@
 
 {% block javascripts %}
 {{ parent() }}
+<script src="{{ asset('js/exchange-rate.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialisation des tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Fonction pour récupérer le taux de change RMB/MGA en temps réel
+        function fetchExchangeRate() {
+            const rmbRateField = document.querySelector('input[id$="rmbMgaExchangeRate"]');
+            if (rmbRateField && !rmbRateField.value) {
+                // Afficher un indicateur de chargement
+                rmbRateField.setAttribute('placeholder', 'Chargement du taux...');
+                rmbRateField.disabled = true;
+                
+                // Faire une requête à notre API
+                fetch('{{ path('app_exchange_rate_api') }}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.rate) {
+                            rmbRateField.value = data.rate;
+                            // Ajouter un petit texte pour indiquer quand le taux a été récupéré et les infos de mise à jour
+                            const helpText = rmbRateField.closest('.form-group').querySelector('.form-text');
+                            if (helpText) {
+                                let infoHtml = '<br><small class="text-success">Taux récupéré le ' + data.timestamp + '</small>';
+                                if (data.last_update) {
+                                    infoHtml += '<br><small class="text-muted">Dernière mise à jour: ' + data.last_update + '</small>';
+                                }
+                                if (data.next_update) {
+                                    infoHtml += '<br><small class="text-muted">Prochaine mise à jour: ' + data.next_update + '</small>';
+                                }
+                                helpText.innerHTML += infoHtml;
+                            }
+                        } else {
+                            rmbRateField.setAttribute('placeholder', 'Erreur lors de la récupération du taux');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors de la récupération du taux de change:', error);
+                        rmbRateField.setAttribute('placeholder', 'Erreur lors de la récupération du taux');
+                    })
+                    .finally(() => {
+                        rmbRateField.disabled = false;
+                    });
+            }
+        }
+        
+        // Si le champ est vide, récupérer le taux actuel
+        const rmbRateField = document.querySelector('input[id$="rmbMgaExchangeRate"]');
+        if (rmbRateField && !rmbRateField.value) {
+            fetchExchangeRate();
+        }
+        
+        // Ajouter un bouton de rafraîchissement à côté du champ
+        if (rmbRateField) {
+            const refreshButton = document.createElement('button');
+            refreshButton.type = 'button';
+            refreshButton.className = 'btn btn-sm btn-outline-primary ms-2';
+            refreshButton.innerHTML = '<i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Actualiser';
+            refreshButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                rmbRateField.value = '';
+                fetchExchangeRate();
+            });
+            
+            const formGroup = rmbRateField.closest('.form-group');
+            const inputWrapper = rmbRateField.parentNode;
+            
+            // Créer un conteneur flex pour aligner le champ et le bouton
+            const flexContainer = document.createElement('div');
+            flexContainer.className = 'd-flex align-items-center';
+            
+            // Retirer le champ du DOM et l'ajouter au conteneur flex
+            inputWrapper.removeChild(rmbRateField);
+            flexContainer.appendChild(rmbRateField);
+            flexContainer.appendChild(refreshButton);
+            
+            // Ajouter le conteneur flex au formulaire
+            inputWrapper.appendChild(flexContainer);
+            
+            // Initialiser les icônes Lucide
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        // Remplacer toutes les options des selects quoteItem par une version avec numéro de badge
+        function addNumbersToSelect(select) {
+            // Création d'un tableau associatif des noms de produits et leurs numéros
+            const productsMap = {};
+            $('.list-group-item').each(function(i) {
+                const badge = $(this).find('.badge.bg-secondary');
+                const badgeNumber = badge.length ? badge.text() : '#' + (i + 1);
+                const productName = $(this).find('strong').text().trim();
+                productsMap[productName] = badgeNumber;
+            });
+            
+            // Remplacer toutes les options sauf la première
+            $(select).find('option').each(function(index) {
+                if (index > 0 && $(this).text()) { // Ignorer l'option "Sélectionnez un produit"
+                    const productName = $(this).text().trim();
+                    if (productsMap[productName]) {
+                        $(this).text(productsMap[productName] + ' - ' + productName);
+                    }
+                }
+            });
+        }
+        
+        // Appliquer aux selects existants
+        $('select[id$="_quoteItem"]').each(function() {
+            addNumbersToSelect(this);
+        });
+        
+        // Surveiller les nouveaux selects ajoutés au DOM
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.addedNodes.length) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) { // ELEMENT_NODE
+                            $(node).find('select[id$="_quoteItem"]').each(function() {
+                                addNumbersToSelect(this);
+                            });
+                        }
+                    });
+                }
+            });
+        });
+        
+        observer.observe(document.body, { childList: true, subtree: true });
+        
         // Rendre les liens cliquables dans les descriptions
         document.querySelectorAll('.description-content p').forEach(function(paragraph) {
             const content = paragraph.innerHTML;
@@ -248,15 +416,44 @@
             $('#' + targetId).toggle();
         });
         
-        $('#add-product-proposal').click(function() {
+        // Génération automatique des propositions au chargement de la page
+        // Vérifier s'il n'y a pas déjà des propositions
+        if ($('.product-proposal-item', $productProposalsContainer).length === 0 || 
+            ($productProposalsContainer.children().length === 1 && $productProposalsContainer.find('.alert').length > 0)) {
+            
+            // Récupérer tous les produits demandés
+            const $quoteItems = $('.list-group-item');
+            
+            // Générer une proposition pour chaque produit
+            if ($quoteItems.length > 0) {
+                // Vider les alertes si présentes
+                if ($productProposalsContainer.find('.alert').length > 0) {
+                    $productProposalsContainer.empty();
+                }
+                
+                $quoteItems.each(function(index) {
+                    const productName = $(this).find('strong').text();
+                    const productId = index; // Utiliser l'index comme ID temporaire
+                    
+                    // Créer une nouvelle proposition
+                    addProductProposal(productId, productName);
+                });
+            }
+        }
+        
+        // Fonction pour ajouter une proposition de produit
+        function addProductProposal(productId = null, productName = null) {
             let prototype = $productProposalsContainer.data('prototype');
             let newForm = prototype.replace(/__name__/g, productProposalIndex);
+            
+            // Titre personnalisé en fonction du produit sélectionné
+            const titleText = productName ? 'Proposition #' + (productProposalIndex + 1) + ': ' + productName : 'Proposition #' + (productProposalIndex + 1);
             
             let $newFormWrapper = $('<div class="product-proposal-item admin-card mb-3"></div>');
             let $header = $('<div class="admin-card-header bg-light d-flex justify-content-between"></div>');
             let $body = $('<div class="admin-card-body"></div>');
             
-            $header.append('<h6 class="mb-0">Proposition #' + (productProposalIndex + 1) + '</h6>');
+            $header.append('<h6 class="mb-0">' + titleText + '</h6>');
             $header.append('<button type="button" class="btn btn-sm btn-danger remove-product-proposal"><i data-lucide="trash-2"></i> Supprimer</button>');
             
             $body.append(newForm);
@@ -266,11 +463,35 @@
             $('.alert', $productProposalsContainer).remove();
             $productProposalsContainer.append($newFormWrapper);
             
+            // Si un produit a été spécifié, sélectionner automatiquement le produit dans le select
+            if (productId !== null) {
+                setTimeout(function() {
+                    let $selects = $('select', $newFormWrapper);
+                    let $quoteItemSelect = $selects.filter(function() {
+                        return $(this).attr('name').includes('[quoteItem]');
+                    });
+                    
+                    if ($quoteItemSelect.length > 0) {
+                        // Trouver l'option correspondant au produit (maintenant avec #N - préfixe)
+                        $quoteItemSelect.find('option').each(function() {
+                            // Chercher le texte original du produit dans l'option (après le préfixe #N - )
+                            if ($(this).text().includes(productName) && $(this).val()) {
+                                $(this).prop('selected', true);
+                                return false; // Break the loop
+                            }
+                        });
+                    }
+                    
+                    // Réinitialiser Lucide icons pour les nouveaux éléments
+                    lucide.createIcons();
+                }, 0);
+            } else {
+                // Réinitialiser Lucide icons pour les nouveaux éléments
+                lucide.createIcons();
+            }
+            
             productProposalIndex++;
             $productProposalsContainer.data('index', productProposalIndex);
-            
-            // Réinitialiser Lucide icons pour les nouveaux éléments
-            lucide.createIcons();
             
             // Ajouter événement de suppression
             $('.remove-product-proposal', $newFormWrapper).click(function() {
@@ -280,6 +501,10 @@
                     $productProposalsContainer.append('<div class="alert alert-info">Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.</div>');
                 }
             });
+        }
+        
+        $('#add-product-proposal').click(function() {
+            addProductProposal();
         });
         
         $(document).on('click', '.remove-product-proposal', function() {

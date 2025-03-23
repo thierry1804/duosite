@@ -2,6 +2,35 @@
 
 {% block title %}Créer une nouvelle offre | {{ parent() }}{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    /* Styles pour l'alignement des champs de formulaire */
+    .admin-card-body .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -5px;
+        margin-left: -5px;
+    }
+    
+    .admin-card-body .row:before,
+    .admin-card-body .row:after {
+        display: none;
+    }
+    
+    /* Améliorer l'espacement entre les champs */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    /* S'assurer que les labels s'alignent correctement */
+    .col-md-6 label {
+        display: block;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{{ path('app_quote_dashboard') }}">Gestion des devis</a></li>
     <li class="breadcrumb-item"><a href="{{ path('app_quote_view', {'id': quote.id}) }}">Détails du devis #{{ quote.id }}</a></li>
@@ -29,12 +58,28 @@
                     <h5 class="mb-0">Informations client</h5>
                 </div>
                 <div class="admin-card-body">
-                    <p><strong>Client:</strong> {{ quote.fullName }}</p>
-                    <p><strong>Email:</strong> {{ quote.email }}</p>
-                    <p><strong>Téléphone:</strong> {{ quote.phone }}</p>
-                    {% if quote.company %}
-                        <p><strong>Société:</strong> {{ quote.company }}</p>
-                    {% endif %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="user" class="icon-lg text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ quote.fullName }}</h6>
+                            {% if quote.company %}
+                                <p class="text-muted mb-0">{{ quote.company }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <a href="mailto:{{ quote.email }}" class="btn btn-sm btn-light me-2" data-bs-toggle="tooltip" title="Email: {{ quote.email }}">
+                                <i data-lucide="mail" class="icon-sm"></i>
+                            </a>
+                            <a href="tel:{{ quote.phone }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Téléphone: {{ quote.phone }}">
+                                <i data-lucide="phone" class="icon-sm"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -48,6 +93,7 @@
                             <li class="list-group-item">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
+                                        <span class="badge bg-secondary me-2">#{{ loop.index }}</span>
                                         <strong>{{ item.productType }}</strong>
                                         {% if item.quantity %}
                                             <span class="badge bg-primary ms-2">{{ item.quantity }} pcs</span>
@@ -100,7 +146,7 @@
                             {{ form_row(form.status) }}
                         </div>
                         <div class="col-md-4">
-                            <!-- Champ retiré -->
+                            {{ form_row(form.rmbMgaExchangeRate) }}
                         </div>
                     </div>
                     
@@ -109,33 +155,37 @@
                     <div class="admin-card mt-4 mb-4">
                         <div class="admin-card-header d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">Propositions de produits</h5>
-                            <button type="button" class="btn btn-success rounded-circle p-0" id="add-product-proposal" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                            </button>
+                            <div>
+                                <button type="button" class="btn btn-success rounded-circle p-0" id="add-product-proposal" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="admin-card-body">
-                            <!-- Conteneur pour les propositions de produits -->
-                            <div class="product-proposals-container" data-prototype="{{ form_widget(form.productProposals.vars.prototype)|e('html_attr') }}" data-index="{{ form.productProposals|length }}">
-                                {% if form.productProposals|length > 0 %}
-                                    {% for productProposalForm in form.productProposals %}
-                                        <div class="product-proposal-item admin-card mb-3">
-                                            <div class="admin-card-header bg-light d-flex justify-content-between">
-                                                <h6 class="mb-0">Proposition #{{ loop.index }}</h6>
-                                                <button type="button" class="btn btn-sm btn-danger remove-product-proposal">
-                                                    <i data-lucide="trash-2"></i> Supprimer
-                                                </button>
-                                            </div>
-                                            <div class="admin-card-body">
+                    </div>
+                    <div class="admin-card-body">
+                        <!-- Conteneur pour les propositions de produits -->
+                        <div class="product-proposals-container" data-prototype="{{ form_widget(form.productProposals.vars.prototype)|e('html_attr') }}" data-index="{{ form.productProposals|length }}">
+                            {% if form.productProposals|length > 0 %}
+                                {% for productProposalForm in form.productProposals %}
+                                    <div class="product-proposal-item admin-card mb-3">
+                                        <div class="admin-card-header bg-light d-flex justify-content-between">
+                                            <h6 class="mb-0">Proposition #{{ loop.index }}</h6>
+                                            <button type="button" class="btn btn-sm btn-danger remove-product-proposal">
+                                                <i data-lucide="trash-2"></i> Supprimer
+                                            </button>
+                                        </div>
+                                        <div class="admin-card-body">
+                                            <div class="row form-row">
                                                 {{ form_widget(productProposalForm) }}
                                             </div>
                                         </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="alert alert-info">
-                                        Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
                                     </div>
-                                {% endif %}
-                            </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info">
+                                    Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -147,6 +197,24 @@
                             </button>
                         </div>
                         <div class="admin-card-body">
+                            {% if quote.shippingMethod|length > 0 %}
+                                <div class="alert alert-info mb-3">
+                                    <i data-lucide="info" class="me-1" style="width: 16px; height: 16px;"></i>
+                                    Le client a sélectionné les méthodes d'envoi suivantes : 
+                                    <strong>
+                                        {% set methodLabels = {
+                                            'maritime': 'Maritime',
+                                            'aerien_express': 'Aérien Express',
+                                            'aerien_normal': 'Aérien Standard'
+                                        } %}
+                                        {% for method in quote.shippingMethod %}
+                                            {{ methodLabels[method]|default(method) }}{% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </strong>
+                                    <br>
+                                    <small>Les options d'expédition ont été pré-remplies selon ces choix. Vous pouvez ajuster les prix et détails si nécessaire.</small>
+                                </div>
+                            {% endif %}
                             <!-- Conteneur pour les options d'expédition -->
                             <div class="shipping-options-container" data-prototype="{{ form_widget(form.shippingOptions.vars.prototype)|e('html_attr') }}" data-index="{{ form.shippingOptions|length }}">
                                 {% if form.shippingOptions|length > 0 %}
@@ -205,8 +273,97 @@
 
 {% block javascripts %}
 {{ parent() }}
+<script src="{{ asset('js/exchange-rate.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Correction de l'alignement des champs
+    document.querySelectorAll('.col-md-6').forEach(col => {
+        col.style.float = 'left';
+    });
+    
+    // Initialisation des tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Fonction pour récupérer le taux de change RMB/MGA en temps réel
+    function fetchExchangeRate() {
+        const rmbRateField = document.querySelector('input[id$="rmbMgaExchangeRate"]');
+        if (rmbRateField && !rmbRateField.value) {
+            // Afficher un indicateur de chargement
+            rmbRateField.setAttribute('placeholder', 'Chargement du taux...');
+            rmbRateField.disabled = true;
+            
+            // Faire une requête à notre API
+            fetch('{{ path('app_exchange_rate_api') }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.rate) {
+                        rmbRateField.value = data.rate;
+                        // Ajouter un petit texte pour indiquer quand le taux a été récupéré et les infos de mise à jour
+                        const helpText = rmbRateField.closest('.form-group').querySelector('.form-text');
+                        if (helpText) {
+                            let infoHtml = '<br><small class="text-success">Taux récupéré le ' + data.timestamp + '</small>';
+                            if (data.last_update) {
+                                infoHtml += '<br><small class="text-muted">Dernière mise à jour: ' + data.last_update + '</small>';
+                            }
+                            if (data.next_update) {
+                                infoHtml += '<br><small class="text-muted">Prochaine mise à jour: ' + data.next_update + '</small>';
+                            }
+                            helpText.innerHTML += infoHtml;
+                        }
+                    } else {
+                        rmbRateField.setAttribute('placeholder', 'Erreur lors de la récupération du taux');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération du taux de change:', error);
+                    rmbRateField.setAttribute('placeholder', 'Erreur lors de la récupération du taux');
+                })
+                .finally(() => {
+                    rmbRateField.disabled = false;
+                });
+        }
+    }
+    
+    // Exécuter la fonction au chargement de la page
+    fetchExchangeRate();
+    
+    // Ajouter un bouton de rafraîchissement à côté du champ
+    const rmbRateField = document.querySelector('input[id$="rmbMgaExchangeRate"]');
+
+    // Remplacer toutes les options des selects quoteItem par une version avec numéro de badge
+    function addNumbersToSelect(select) {
+        // Création d'un tableau associatif des noms de produits et leurs numéros
+        const productsMap = {};
+        document.querySelectorAll('.list-group-item').forEach(function(item, i) {
+            const badge = item.querySelector('.badge.bg-secondary');
+            const badgeNumber = badge ? badge.textContent : '#' + (i + 1);
+            const productName = badgeNumber + ' ' + item.querySelector('strong').textContent.trim();
+            productsMap[productName] = badgeNumber;
+        });
+    }
+    
+    // Appliquer aux selects existants
+    document.querySelectorAll('select[id$="_quoteItem"]').forEach(addNumbersToSelect);
+    
+    // Surveiller les nouveaux selects ajoutés au DOM
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === 1) { // ELEMENT_NODE
+                        const newSelects = node.querySelectorAll ? node.querySelectorAll('select[id$="_quoteItem"]') : [];
+                        newSelects.forEach(addNumbersToSelect);
+                    }
+                });
+            }
+        });
+    });
+    
+    observer.observe(document.body, { childList: true, subtree: true });
+    
     // Rendre les liens cliquables dans les descriptions
     document.querySelectorAll('.description-content p').forEach(function(paragraph) {
         const content = paragraph.innerHTML;
@@ -235,25 +392,58 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Génération automatique des propositions au chargement de la page
+    // Vérifier s'il n'y a pas déjà des propositions
+    if (proposalsContainer.children.length === 0 || 
+        (proposalsContainer.children.length === 1 && proposalsContainer.querySelector('.alert'))) {
+        // Récupérer tous les produits demandés
+        const quoteItems = document.querySelectorAll('.list-group-item');
+        
+        // Générer une proposition pour chaque produit
+        if (quoteItems.length > 0) {
+            // Vider les alertes si présentes
+            if (proposalsContainer.querySelector('.alert')) {
+                proposalsContainer.innerHTML = '';
+            }
+            
+            quoteItems.forEach(function(item, index) {
+                const productName = item.querySelector('strong').textContent;
+                const productId = index; // Utiliser l'index comme ID temporaire
+                
+                // Créer une nouvelle proposition
+                addProductProposal(productId, productName);
+            });
+        }
+    }
+    
     document.getElementById('add-product-proposal').addEventListener('click', function(e) {
         e.preventDefault();
-        
+        addProductProposal();
+    });
+    
+    function addProductProposal(productId = null, productName = null) {
         // Obtenir et préparer le prototype
         let prototype = proposalsContainer.dataset.prototype;
         prototype = prototype.replace(/__name__/g, proposalIndex);
         
         // Créer l'élément de proposition
         const proposalItem = document.createElement('div');
-        proposalItem.className = 'product-proposal-item card mb-3';
+        proposalItem.className = 'product-proposal-item admin-card mb-3';
+        
+        // Titre personnalisé en fonction du produit sélectionné
+        const titleText = productName ? `Proposition #${proposalIndex + 1}: ${productName}` : `Proposition #${proposalIndex + 1}`;
+        
         proposalItem.innerHTML = `
-            <div class="card-header bg-light d-flex justify-content-between">
-                <h6 class="mb-0">Proposition #${proposalIndex + 1}</h6>
+            <div class="admin-card-header bg-light d-flex justify-content-between">
+                <h6 class="mb-0">${titleText}</h6>
                 <button type="button" class="btn btn-sm btn-danger remove-product-proposal">
-                    <i class="fas fa-trash"></i> Supprimer
+                    <i data-lucide="trash-2"></i> Supprimer
                 </button>
             </div>
-            <div class="card-body">
-                ${prototype}
+            <div class="admin-card-body">
+                <div class="row form-row">
+                    ${prototype}
+                </div>
             </div>
         `;
         
@@ -262,6 +452,39 @@ document.addEventListener('DOMContentLoaded', function() {
             proposalsContainer.innerHTML = '';
         }
         proposalsContainer.appendChild(proposalItem);
+        
+        // Après ajout, trouver les champs par paires et ajuster leurs propriétés
+        setTimeout(() => {
+            const formGroups = proposalItem.querySelectorAll('.form-group');
+            
+            // S'assurer que les paires de champs soient correctement alignées
+            proposalItem.querySelectorAll('.col-md-6').forEach(col => {
+                col.style.float = 'left';
+            });
+            
+            // Si un produit a été spécifié, sélectionner automatiquement le produit dans le select
+            if (productId !== null) {
+                // Trouver le select de quoteItem et définir sa valeur
+                const selects = proposalItem.querySelectorAll('select');
+                const quoteItemSelect = Array.from(selects).find(select => select.name.includes('[quoteItem]'));
+                if (quoteItemSelect) {
+                    // Trouver l'option correspondant au produit (maintenant avec #N - préfixe)
+                    const options = quoteItemSelect.querySelectorAll('option');
+                    for (let i = 0; i < options.length; i++) {
+                        // Chercher le texte original du produit dans l'option (après le préfixe #N - )
+                        if (options[i].textContent.includes('#' + (productId + 1) + ' - ' + productName) && options[i].value) {
+                            quoteItemSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+                
+            // Réinitialiser les icônes Lucide
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }, 10);
         
         // Ajouter l'événement de suppression
         proposalItem.querySelector('.remove-product-proposal').addEventListener('click', function() {
@@ -276,7 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         proposalIndex++;
-    });
+    }
     
     // Ajouter des événements de suppression pour les propositions existantes
     document.querySelectorAll('.remove-product-proposal').forEach(button => {
@@ -306,15 +529,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Créer l'élément d'option d'expédition
         const shippingItem = document.createElement('div');
-        shippingItem.className = 'shipping-option-item card mb-3';
+        shippingItem.className = 'shipping-option-item admin-card mb-3';
         shippingItem.innerHTML = `
-            <div class="card-header bg-light d-flex justify-content-between">
+            <div class="admin-card-header bg-light d-flex justify-content-between">
                 <h6 class="mb-0">Option d'expédition #${shippingIndex + 1}</h6>
                 <button type="button" class="btn btn-sm btn-danger remove-shipping-option">
-                    <i class="fas fa-trash"></i> Supprimer
+                    <i data-lucide="trash-2"></i> Supprimer
                 </button>
             </div>
-            <div class="card-body">
+            <div class="admin-card-body">
                 ${prototype}
             </div>
         `;

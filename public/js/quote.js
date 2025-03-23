@@ -57,14 +57,27 @@ document.addEventListener('DOMContentLoaded', function() {
         if (shippingMethodContainer) {
             if (logisticsSelected) {
                 shippingMethodContainer.style.display = 'block';
-                // Rendre le champ obligatoire quand il est visible
-                document.querySelectorAll('input[name="quote[shippingMethod]"]').forEach(function(radio) {
-                    radio.required = true;
-                });
+                
+                // Déterminer les méthodes d'expédition sélectionnées
+                const selectedMethods = Array.from(
+                    document.querySelectorAll('input[name="quote[shippingMethod][]"]:checked')
+                ).map(radio => radio.value);
+                
+                // Si aucune méthode n'est sélectionnée, ne pas rendre le champ obligatoire
+                if (selectedMethods.length === 0) {
+                    document.querySelectorAll('input[name="quote[shippingMethod][]"]').forEach(function(radio) {
+                        radio.required = false;
+                    });
+                } else {
+                    // Si au moins une méthode est sélectionnée, rendre le champ obligatoire
+                    document.querySelectorAll('input[name="quote[shippingMethod][]"]').forEach(function(radio) {
+                        radio.required = true;
+                    });
+                }
             } else {
                 shippingMethodContainer.style.display = 'none';
                 // Désélectionner toutes les options et les rendre non obligatoires
-                document.querySelectorAll('input[name="quote[shippingMethod]"]').forEach(function(radio) {
+                document.querySelectorAll('input[name="quote[shippingMethod][]"]').forEach(function(radio) {
                     radio.checked = false;
                     radio.required = false;
                 });
@@ -108,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         shippingMethodContainer.style.display = 'none';
         
         // Désactiver l'attribut required des boutons radio au chargement initial
-        document.querySelectorAll('input[name="quote[shippingMethod]"]').forEach(function(radio) {
+        document.querySelectorAll('input[name="quote[shippingMethod][]"]').forEach(function(radio) {
             radio.required = false;
         });
         
@@ -486,20 +499,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Vérifier si le choix d'envoi est visible
             if (shippingMethodContainer && shippingMethodContainer.style.display === 'block') {
                 const shippingMethodSelected = Array.from(
-                    document.querySelectorAll('input[name="quote[shippingMethod][]"]')
-                ).some(radio => radio.checked);
+                    document.querySelectorAll('input[name="quote[shippingMethod][]"]:checked')
+                ).length > 0;
                 
                 if (!shippingMethodSelected) {
-                    // Empêcher la soumission du formulaire
-                    event.preventDefault();
-                    
-                    // Afficher un message d'erreur
-                    alert('Veuillez sélectionner une méthode d\'envoi.');
-                    
-                    // Faire défiler jusqu'au choix d'envoi
-                    shippingMethodContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    return false;
+                    // Ne pas empêcher la soumission du formulaire si aucune méthode n'est sélectionnée
+                    // Puisque nous ne voulons pas rendre les méthodes d'expédition obligatoires
                 }
             } else {
                 // Si le choix d'envoi est masqué, désactiver la validation HTML5 pour ce champ

@@ -99,9 +99,11 @@ class Quote
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->generateQuoteNumber();
+        $this->processed = false;
+        $this->status = 'pending';
         $this->items = new ArrayCollection();
         $this->offers = new ArrayCollection();
+        $this->generateQuoteNumber();
     }
 
     #[ORM\PrePersist]

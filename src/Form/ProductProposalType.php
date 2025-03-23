@@ -20,9 +20,12 @@ class ProductProposalType extends AbstractType
     {
         $builder
             ->add('quoteItem', EntityType::class, [
+                'label' => 'Produit / Article',
                 'class' => QuoteItem::class,
                 'choice_label' => function (QuoteItem $quoteItem) {
-                    return $quoteItem->getProductType() . ' - ' . substr($quoteItem->getDescription(), 0, 50) . 
+                    static $counter = 0;
+                    $counter++;
+                    return '#' . $counter . ' - ' . $quoteItem->getProductType() . ' - ' . substr($quoteItem->getDescription(), 0, 50) . 
                            (strlen($quoteItem->getDescription()) > 50 ? '...' : '');
                 },
                 'placeholder' => 'Sélectionnez un produit',
@@ -33,25 +36,31 @@ class ProductProposalType extends AbstractType
                 ]
             ])
             ->add('minPrice', MoneyType::class, [
-                'label' => 'Prix minimum',
-                'currency' => 'EUR',
+                'label' => 'Prix minimum - RMB',
+                'currency' => ' RMB',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'Prix min'
+                ],
+                'row_attr' => [
+                    'class' => 'col-md-6 px-1'
                 ]
             ])
             ->add('maxPrice', MoneyType::class, [
-                'label' => 'Prix maximum',
-                'currency' => 'EUR',
+                'label' => 'Prix maximum - RMB',
+                'currency' => ' RMB',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'Prix max'
+                ],
+                'row_attr' => [
+                    'class' => 'col-md-6 px-1'
                 ]
             ])
             ->add('comments', TextareaType::class, [
-                'label' => 'Commentaires',
+                'label' => 'Infos complémentaires',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
@@ -59,31 +68,37 @@ class ProductProposalType extends AbstractType
                     'placeholder' => 'Commentaires sur ce produit'
                 ]
             ])
+            ->add('imageFiles', FileType::class, [
+                'label' => 'Images',
+                'multiple' => true,
+                'required' => false,
+                'mapped' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'accept' => 'image/*'
+                ]
+            ])
             ->add('dimensions', TextareaType::class, [
                 'label' => 'Dimensions',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'rows' => 2,
+                    'rows' => 1,
                     'placeholder' => 'Ex: 10cm x 15cm x 5cm'
+                ],
+                'row_attr' => [
+                    'class' => 'col-md-6 px-1'
                 ]
             ])
             ->add('weight', NumberType::class, [
-                'label' => 'Poids (kg)',
+                'label' => 'Poids (g)',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Poids en kg'
-                ]
-            ])
-            ->add('imageFiles', FileType::class, [
-                'label' => 'Images',
-                'multiple' => true,
-                'required' => false,
-                'mapped' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'accept' => 'image/*'
+                    'placeholder' => 'Poids en g'
+                ],
+                'row_attr' => [
+                    'class' => 'col-md-6 px-1'
                 ]
             ])
         ;
