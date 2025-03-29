@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Quote;
+use App\Entity\QuoteOffer;
 use App\Entity\QuoteSettings;
 use App\Entity\User;
 use App\Entity\QuoteItem;
@@ -335,9 +336,10 @@ class QuoteController extends AbstractController
         if (!$this->isGranted('ROLE_ADMIN') && (!$user || $quote->getUser() !== $user)) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande de devis.');
         }
-        
-        // Forcer le chargement des offres
-        $quote->getOffers()->initialize();
+
+        $quoteOfferRepository = $entityManager->getRepository(QuoteOffer::class);
+
+        $offers = $quoteOfferRepository->findByQuote($quote);
         
         // Calculer les frais de devis pour avoir les informations détaillées
         $feeDetails = $feeCalculator->calculateFee($quote);
@@ -347,7 +349,8 @@ class QuoteController extends AbstractController
         
         return $this->render('quote/view.html.twig', [
             'quote' => $quote,
-            'feeDetails' => $feeDetails
+            'feeDetails' => $feeDetails,
+            'offers' => $offers
         ]);
     }
 

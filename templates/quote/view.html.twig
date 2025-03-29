@@ -377,7 +377,7 @@
             </a>
         </div>
         <div class="admin-card-body">
-            {% if quote.offers|length > 0 %}
+            {% if offers|length > 0 %}
                 <div class="table-responsive">
                     <table class="table align-items-center mb-0">
                         <thead>
@@ -390,7 +390,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for offer in quote.offers %}
+                            {% for offer in offers %}
                                 <tr>
                                     <td>
                                         <div class="d-flex px-2 py-1">

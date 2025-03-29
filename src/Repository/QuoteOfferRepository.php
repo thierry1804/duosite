@@ -71,4 +71,4 @@ class QuoteOfferRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-} 
+}

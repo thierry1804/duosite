@@ -93,7 +93,7 @@ class Quote
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $paymentDate = null;
 
-    #[ORM\OneToMany(mappedBy: 'quote', targetEntity: QuoteOffer::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'quote', targetEntity: QuoteOffer::class, orphanRemoval: true, fetch: 'EAGER')]
     private Collection $offers;
 
     public function __construct()

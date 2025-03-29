@@ -59,4 +59,41 @@ class QuoteRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function save(Quote $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    /**
+     * Trouve un devis avec ses offres pré-chargées
+     */
+    public function findOneWithOffers(int $id): ?Quote
+    {
+        return $this->createQueryBuilder('q')
+            ->leftJoin('q.offers', 'o')
+            ->addSelect('o')
+            ->where('q.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Charge un devis avec ses offres
+     */
+    public function loadWithOffers(int $id): ?Quote
+    {
+        return $this->createQueryBuilder('q')
+            ->select('q', 'o')
+            ->leftJoin('q.offers', 'o')
+            ->where('q.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 } 
