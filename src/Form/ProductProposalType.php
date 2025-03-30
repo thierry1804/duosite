@@ -51,7 +51,7 @@ class ProductProposalType extends AbstractType
                 ]
             ])
             ->add('maxPrice', MoneyType::class, [
-                'label' => 'Prix maximum (RMB)',
+                'label' => 'PU',
                 'currency' => 'RMB',
                 'required' => false,
                 'attr' => [
@@ -59,18 +59,18 @@ class ProductProposalType extends AbstractType
                     'placeholder' => '130.00'
                 ],
                 'row_attr' => [
-                    'class' => 'col-md-6'
+                'class' => 'col-md-12'
                 ]
             ])
             ->add('dimensions', TextType::class, [
-                'label' => 'Dimensions',
+                'label' => 'Dimensions / Taille',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ex: 10cm x 15cm x 5cm'
+                    'placeholder' => 'Ex: 10cm x 15cm x 5cm; S, M, L, XL, etc.'
                 ],
                 'row_attr' => [
-                    'class' => 'col-md-6'
+                    'class' => 'col-md-12'
                 ]
             ])
             ->add('weight', NumberType::class, [
@@ -81,7 +81,7 @@ class ProductProposalType extends AbstractType
                     'placeholder' => '190'
                 ],
                 'row_attr' => [
-                    'class' => 'col-md-6'
+                    'class' => 'col-md-12'
                 ]
             ])
             ->add('comments', TextareaType::class, [

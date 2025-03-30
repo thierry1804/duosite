@@ -198,13 +198,19 @@
                                             <div class="mb-3">
                                                 {{ form_row(productProposalForm.quoteItem) }}
                                             </div>
-                                            <div class="row mb-3">
+                                            <div style="display: none;">
                                                 {{ form_row(productProposalForm.minPrice) }}
-                                                {{ form_row(productProposalForm.maxPrice) }}
                                             </div>
                                             <div class="row mb-3">
-                                                {{ form_row(productProposalForm.dimensions) }}
-                                                {{ form_row(productProposalForm.weight) }}
+                                                <div class="col-md-4">
+                                                    {{ form_row(productProposalForm.maxPrice) }}
+                                                </div>
+                                                <div class="col-md-4">
+                                                    {{ form_row(productProposalForm.dimensions) }}
+                                                </div>
+                                                <div class="col-md-4">
+                                                    {{ form_row(productProposalForm.weight) }}
+                                                </div>
                                             </div>
                                             <div class="mb-3">
                                                 {{ form_row(productProposalForm.comments) }}
@@ -579,17 +585,17 @@
             $quoteItemDiv.append($(newForm).find('[id$="_quoteItem"]').closest('.form-group'));
             $formContent.append($quoteItemDiv);
             
-            // Créer une ligne pour les prix min et max
-            let $priceRow = $('<div class="row mb-3"></div>');
-            $priceRow.append($(newForm).find('[id$="_minPrice"]').closest('.col-md-6'));
-            $priceRow.append($(newForm).find('[id$="_maxPrice"]').closest('.col-md-6'));
-            $formContent.append($priceRow);
+            // Masquer le prix minimum
+            let $minPriceInput = $(newForm).find('[id$="_minPrice"]').closest('.col-md-6');
+            $minPriceInput.hide();
+            $formContent.append($minPriceInput);
             
-            // Créer une ligne pour les dimensions et le poids
-            let $dimensionsRow = $('<div class="row mb-3"></div>');
-            $dimensionsRow.append($(newForm).find('[id$="_dimensions"]').closest('.col-md-6'));
-            $dimensionsRow.append($(newForm).find('[id$="_weight"]').closest('.col-md-6'));
-            $formContent.append($dimensionsRow);
+            // Créer une ligne pour le prix max, dimensions et poids
+            let $detailsRow = $('<div class="row mb-3"></div>');
+            $detailsRow.append($(newForm).find('[id$="_maxPrice"]').closest('.col-md-6').removeClass('col-md-6').addClass('col-md-4'));
+            $detailsRow.append($(newForm).find('[id$="_dimensions"]').closest('.col-md-6').removeClass('col-md-6').addClass('col-md-4'));
+            $detailsRow.append($(newForm).find('[id$="_weight"]').closest('.col-md-6').removeClass('col-md-6').addClass('col-md-4'));
+            $formContent.append($detailsRow);
             
             // Ajouter les commentaires
             let $commentsDiv = $('<div class="mb-3"></div>');

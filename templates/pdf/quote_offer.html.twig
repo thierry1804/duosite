@@ -173,15 +173,12 @@
                 <thead>
                     <tr>
                         <th style="width: 50%;">Produit demandé</th>
-                        <th style="text-align: center;">PU min</th>
-                        <th style="text-align: center;">PU max</th>
-                        <th style="text-align: center;">Qté</th>
-                        <th style="text-align: center;">Mt min</th>
-                        <th style="text-align: center;">Mt max</th>
+                        <th style="text-align: center;">PU</th>
+                        <th style="text-align: center;">Quantité</th>
+                        <th style="text-align: center;">Montant</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% set totalMinPrice = 0 %}
                     {% set totalMaxPrice = 0 %}
                     {% for proposal in offer.productProposals %}
                     <tr>
@@ -192,13 +189,6 @@
                                 {{ proposal.quoteItem.description|length > 50 ? proposal.quoteItem.description|slice(0, 50) ~ '...' : proposal.quoteItem.description }}
                             {% else %}
                                 Produit sans référence
-                            {% endif %}
-                        </td>
-                        <td style="text-align: right; white-space: nowrap;">
-                            {% if proposal.minPrice %}
-                                {{ proposal.minPrice|number_format(2, ',', ' ') }}
-                            {% else %}
-                                Non défini
                             {% endif %}
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
@@ -216,16 +206,6 @@
                             {% endif %}
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
-                            {% if proposal.minPrice %}
-                                {% set avgPrice = proposal.minPrice %}
-                                {% set quantity = proposal.quoteItem ? (proposal.quoteItem.quantity ?: 1) : 1 %}
-                                {{ (avgPrice * quantity)|number_format(2, ',', ' ') }}
-                                {% set totalMinPrice = totalMinPrice + (avgPrice * quantity) %}
-                            {% else %}
-                                Non défini
-                            {% endif %}
-                        </td>
-                        <td style="text-align: right; white-space: nowrap;">
                             {% if proposal.maxPrice %}
                                 {% set avgPrice = proposal.maxPrice %}
                                 {% set quantity = proposal.quoteItem ? (proposal.quoteItem.quantity ?: 1) : 1 %}
@@ -238,7 +218,7 @@
                     </tr>
                     {% if proposal.comments %}
                     <tr>
-                        <td colspan="6" style="background-color: #f8f9fa; font-style: italic;">
+                        <td colspan="4" style="background-color: #f8f9fa; font-style: italic;">
                             Commentaires: {{ proposal.comments }}
                         </td>
                     </tr>
@@ -247,34 +227,28 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="6" style="text-align: right;"></td>
+                        <td colspan="4" style="text-align: right;"></td>
                     </tr>
                     <tr>
-                        <th colspan="4" style="text-align: right;">
+                        <th colspan="3" style="text-align: right;">
                             Total RMB:
-                        </th>
-                        <th style="text-align: right; white-space: nowrap;">
-                            {{ totalMinPrice|number_format(2, ',', ' ') }}
                         </th>
                         <th style="text-align: right; white-space: nowrap;">
                             {{ totalMaxPrice|number_format(2, ',', ' ') }}
                         </th>
                     </tr>
                     <tr>
-                        <th colspan="4" style="text-align: right;">
+                        <th colspan="3" style="text-align: right;">
                             Total MGA:
-                        </th>
-                        <th style="text-align: right; white-space: nowrap;">
-                            {{ (totalMinPrice * offer.rmbMgaExchangeRate)|number_format(2, ',', ' ') }}
                         </th>
                         <th style="text-align: right; white-space: nowrap;">
                             {{ (totalMaxPrice * offer.rmbMgaExchangeRate)|number_format(2, ',', ' ') }}
                         </th>
                     </tr>
                     <tr>
-                        <td colspan="6" style="text-align: right;">
+                        <td colspan="4" style="text-align: right;">
                             <span style="font-size: 12px; font-weight: normal;">
-                                * Taux de change RMB/MGA utilisé: {{ offer.rmbMgaExchangeRate|number_format(2, ',', ' ') }}
+                                * Taux de change RMB/MGA utilisé au moment de la création de l'offre ({{ offer.createdAt|date('d/m/Y') }}): {{ offer.rmbMgaExchangeRate|number_format(2, ',', ' ') }}
                             </span>
                         </td>
                     </tr>
@@ -294,7 +268,7 @@
                         <th>Mode d'expédition</th>
                         <th>Description</th>
                         <th>Délai estimé</th>
-                        <th>Prix</th>
+                        <th>Tarif</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -303,7 +277,7 @@
                         <td>{{ option.name }}</td>
                         <td>{{ option.description ?: 'Aucune description' }}</td>
                         <td>{{ option.estimatedDeliveryDays ? option.estimatedDeliveryDays ~ ' jours' : 'Non défini' }}</td>
-                        <td>{{ option.price|number_format(2, ',', ' ') }} €</td>
+                        <td>{{ option.price|number_format(2, ',', ' ') }} Ar</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -313,23 +287,38 @@
             {% endif %}
         </div>
 
-        <div class="info-section">
+        <div style="page-break-before: always;" class="info-section">
             <h3>Catalogue des produits proposés</h3>
             {% if offer.productProposals|length > 0 %}
                 {% for proposal in offer.productProposals %}
-                    <h4 style="margin-bottom: 10px;">#{{ loop.index }} - {{ proposal.quoteItem.productType }}</h4>
-                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                    {% for image in proposal.images %}
-                        <img src="{{ absolute_url(asset('uploads/product_proposals/' ~ image)) }}" 
-                                alt="{{ proposal.quoteItem.description }}" 
-                                style="max-width: 200px; max-height: 150px; margin: 0 5px; object-fit: contain;">
-                    {% else %}
-                        <p style="font-style: italic; color: #666;">Aucune image disponible</p>
-                    {% endfor %}
+                    <div style="margin-bottom: 30px;{% if loop.index > 1 %} page-break-before: always;{% endif %}">
+                        <h4 style="margin-bottom: 15px; font-size: 14px; color: #0d6efd;">
+                            #{{ loop.index }} - {{ proposal.quoteItem.productType }}
+                        </h4>
+                        {% if proposal.images|length > 0 %}
+                            <table style="width: 100%; border-collapse: collapse;">
+                                {% for images in proposal.images|batch(2) %}
+                                    <tr>
+                                        {% for image in images %}
+                                            <td style="width: 50%; padding: 10px; text-align: center;">
+                                                <img src="{{ absolute_url(asset('uploads/product_proposals/' ~ image)) }}" 
+                                                     alt="Image {{ loop.parent.loop.index }}.{{ loop.index }}"
+                                                     style="width: 200px; height: auto; object-fit: contain;">
+                                            </td>
+                                        {% endfor %}
+                                        {% if images|length == 1 %}
+                                            <td style="width: 50%;"></td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        {% else %}
+                            <p style="font-style: italic; color: #666; text-align: center;">Aucune image disponible</p>
+                        {% endif %}
                     </div>
                 {% endfor %}
             {% else %}
-            <p>Aucun catalogue de produits proposé pour cette offre.</p>
+                <p>Aucun catalogue de produits proposé pour cette offre.</p>
             {% endif %}
         </div>
         

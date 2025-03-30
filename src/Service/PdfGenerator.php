@@ -55,7 +55,7 @@ class PdfGenerator
         }
         
         // Générer un nom de fichier unique
-        $filename = 'offer-' . $offer->getId() . '-' . uniqid() . '.pdf';
+        $filename = 'offer-' . $offer->getQuote()->getQuoteNumber() . '-' . $offer->getId() . '.pdf';
         $filePath = '/uploads/quote_offers/pdf/' . $filename;
         $fullPath = $this->publicDir . $filePath;
         
