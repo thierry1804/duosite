@@ -12,6 +12,9 @@ use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Doctrine\ORM\EntityRepository;
 
 class ProductProposalType extends AbstractType
@@ -36,27 +39,49 @@ class ProductProposalType extends AbstractType
                 ]
             ])
             ->add('minPrice', MoneyType::class, [
-                'label' => 'Prix minimum - RMB',
-                'currency' => ' RMB',
+                'label' => 'Prix minimum (RMB)',
+                'currency' => 'RMB',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Prix min'
+                    'placeholder' => '13.00'
                 ],
                 'row_attr' => [
-                    'class' => 'col-md-6 px-1'
+                    'class' => 'col-md-6'
                 ]
             ])
             ->add('maxPrice', MoneyType::class, [
-                'label' => 'Prix maximum - RMB',
-                'currency' => ' RMB',
+                'label' => 'Prix maximum (RMB)',
+                'currency' => 'RMB',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Prix max'
+                    'placeholder' => '130.00'
                 ],
                 'row_attr' => [
-                    'class' => 'col-md-6 px-1'
+                    'class' => 'col-md-6'
+                ]
+            ])
+            ->add('dimensions', TextType::class, [
+                'label' => 'Dimensions',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Ex: 10cm x 15cm x 5cm'
+                ],
+                'row_attr' => [
+                    'class' => 'col-md-6'
+                ]
+            ])
+            ->add('weight', NumberType::class, [
+                'label' => 'Poids (g)',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => '190'
+                ],
+                'row_attr' => [
+                    'class' => 'col-md-6'
                 ]
             ])
             ->add('comments', TextareaType::class, [
@@ -65,7 +90,7 @@ class ProductProposalType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 3,
-                    'placeholder' => 'Commentaires sur ce produit'
+                    'placeholder' => 'j lkjlkjlkjhlkhl'
                 ]
             ])
             ->add('imageFiles', FileType::class, [
@@ -74,32 +99,20 @@ class ProductProposalType extends AbstractType
                 'required' => false,
                 'mapped' => true,
                 'attr' => [
-                    'class' => 'form-control',
-                    'accept' => 'image/*'
-                ]
-            ])
-            ->add('dimensions', TextareaType::class, [
-                'label' => 'Dimensions',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 1,
-                    'placeholder' => 'Ex: 10cm x 15cm x 5cm'
+                    'class' => 'form-control image-upload-input',
+                    'accept' => 'image/*',
+                    'style' => 'display: none;'
                 ],
                 'row_attr' => [
-                    'class' => 'col-md-6 px-1'
+                    'class' => 'image-upload-container'
                 ]
             ])
-            ->add('weight', NumberType::class, [
-                'label' => 'Poids (g)',
+            ->add('removedImages', CollectionType::class, [
+                'entry_type' => HiddenType::class,
+                'allow_add' => true,
+                'mapped' => false,
                 'required' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'placeholder' => 'Poids en g'
-                ],
-                'row_attr' => [
-                    'class' => 'col-md-6 px-1'
-                ]
+                'prototype' => true,
             ])
         ;
     }

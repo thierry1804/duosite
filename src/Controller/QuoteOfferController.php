@@ -344,4 +344,38 @@ class QuoteOfferController extends AbstractController
             'timestamp' => (new \DateTime())->format('Y-m-d H:i:s')
         ]);
     }
+    
+    #[Route('/{id}/generate-pdf', name: 'app_quote_offer_generate_pdf', methods: ['GET'])]
+    public function generatePdf(
+        QuoteOffer $offer,
+        EntityManagerInterface $entityManager,
+        PdfGenerator $pdfGenerator
+    ): Response
+    {
+        // Vérifier les permissions
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        try {
+            // Générer le PDF
+            $pdfPath = $pdfGenerator->generateQuoteOfferPdf($offer);
+            
+            // Mettre à jour le chemin du PDF dans l'offre
+            $offer->setPdfFilePath($pdfPath);
+            $entityManager->flush();
+            
+            // Lire le contenu du fichier PDF
+            $pdfContent = file_get_contents($this->getParameter('kernel.project_dir') . '/public' . $pdfPath);
+            
+            // Créer la réponse avec le contenu du PDF
+            $response = new Response($pdfContent);
+            $response->headers->set('Content-Type', 'application/pdf');
+            $response->headers->set('Content-Disposition', 'inline; filename="offre-' . $offer->getId() . '.pdf"');
+            
+            return $response;
+            
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la génération du PDF : ' . $e->getMessage());
+            return $this->redirectToRoute('app_quote_offer_edit', ['id' => $offer->getId()]);
+        }
+    }
 } 

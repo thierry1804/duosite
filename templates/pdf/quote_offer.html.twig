@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Offre de devis #{{ offer.id }}</title>
+    <title>Offre de devis #{{ offer.quote.quoteNumber ~ '-' ~ offer.id }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -86,6 +86,7 @@
         .badge-info { background-color: #0dcaf0; }
         .badge-success { background-color: #198754; }
         .badge-danger { background-color: #dc3545; }
+        .badge-warning { background-color: #ffc107; }
         
         .price-total {
             font-size: 18px;
@@ -101,50 +102,62 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ absolute_url(asset('images/logo.png')) }}" alt="Logo" class="logo">
-            <h1>Offre de devis #{{ offer.id }}</h1>
-            <h2>{{ offer.title }}</h2>
+            <table style="width: 100%; border: none;">
+                <tr>
+                    <td style="border: none;">
+                        <img src="{{ absolute_url(asset('images/logo.webp')) }}" alt="Logo" class="logo">
+                    </td>
+                    <td style="border: none;">
+                        <h1>Offre de devis #{{ offer.quote.quoteNumber ~ '-' ~ offer.id }}</h1>
+                        <h2>{{ offer.title }}</h2>
+                    </td>
+                </tr>
+            </table>
         </div>
         
-        <div class="info-section">
-            <h3>Informations générales</h3>
-            <div class="info-row">
-                <span class="label">Référence:</span>
-                <span>{{ offer.quote.quoteNumber }}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Date de création:</span>
-                <span>{{ offer.createdAt|date('d/m/Y') }}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Statut:</span>
-                <span class="badge badge-{{ offer.status == 'draft' ? 'secondary' : (offer.status == 'sent' ? 'info' : (offer.status == 'accepted' ? 'success' : 'danger')) }}">
-                    {{ offer.status == 'draft' ? 'Brouillon' : (offer.status == 'sent' ? 'Envoyée' : (offer.status == 'accepted' ? 'Acceptée' : 'Refusée')) }}
-                </span>
-            </div>
-        </div>
-        
-        <div class="info-section">
-            <h3>Informations client</h3>
-            <div class="info-row">
-                <span class="label">Nom complet:</span>
-                <span>{{ offer.quote.fullName }}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Email:</span>
-                <span>{{ offer.quote.email }}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Téléphone:</span>
-                <span>{{ offer.quote.phone }}</span>
-            </div>
-            {% if offer.quote.company %}
-            <div class="info-row">
-                <span class="label">Société:</span>
-                <span>{{ offer.quote.company }}</span>
-            </div>
-            {% endif %}
-        </div>
+        <table style="width: 100%; margin-bottom: 20px; border: none;">
+            <tr>
+                <td style="width: 50%; vertical-align: top; padding-right: 10px; border: none;">
+                    <div class="info-section">
+                        <h3>Informations générales</h3>
+                        <div class="info-row">
+                            <span class="label">Référence:</span>
+                            <span>{{ offer.quote.quoteNumber }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Date de création:</span>
+                            <span>{{ offer.createdAt|date('d/m/Y') }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Statut:</span>
+                            <span class="badge badge-{{ offer.status == 'draft' ? 'secondary' : (offer.status == 'sent' ? 'info' : (offer.status == 'accepted' ? 'success' : (offer.status == 'pending' ? 'warning' : 'danger'))) }}">
+                                {{ offer.status == 'draft' ? 'Brouillon' : (offer.status == 'sent' ? 'Envoyée' : (offer.status == 'accepted' ? 'Acceptée' : (offer.status == 'pending' ? 'En attente' : 'Refusée'))) }}
+                            </span>
+                        </div>
+                    </div>
+                </td>
+                <td style="width: 50%; vertical-align: top; padding-left: 10px; border: none;">
+                    <div class="info-section">
+                        <h3>Informations client</h3>
+                        <div class="info-row">
+                            <span>{{ offer.quote.fullName }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span>{{ offer.quote.email }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span>{{ offer.quote.phone }}</span>
+                        </div>
+                        {% if offer.quote.company %}
+                        <div class="info-row">
+                            <span class="label">Société:</span>
+                            <span>{{ offer.quote.company }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </table>
         
         {% if offer.description %}
         <div class="info-section">
@@ -156,49 +169,68 @@
         <div class="info-section">
             <h3>Produits proposés</h3>
             {% if offer.productProposals|length > 0 %}
-            <table>
+            <table style="font-size: 11px;">
                 <thead>
                     <tr>
-                        <th>Produit demandé</th>
-                        <th>Fourchette de prix</th>
-                        <th>Quantité</th>
-                        <th>Montant</th>
+                        <th style="width: 50%;">Produit demandé</th>
+                        <th style="text-align: center;">PU min</th>
+                        <th style="text-align: center;">PU max</th>
+                        <th style="text-align: center;">Qté</th>
+                        <th style="text-align: center;">Mt min</th>
+                        <th style="text-align: center;">Mt max</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% set totalMinPrice = 0 %}
+                    {% set totalMaxPrice = 0 %}
                     {% for proposal in offer.productProposals %}
                     <tr>
                         <td>
                             {% if proposal.quoteItem %}
+                                #{{ loop.index }} - 
                                 {{ proposal.quoteItem.productType }} - 
                                 {{ proposal.quoteItem.description|length > 50 ? proposal.quoteItem.description|slice(0, 50) ~ '...' : proposal.quoteItem.description }}
                             {% else %}
                                 Produit sans référence
                             {% endif %}
                         </td>
-                        <td>
-                            {% if proposal.minPrice and proposal.maxPrice %}
-                                {{ proposal.minPrice|number_format(2, ',', ' ') }} RMB - {{ proposal.maxPrice|number_format(2, ',', ' ') }} RMB
-                            {% elseif proposal.minPrice %}
-                                {{ proposal.minPrice|number_format(2, ',', ' ') }} RMB
-                            {% elseif proposal.maxPrice %}
-                                {{ proposal.maxPrice|number_format(2, ',', ' ') }} RMB
+                        <td style="text-align: right; white-space: nowrap;">
+                            {% if proposal.minPrice %}
+                                {{ proposal.minPrice|number_format(2, ',', ' ') }}
                             {% else %}
                                 Non défini
                             {% endif %}
                         </td>
-                        <td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            {% if proposal.maxPrice %}
+                                {{ proposal.maxPrice|number_format(2, ',', ' ') }}
+                            {% else %}
+                                Non défini
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
                             {% if proposal.quoteItem %}
                                 {{ proposal.quoteItem.quantity }}
                             {% else %}
                                 1
                             {% endif %}
                         </td>
-                        <td>
-                            {% if proposal.minPrice and proposal.maxPrice %}
-                                {% set avgPrice = (proposal.minPrice + proposal.maxPrice) / 2 %}
+                        <td style="text-align: right; white-space: nowrap;">
+                            {% if proposal.minPrice %}
+                                {% set avgPrice = proposal.minPrice %}
                                 {% set quantity = proposal.quoteItem ? (proposal.quoteItem.quantity ?: 1) : 1 %}
-                                {{ (avgPrice * quantity)|number_format(2, ',', ' ') }} RMB
+                                {{ (avgPrice * quantity)|number_format(2, ',', ' ') }}
+                                {% set totalMinPrice = totalMinPrice + (avgPrice * quantity) %}
+                            {% else %}
+                                Non défini
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            {% if proposal.maxPrice %}
+                                {% set avgPrice = proposal.maxPrice %}
+                                {% set quantity = proposal.quoteItem ? (proposal.quoteItem.quantity ?: 1) : 1 %}
+                                {{ (avgPrice * quantity)|number_format(2, ',', ' ') }}
+                                {% set totalMaxPrice = totalMaxPrice + (avgPrice * quantity) %}
                             {% else %}
                                 Non défini
                             {% endif %}
@@ -206,13 +238,47 @@
                     </tr>
                     {% if proposal.comments %}
                     <tr>
-                        <td colspan="4" style="background-color: #f8f9fa; font-style: italic;">
+                        <td colspan="6" style="background-color: #f8f9fa; font-style: italic;">
                             Commentaires: {{ proposal.comments }}
                         </td>
                     </tr>
                     {% endif %}
                     {% endfor %}
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6" style="text-align: right;"></td>
+                    </tr>
+                    <tr>
+                        <th colspan="4" style="text-align: right;">
+                            Total RMB:
+                        </th>
+                        <th style="text-align: right; white-space: nowrap;">
+                            {{ totalMinPrice|number_format(2, ',', ' ') }}
+                        </th>
+                        <th style="text-align: right; white-space: nowrap;">
+                            {{ totalMaxPrice|number_format(2, ',', ' ') }}
+                        </th>
+                    </tr>
+                    <tr>
+                        <th colspan="4" style="text-align: right;">
+                            Total MGA:
+                        </th>
+                        <th style="text-align: right; white-space: nowrap;">
+                            {{ (totalMinPrice * offer.rmbMgaExchangeRate)|number_format(2, ',', ' ') }}
+                        </th>
+                        <th style="text-align: right; white-space: nowrap;">
+                            {{ (totalMaxPrice * offer.rmbMgaExchangeRate)|number_format(2, ',', ' ') }}
+                        </th>
+                    </tr>
+                    <tr>
+                        <td colspan="6" style="text-align: right;">
+                            <span style="font-size: 12px; font-weight: normal;">
+                                * Taux de change RMB/MGA utilisé: {{ offer.rmbMgaExchangeRate|number_format(2, ',', ' ') }}
+                            </span>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
             {% else %}
             <p>Aucun produit proposé pour cette offre.</p>
@@ -222,7 +288,7 @@
         <div class="info-section">
             <h3>Options d'expédition</h3>
             {% if offer.shippingOptions|length > 0 %}
-            <table>
+            <table style="font-size: 11px;">
                 <thead>
                     <tr>
                         <th>Mode d'expédition</th>
@@ -246,14 +312,24 @@
             <p>Aucune option d'expédition pour cette offre.</p>
             {% endif %}
         </div>
-        
-        <div class="price-total">
-            Prix total de l'offre: {{ offer.totalPrice|number_format(2, ',', ' ') }} €
-            {% if offer.rmbMgaExchangeRate %}
-            <br>
-            <span style="font-size: 12px; font-weight: normal;">
-                * Taux de change RMB/MGA utilisé: {{ offer.rmbMgaExchangeRate }}
-            </span>
+
+        <div class="info-section">
+            <h3>Catalogue des produits proposés</h3>
+            {% if offer.productProposals|length > 0 %}
+                {% for proposal in offer.productProposals %}
+                    <h4 style="margin-bottom: 10px;">#{{ loop.index }} - {{ proposal.quoteItem.productType }}</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    {% for image in proposal.images %}
+                        <img src="{{ absolute_url(asset('uploads/product_proposals/' ~ image)) }}" 
+                                alt="{{ proposal.quoteItem.description }}" 
+                                style="max-width: 200px; max-height: 150px; margin: 0 5px; object-fit: contain;">
+                    {% else %}
+                        <p style="font-style: italic; color: #666;">Aucune image disponible</p>
+                    {% endfor %}
+                    </div>
+                {% endfor %}
+            {% else %}
+            <p>Aucun catalogue de produits proposé pour cette offre.</p>
             {% endif %}
         </div>
         

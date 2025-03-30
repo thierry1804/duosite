@@ -17,13 +17,58 @@
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Modifier l'offre #{{ offer.id }}</h1>
-        <a href="{{ path('app_quote_view', {'id': offer.quote.id}) }}" class="btn btn-secondary">
-            <i data-lucide="arrow-left" class="me-2"></i> Retour au devis
-        </a>
+        <div>
+            <a href="{{ path('app_quote_view', {'id': offer.quote.id}) }}" class="btn btn-secondary">
+                <i data-lucide="arrow-left" class="me-2"></i> Retour au devis
+            </a>
+            {% if offer.status == 'draft' %}
+                <form method="post" action="{{ path('app_quote_offer_send', {'id': offer.id}) }}" style="display: inline-block" class="me-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('send' ~ offer.id) }}">
+                    <button type="submit" class="btn btn-success">
+                        <i data-lucide="send" class="me-2"></i> Envoyer au client
+                    </button>
+                </form>
+            {% endif %}
+            {% if offer.pdfFilePath %}
+                <a href="/perso/duosite/public{{ asset(offer.pdfFilePath) }}" class="btn btn-primary me-2" target="_blank">
+                    <i data-lucide="file-text" class="me-2"></i> Voir le PDF
+                </a>
+            {% endif %}
+            <a href="{{ path('app_quote_offer_generate_pdf', {'id': offer.id}) }}" class="btn btn-info" target="_blank">
+                <i data-lucide="file-plus" class="me-2"></i> Générer le PDF
+            </a>
+        </div>
     </div>
 
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-6">
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Informations générales</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="info" class="icon-lg text-primary"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">Offre #{{ offer.id }}</h6>
+                            <p class="text-muted mb-0">{{ offer.title }}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <span class="badge {{ offer.status == 'draft' ? 'bg-secondary' : (offer.status == 'sent' ? 'bg-info' : (offer.status == 'accepted' ? 'bg-success' : (offer.status == 'pending' ? 'bg-warning' : 'bg-danger'))) }}">
+                                {{ offer.status == 'draft' ? 'Brouillon' : (offer.status == 'sent' ? 'Envoyée' : (offer.status == 'accepted' ? 'Acceptée' : (offer.status == 'pending' ? 'En attente' : 'Refusée'))) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
             <div class="admin-card mb-4">
                 <div class="admin-card-header">
                     <h5 class="mb-0">Informations client</h5>
@@ -53,7 +98,11 @@
                     </div>
                 </div>
             </div>
-            
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
             <div class="admin-card mb-4">
                 <div class="admin-card-header">
                     <h5 class="mb-0">Produits demandés</h5>
@@ -146,7 +195,40 @@
                                             </button>
                                         </div>
                                         <div class="admin-card-body">
-                                            {{ form_widget(productProposalForm) }}
+                                            <div class="mb-3">
+                                                {{ form_row(productProposalForm.quoteItem) }}
+                                            </div>
+                                            <div class="row mb-3">
+                                                {{ form_row(productProposalForm.minPrice) }}
+                                                {{ form_row(productProposalForm.maxPrice) }}
+                                            </div>
+                                            <div class="row mb-3">
+                                                {{ form_row(productProposalForm.dimensions) }}
+                                                {{ form_row(productProposalForm.weight) }}
+                                            </div>
+                                            <div class="mb-3">
+                                                {{ form_row(productProposalForm.comments) }}
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Images</label>
+                                                <div class="image-upload-container">
+                                                    {% if productProposalForm.vars.data and productProposalForm.vars.data.images|length > 0 %}
+                                                        {% for image in productProposalForm.vars.data.images %}
+                                                            <div class="image-preview">
+                                                                <img src="{{ asset('uploads/product_proposals/' ~ image) }}" alt="Image de proposition">
+                                                                <button type="button" class="remove-image" data-image="{{ image }}">
+                                                                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                                                </button>
+                                                            </div>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                    <label class="add-image-button" for="{{ productProposalForm.imageFiles.vars.id }}">
+                                                        <i data-lucide="plus" style="width: 24px; height: 24px; margin-bottom: 5px;"></i>
+                                                        <span>Ajouter</span>
+                                                    </label>
+                                                    {{ form_widget(productProposalForm.imageFiles) }}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 {% endfor %}
@@ -215,6 +297,9 @@
                             <i data-lucide="save" class="me-2"></i> Enregistrer les modifications
                         </button>
                     </div>
+                    <div class="d-none">
+                        {{ form_rest(form) }}
+                    </div>
                     {{ form_end(form) }}
                 </div>
             </div>
@@ -261,8 +346,71 @@
 {% endfor %}
 {% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .image-upload-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .image-preview {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .image-preview .remove-image {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    
+    .add-image-button {
+        width: 120px;
+        height: 120px;
+        border: 2px dashed #ccc;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #666;
+        background: white;
+    }
+    
+    .add-image-button:hover {
+        border-color: #999;
+        color: #333;
+    }
+</style>
+{% endblock %}
+
 {% block javascripts %}
 {{ parent() }}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="{{ asset('js/exchange-rate.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -428,27 +576,38 @@
             
             // Ajouter le select pour le produit
             let $quoteItemDiv = $('<div class="mb-3"></div>');
-            $quoteItemDiv.append($(newForm).find('select[id$="_quoteItem"]').parent());
+            $quoteItemDiv.append($(newForm).find('[id$="_quoteItem"]').closest('.form-group'));
             $formContent.append($quoteItemDiv);
             
             // Créer une ligne pour les prix min et max
             let $priceRow = $('<div class="row mb-3"></div>');
-            let $minPriceDiv = $('<div class="col-md-6"></div>').append($(newForm).find('input[id$="_minPrice"]').parent());
-            let $maxPriceDiv = $('<div class="col-md-6"></div>').append($(newForm).find('input[id$="_maxPrice"]').parent());
-            $priceRow.append($minPriceDiv).append($maxPriceDiv);
+            $priceRow.append($(newForm).find('[id$="_minPrice"]').closest('.col-md-6'));
+            $priceRow.append($(newForm).find('[id$="_maxPrice"]').closest('.col-md-6'));
             $formContent.append($priceRow);
-            
-            // Ajouter les commentaires
-            let $commentsDiv = $('<div class="mb-3"></div>');
-            $commentsDiv.append($(newForm).find('textarea[id$="_comments"]').parent());
-            $formContent.append($commentsDiv);
             
             // Créer une ligne pour les dimensions et le poids
             let $dimensionsRow = $('<div class="row mb-3"></div>');
-            let $dimensionsDiv = $('<div class="col-md-6"></div>').append($(newForm).find('input[id$="_dimensions"]').parent());
-            let $weightDiv = $('<div class="col-md-6"></div>').append($(newForm).find('input[id$="_weight"]').parent());
-            $dimensionsRow.append($dimensionsDiv).append($weightDiv);
+            $dimensionsRow.append($(newForm).find('[id$="_dimensions"]').closest('.col-md-6'));
+            $dimensionsRow.append($(newForm).find('[id$="_weight"]').closest('.col-md-6'));
             $formContent.append($dimensionsRow);
+            
+            // Ajouter les commentaires
+            let $commentsDiv = $('<div class="mb-3"></div>');
+            $commentsDiv.append($(newForm).find('[id$="_comments"]').closest('.form-group'));
+            $formContent.append($commentsDiv);
+            
+            // Ajouter les images
+            let $imagesDiv = $('<div class="mb-3"></div>');
+            let $imageInput = $(newForm).find('[id$="_imageFiles"]');
+            let $imageContainer = $('<div class="image-upload-container"></div>');
+            let $addButton = $('<label class="add-image-button"></label>').attr('for', $imageInput.attr('id'));
+            $addButton.html('<i data-lucide="plus" style="width: 24px; height: 24px; margin-bottom: 5px;"></i><span>Ajouter</span>');
+            
+            $imageContainer.append($addButton);
+            $imageContainer.append($imageInput);
+            $imagesDiv.append('<label class="form-label">Images</label>');
+            $imagesDiv.append($imageContainer);
+            $formContent.append($imagesDiv);
             
             $body.append($formContent);
             $newFormWrapper.append($header);
@@ -459,42 +618,22 @@
             
             // Si un produit a été spécifié, sélectionner automatiquement le produit dans le select
             if (productId !== null) {
-                setTimeout(function() {
-                    let $selects = $('select', $newFormWrapper);
-                    let $quoteItemSelect = $selects.filter(function() {
-                        return $(this).attr('name').includes('[quoteItem]');
-                    });
-                    
-                    if ($quoteItemSelect.length > 0) {
-                        // Trouver l'option correspondant au produit (maintenant avec #N - préfixe)
-                        $quoteItemSelect.find('option').each(function() {
-                            // Chercher le texte original du produit dans l'option (après le préfixe #N - )
-                            if ($(this).text().includes(productName) && $(this).val()) {
-                                $(this).prop('selected', true);
-                                return false; // Break the loop
-                            }
-                        });
+                const $select = $newFormWrapper.find('select[id$="_quoteItem"]');
+                const options = $select.find('option');
+                for (let i = 0; i < options.length; i++) {
+                    if (options[i].textContent.includes('#' + (productId + 1) + ' - ' + productName) && options[i].value) {
+                        $select.val(options[i].value);
+                        break;
                     }
-                    
-                    // Réinitialiser Lucide icons pour les nouveaux éléments
-                    lucide.createIcons();
-                }, 0);
-            } else {
-                // Réinitialiser Lucide icons pour les nouveaux éléments
+                }
+            }
+            
+            // Réinitialiser les icônes Lucide
+            if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
             
             productProposalIndex++;
-            $productProposalsContainer.data('index', productProposalIndex);
-            
-            // Ajouter événement de suppression
-            $('.remove-product-proposal', $newFormWrapper).click(function() {
-                $(this).closest('.product-proposal-item').remove();
-                
-                if ($('.product-proposal-item', $productProposalsContainer).length === 0) {
-                    $productProposalsContainer.append('<div class="alert alert-info">Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.</div>');
-                }
-            });
         }
         
         $('#add-product-proposal').click(function() {
@@ -553,6 +692,79 @@
             if ($('.shipping-option-item', $shippingOptionsContainer).length === 0) {
                 $shippingOptionsContainer.append('<div class="alert alert-info">Aucune option d\'expédition ajoutée. Cliquez sur le bouton + pour commencer.</div>');
             }
+        });
+
+        // Gestion des images
+        function handleImageUpload(input, container) {
+            if (input.files && input.files.length > 0) {
+                Array.from(input.files).forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const preview = document.createElement('div');
+                            preview.className = 'image-preview temp';
+                            preview.innerHTML = `
+                                <img src="${e.target.result}" alt="Image preview">
+                                <button type="button" class="remove-image">
+                                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                </button>
+                            `;
+                            
+                            // Insérer avant le bouton d'ajout
+                            const addButton = container.querySelector('.add-image-button');
+                            container.insertBefore(preview, addButton);
+                            
+                            // Réinitialiser les icônes Lucide
+                            if (typeof lucide !== 'undefined') {
+                                lucide.createIcons();
+                            }
+                            
+                            // Ajouter l'événement de suppression pour cette prévisualisation
+                            preview.querySelector('.remove-image').addEventListener('click', function() {
+                                preview.remove();
+                                
+                                // Créer un nouveau FileList sans ce fichier
+                                const dt = new DataTransfer();
+                                const files = input.files;
+                                for (let i = 0; i < files.length; i++) {
+                                    const currentFile = files[i];
+                                    if (currentFile !== file) {
+                                        dt.items.add(currentFile);
+                                    }
+                                }
+                                input.files = dt.files;
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }
+        
+        // Gérer l'upload d'images pour les formulaires existants et nouveaux
+        $(document).on('change', '.image-upload-input', function() {
+            const container = this.closest('.image-upload-container');
+            handleImageUpload(this, container);
+        });
+        
+        // Gérer la suppression d'images existantes
+        $(document).on('click', '.remove-image', function(e) {
+            e.preventDefault();
+            const $preview = $(this).closest('.image-preview');
+            const $container = $preview.closest('.image-upload-container');
+            const imageToRemove = $(this).data('image');
+            
+            if (imageToRemove) {
+                // C'est une image existante, créer un champ caché pour la suppression
+                let $removedImagesInput = $container.find('input[name$="[removedImages][]"]');
+                if (!$removedImagesInput.length) {
+                    $removedImagesInput = $('<input type="hidden" name="removedImages[]">');
+                    $container.append($removedImagesInput);
+                }
+                $removedImagesInput.val(imageToRemove);
+            }
+            
+            $preview.remove();
         });
     });
 </script>
