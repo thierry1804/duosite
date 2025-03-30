@@ -69,6 +69,7 @@ jobs:
         local-dir: ./  # Répertoire de build
         server-dir: /  # Répertoire distant
         timeout: 120000  # Augmenter le délai d'attente (en millisecondes)
+        passive: false
         exclude: |
           **/.git*
           **/.git*/**
