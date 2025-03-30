@@ -77,6 +77,8 @@
         }
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.62"
+        "symfony/debug-bundle": "7.2.*",
+        "symfony/maker-bundle": "^1.62",
+        "symfony/web-profiler-bundle": "7.2.*"
     }
 }

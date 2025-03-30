@@ -241,18 +241,22 @@ class QuoteOffer
         
         // Calculer le total des propositions de produits (prix unitaire moyen * quantité)
         foreach ($this->productProposals as $proposal) {
-            if ($proposal->getMinPrice() && $proposal->getMaxPrice()) {
-                $avgPrice = ($proposal->getMinPrice() + $proposal->getMaxPrice()) / 2;
-                $total += $avgPrice * ($proposal->getQuoteItem() ? ($proposal->getQuoteItem()->getQuantity() ?: 1) : 1);
+            $unitPrice = $proposal->getMinPrice();
+            if ($proposal->getMaxPrice() > $proposal->getMinPrice()) {
+                $unitPrice = $proposal->getMaxPrice();
             }
-        }
-        
-        // Ajouter les frais d'expédition
-        foreach ($this->shippingOptions as $shippingOption) {
-            $total += $shippingOption->getPrice() ?: 0;
+            $total += $unitPrice * ($proposal->getQuoteItem() ? ($proposal->getQuoteItem()->getQuantity() ?: 1) : 1);
         }
         
         $this->totalPrice = $total;
         return $total;
+    }
+
+    public function calculateTotalPriceInMga(): ?float
+    {
+        if (!$this->rmbMgaExchangeRate) {
+            return null;
+        }
+        return $this->calculateTotalPrice() * (float)$this->rmbMgaExchangeRate;
     }
 } 

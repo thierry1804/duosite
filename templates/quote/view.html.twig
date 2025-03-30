@@ -400,15 +400,20 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="badge {{ offer.status == 'draft' ? 'bg-secondary' : (offer.status == 'sent' ? 'bg-info' : (offer.status == 'accepted' ? 'bg-success' : 'bg-danger')) }}">
-                                            {{ offer.status == 'draft' ? 'Brouillon' : (offer.status == 'sent' ? 'Envoyée' : (offer.status == 'accepted' ? 'Acceptée' : 'Refusée')) }}
+                                        <span class="badge {{ offer.status == 'draft' ? 'bg-secondary' : (offer.status == 'sent' ? 'bg-info' : (offer.status == 'accepted' ? 'bg-success' : (offer.status == 'pending' ? 'bg-warning' : 'bg-danger'))) }}">
+                                            {{ offer.status == 'draft' ? 'Brouillon' : (offer.status == 'sent' ? 'Envoyée' : (offer.status == 'accepted' ? 'Acceptée' : (offer.status == 'pending' ? 'En attente' : 'Refusée'))) }}
                                         </span>
                                     </td>
                                     <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ offer.totalPrice|number_format(2, ',', ' ') }} €</p>
+                                        {% set totalPriceMga = offer.calculateTotalPriceInMga() %}
+                                        {% if totalPriceMga is not null %}
+                                            <p class="text-sm font-weight-bold mb-0">{{ totalPriceMga|number_format(2, ',', ' ') }} Ar</p>
+                                        {% else %}
+                                            <p class="text-sm font-weight-bold mb-0 text-muted">Prix en MGA non disponible (taux de change manquant)</p>
+                                        {% endif %}
                                     </td>
                                     <td>
-                                        <p class="text-sm font-weight-bold mb-0">{{ offer.createdAt|date('d/m/Y') }}</p>
+                                        <p class="text-sm font-weight-bold mb-0">{{ offer.createdAt|date('d/m/Y H:i:s') }}</p>
                                     </td>
                                     <td class="align-middle">
                                         <div class="d-flex gap-1">
