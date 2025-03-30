@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+ini_set('memory_limit', '512M');
+set_time_limit(120); // Augmente à 120 secondes
+
 use App\Entity\QuoteOffer;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -30,6 +33,10 @@ class PdfGenerator
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isRemoteEnabled', true);
         $options->set('defaultFont', 'Arial');
+        $options->set('isPhpEnabled', true); // Active PHP dans les templates Twig (si nécessaire)
+        $options->set('isFontSubsettingEnabled', true); // Réduit la taille des polices utilisées
+        $options->set('dpi', 96); // Diminue la résolution pour limiter l'utilisation mémoire
+        $options->set('defaultPaperSize', 'A4'); // Définit la taille du papier au lieu de la définir séparément
         
         // Instancier DOMPDF
         $dompdf = new Dompdf($options);
@@ -65,4 +72,4 @@ class PdfGenerator
         // Retourner le chemin relatif du fichier
         return $filePath;
     }
-} 
+}
