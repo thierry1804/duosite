@@ -68,6 +68,7 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./  # Répertoire de build
         server-dir: /  # Répertoire distant
+        timeout: 120000  # Augmenter le délai d'attente (en millisecondes)
         exclude: |
           **/.git*
           **/.git*/**
