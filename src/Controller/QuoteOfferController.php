@@ -19,6 +19,9 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Service\ExchangeRateService;
 use App\Service\PdfGenerator;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Address;
 
 #[Route('/admin/quote-offer')]
 class QuoteOfferController extends AbstractController
@@ -377,5 +380,59 @@ class QuoteOfferController extends AbstractController
             $this->addFlash('error', 'Erreur lors de la génération du PDF : ' . $e->getMessage());
             return $this->redirectToRoute('app_quote_offer_edit', ['id' => $offer->getId()]);
         }
+    }
+
+    #[Route('/{id}/send-pdf', name: 'app_quote_offer_send_pdf', methods: ['POST'])]
+    public function sendPdf(
+        Request $request,
+        QuoteOffer $offer,
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer
+    ): Response
+    {
+        // Vérifier les permissions
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        // Obtenir le devis associé
+        $quote = $offer->getQuote();
+        
+        // Vérifier le token CSRF
+        if ($this->isCsrfTokenValid('send_pdf'.$offer->getId(), $request->request->get('_token'))) {
+            try {
+                // Créer l'email
+                $email = (new Email())
+                    ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG'))
+                    ->to($quote->getEmail())
+                    ->subject('Votre devis #' . $quote->getQuoteNumber())
+                    ->html($this->renderView(
+                        'emails/quote_offer.html.twig',
+                        [
+                            'quote' => $quote,
+                            'offer' => $offer
+                        ]
+                    ));
+
+                // Ajouter le PDF en pièce jointe
+                if ($offer->getPdfFilePath()) {
+                    $pdfPath = $this->getParameter('kernel.project_dir') . '/public' . $offer->getPdfFilePath();
+                    if (file_exists($pdfPath)) {
+                        $email->attachFromPath($pdfPath, 'devis.pdf', 'application/pdf');
+                    }
+                }
+
+                // Envoyer l'email
+                $mailer->send($email);
+
+                // Mettre à jour le statut de l'offre
+                $offer->setStatus('sent');
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Le devis a été envoyé par email avec succès.');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi de l\'email : ' . $e->getMessage());
+            }
+        }
+
+        return $this->redirectToRoute('app_quote_offer_edit', ['id' => $offer->getId()]);
     }
 } 
