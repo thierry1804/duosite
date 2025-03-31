@@ -20,9 +20,17 @@
                         <i class="fas fa-file-invoice fs-3 me-3"></i>
                         <h2 class="mb-0 fs-4 fw-bold">Demande {{ quote.quoteNumber }}</h2>
                     </div>
-                    <a href="{{ path('app_user_quotes') }}" class="btn btn-light rounded-3 px-3 py-2">
-                        <i class="fas fa-arrow-left me-2"></i> Retour
-                    </a>
+
+                    <div class="d-flex gap-2">
+                        {% if quote.status == 'completed' or quote.status == 'accepted' %}
+                            <a href="{{ path('app_user_quotes_offer', {'id': quote.id}) }}" class="btn btn-light rounded-3 px-3 py-2">
+                                <i class="fas fa-file-pdf me-2"></i> Voir l'offre
+                            </a>
+                        {% endif %}
+                        <a href="{{ path('app_user_quotes') }}" class="btn btn-light rounded-3 px-3 py-2">
+                            <i class="fas fa-arrow-left me-2"></i> Retour
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-4 mb-4">
@@ -42,17 +50,15 @@
                                     </div>
                                     <div>
                                         <span class="text-muted">Statut :</span>
-                                        <div class="mt-1">
-                                            {% if quote.status == 'pending' %}
-                                                <span class="badge bg-warning text-dark rounded-pill px-3 py-2">En attente</span>
-                                            {% elseif quote.status == 'in_progress' %}
-                                                <span class="badge bg-info rounded-pill px-3 py-2">En cours</span>
-                                            {% elseif quote.status == 'completed' %}
-                                                <span class="badge bg-success rounded-pill px-3 py-2">Terminé</span>
-                                            {% elseif quote.status == 'rejected' %}
-                                                <span class="badge bg-danger rounded-pill px-3 py-2">Rejeté</span>
-                                            {% endif %}
-                                        </div>
+                                        {% if quote.status == 'pending' %}
+                                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2">En attente</span>
+                                        {% elseif quote.status == 'in_progress' %}
+                                            <span class="badge bg-info rounded-pill px-3 py-2">En cours</span>
+                                        {% elseif quote.status == 'completed' or quote.status == 'accepted' %}
+                                            <span class="badge bg-success rounded-pill px-3 py-2">Terminé</span>
+                                        {% elseif quote.status == 'rejected' %}
+                                            <span class="badge bg-danger rounded-pill px-3 py-2">Rejeté</span>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -65,20 +71,20 @@
                                         Contact
                                     </h5>
                                     <div class="mb-2">
-                                        <span class="text-muted">Nom :</span>
                                         <div class="fw-medium">{{ quote.fullName }}</div>
                                     </div>
                                     <div class="mb-2">
-                                        <span class="text-muted">Email :</span>
-                                        <div class="fw-medium">{{ quote.email }}</div>
+                                        <div class="fw-medium">
+                                            <a href="mailto:{{ quote.email }}">{{ quote.email }}</a>
+                                        </div>
                                     </div>
                                     <div class="mb-2">
-                                        <span class="text-muted">Téléphone :</span>
-                                        <div class="fw-medium">{{ quote.phone }}</div>
+                                        <div class="fw-medium">
+                                            <a href="tel:{{ quote.phone }}">{{ quote.phone }}</a>
+                                        </div>
                                     </div>
                                     {% if quote.company %}
                                         <div>
-                                            <span class="text-muted">Entreprise :</span>
                                             <div class="fw-medium">{{ quote.company }}</div>
                                         </div>
                                     {% endif %}
@@ -175,6 +181,44 @@
                                             <li class="list-group-item bg-transparent px-0">
                                                 <i class="fas fa-check-circle text-success me-2"></i>
                                                 {{ service }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if 'Transport et logistique' in quote.services and quote.shippingMethod is not empty %}
+                        <div class="card border-0 bg-light rounded-3 mt-4">
+                            <div class="card-body p-4">
+                                <h5 class="card-title d-flex align-items-center mb-3">
+                                    <i class="fas fa-shipping-fast text-primary me-2"></i>
+                                    Modes d'expédition choisis
+                                </h5>
+                                <div class="p-3 bg-white rounded-3">
+                                    <ul class="list-group list-group-flush">
+                                        {% for method in quote.shippingMethod %}
+                                            <li class="list-group-item bg-transparent px-0 d-flex align-items-center">
+                                                {% if method == 'maritime' %}
+                                                    <i class="fas fa-ship text-primary me-2"></i>
+                                                    <div>
+                                                        <div class="fw-medium">Transport maritime</div>
+                                                        <small class="text-muted">Délai estimé: 50-70 jours</small>
+                                                    </div>
+                                                {% elseif method == 'aerien_express' %}
+                                                    <i class="fas fa-plane-departure text-primary me-2"></i>
+                                                    <div>
+                                                        <div class="fw-medium">Transport aérien express</div>
+                                                        <small class="text-muted">Délai estimé: 3-7 jours</small>
+                                                    </div>
+                                                {% elseif method == 'aerien_normal' %}
+                                                    <i class="fas fa-plane text-primary me-2"></i>
+                                                    <div>
+                                                        <div class="fw-medium">Transport aérien standard</div>
+                                                        <small class="text-muted">Délai estimé: 15-30 jours</small>
+                                                    </div>
+                                                {% endif %}
                                             </li>
                                         {% endfor %}
                                     </ul>

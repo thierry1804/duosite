@@ -295,6 +295,13 @@ class Quote
 
     public function getStatus(): ?string
     {
+        // Si le statut est 'in_progress', et que la dernière offre a été envoyée, alors on change le statut en 'completed'
+        if ($this->status === 'in_progress' && $this->offers->last()?->getStatus() === 'sent') {
+            $this->status = 'completed';
+
+            // Enregistrer le changement de statut
+            $this->setStatus($this->status);
+        }
         return $this->status;
     }
 

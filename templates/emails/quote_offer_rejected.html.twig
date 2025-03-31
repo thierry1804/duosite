@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Offre refusée - {{ quote.quoteNumber }}</title>
+</head>
+<body>
+    <h2>Offre refusée</h2>
+    <p>L'offre {{ quote.quoteNumber }} a été refusée par le client.</p>
+    
+    <h3>Informations du client</h3>
+    <ul>
+        <li>Nom : {{ user.fullName }}</li>
+        <li>Email : {{ user.email }}</li>
+        <li>Téléphone : {{ user.phone }}</li>
+        {% if user.company %}
+            <li>Entreprise : {{ user.company }}</li>
+        {% endif %}
+    </ul>
+
+    <p>Vous pouvez consulter les détails de l'offre dans votre tableau de bord.</p>
+</body>
+</html> 
