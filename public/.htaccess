@@ -69,7 +69,16 @@ Options -Indexes
 
 # Handle front controller
 <IfModule mod_rewrite.c>
+    # Activer le moteur de réécriture
+    RewriteEngine On
+    
+    # Définir le répertoire de base pour les règles de réécriture
+    RewriteBase /public/
+    
+    # Rediriger les requêtes vers des fichiers ou dossiers existants
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Réécrire toutes les requêtes vers index.php
     RewriteRule ^(.*)$ index.php [QSA,L]
-</IfModule> 
+</IfModule>
