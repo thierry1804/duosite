@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://duoimport.mg/sitemap.xml 
+Sitemap: https://duoimport.mg/public/sitemap.xml 
