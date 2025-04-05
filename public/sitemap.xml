@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://duoimport.mg/</loc>
+        <loc>https://duoimport.mg/public/</loc>
         <lastmod>2023-03-14</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>https://duoimport.mg/services</loc>
+        <loc>https://duoimport.mg/public/services</loc>
         <lastmod>2023-03-14</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://duoimport.mg/about</loc>
+        <loc>https://duoimport.mg/public/about</loc>
         <lastmod>2023-03-14</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://duoimport.mg/contact</loc>
+        <loc>https://duoimport.mg/public/contact</loc>
         <lastmod>2023-03-14</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://duoimport.mg/quote</loc>
+        <loc>https://duoimport.mg/public/quote</loc>
         <lastmod>2023-03-14</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
     </url>
     <url>
-        <loc>https://duoimport.mg/cgv</loc>
+        <loc>https://duoimport.mg/public/cgv</loc>
         <lastmod>2023-03-14</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.5</priority>
