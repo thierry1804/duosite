@@ -4,7 +4,7 @@
     
     # Redirection de www vers non-www
     RewriteCond %{HTTP_HOST} ^www\.duoimport\.mg [NC]
-    RewriteRule ^(.*)$ https://duoimport.mg/$1 [R=301,L]
+    RewriteRule ^(.*)$ https://duoimport.mg/public$1 [R=301,L]
 </IfModule>
 
 # Remove x-robots-tag header if it exists
