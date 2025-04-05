@@ -2,7 +2,7 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
     
-    # Redirection de www vers non-www
+    # Redirection de www vers non-www avec gestion des chemins
     RewriteCond %{HTTP_HOST} ^www\.duoimport\.mg [NC]
     RewriteRule ^(.*)$ https://duoimport.mg$1 [R=301,L]
 
@@ -10,6 +10,21 @@
     RewriteCond %{HTTP_HOST} ^duoimport\.mg [NC]
     RewriteCond %{REQUEST_URI} ^/?$
     RewriteRule ^(.*)$ /public/ [R=301,L]
+
+    # Redirection de www.duoimport.mg/ vers duoimport.mg/public/
+    RewriteCond %{HTTP_HOST} ^www\.duoimport\.mg [NC]
+    RewriteCond %{REQUEST_URI} ^/?$
+    RewriteRule ^(.*)$ https://duoimport.mg/public/ [R=301,L]
+
+    # Redirection de www.duoimport.mg/chemin vers duoimport.mg/public/chemin
+    RewriteCond %{HTTP_HOST} ^www\.duoimport\.mg [NC]
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ https://duoimport.mg/public$1 [R=301,L]
+
+    # Redirection de duoimport.mg/chemin vers duoimport.mg/public/chemin
+    RewriteCond %{HTTP_HOST} ^duoimport\.mg [NC]
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /public$1 [R=301,L]
 </IfModule>
 
 # Remove x-robots-tag header if it exists
