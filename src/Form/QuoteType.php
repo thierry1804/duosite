@@ -99,10 +99,7 @@ class QuoteType extends AbstractType
                 'placeholder' => 'Sélectionnez une option',
             ])
             ->add('privacyPolicy', CheckboxType::class, [
-                'label' => 'J\'accepte la politique de confidentialité',
-                'label_attr' => [
-                    'class' => 'checkbox-custom-label'
-                ],
+                'label' => false,
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Vous devez accepter la politique de confidentialité'

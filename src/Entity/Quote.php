@@ -81,7 +81,7 @@ class Quote
     /**
      * @var string|array|null
      */
-    #[ORM\Column(type: 'text', nullable: true)]
+    #[ORM\Column(type: 'json', nullable: true)]
     private $originalUserData = null;
 
     #[ORM\Column(type: 'string', length: 20, options: ['default' => 'not_required'])]
@@ -363,6 +363,10 @@ class Quote
      */
     public function setOriginalUserData($originalUserData): self
     {
+        // Si c'est un tableau, il faut le convertir en chaîne JSON
+        if (is_array($originalUserData)) {
+            $originalUserData = json_encode($originalUserData);
+        }
         // Si un tableau est fourni, le stocker tel quel
         // La conversion JSON se fera automatiquement par Doctrine
         $this->originalUserData = $originalUserData;

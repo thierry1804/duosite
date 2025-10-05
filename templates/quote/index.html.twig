@@ -128,10 +128,10 @@
 
 {% block body %}
 <div class="container py-5">
-    <h1 class="text-center mb-4">Formulaire de demande de devis</h1>
+    <h1 class="mb-4">Formulaire de demande de devis</h1>
     
-    <p class="text-center mb-4">
-        Veuillez remplir ce formulaire avec les détails de votre projet. Notre équipe vous contactera dans les 24 à 72 heures avec un devis personnalisé.
+    <p class="mb-4">
+        Veuillez remplir ce formulaire avec les détails de votre projet.
     </p>
 
     {% for label, messages in app.flashes %}
@@ -163,6 +163,8 @@
     
     {{ form_start(form, {'attr': {'class': 'needs-validation', 'id': 'quoteForm', 'novalidate': 'novalidate'}}) }}
         {{ form_errors(form) }}
+
+        <h2 class="mt-4 mb-3">1. Vos coordonnées</h4>
         
         <div class="row mb-3">
             <div class="col-md-6">
@@ -181,10 +183,19 @@
                 {{ form_row(form.phone, {'attr': {'class': 'form-control'}}) }}
             </div>
         </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                {{ form_row(form.company, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="col-md-6">
+                {{ form_label(form.referralSource) }}
+                {{ form_widget(form.referralSource, {'attr': {'class': 'form-select'}}) }}
+                {{ form_errors(form.referralSource) }}
+            </div>
+        </div>
         
-        {{ form_row(form.company, {'attr': {'class': 'form-control'}}) }}
-        
-        <h4 class="mt-4 mb-3">Produits</h4>
+        <h2 class="mt-4 mb-3">2. Détails du ou des produits</h2>
         
         <div class="quote-items-wrapper" 
              data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
@@ -240,18 +251,27 @@
             <i class="fas fa-plus-circle me-2"></i> Ajouter un produit
         </button>
         
-        <div class="row mt-4 mb-4">
+        <h2 class="mt-4">3. Services souhaités</h2>
+        <div class="row mb-4">
             <!-- Services souhaités (colonne gauche) -->
             <div class="col-md-6">
                 <div class="mb-3 h-100">
-                    {{ form_label(form.services) }}
+                    {{ form_label(form.services, '', {'label_attr': {'class': 'form-label text-white'}}) }}
                     <div class="services-switches d-flex flex-column h-100">
                         {% for service in form.services %}
                             <div class="mb-2 flex-grow-1">
-                                <label class="switch-container h-100">
-                                    {{ form_widget(service, {'attr': {'class': 'switch-input'}}) }}
-                                    <span class="switch-slider"></span>
-                                    <span class="switch-label">{{ service.vars.label }}</span>
+                                <label class="switch-container h-100 d-flex align-items-center justify-content-between">
+                                    <span class="switch-slider" style="width: 50px;"></span>
+                                    {{ form_widget(service, {'attr': {'class': 'switch-input', 'style': 'margin-right: 10px;'}}) }}
+                                    <span class="switch-label w-25" style="text-align: center;">
+                                        {% if service.vars.value == 'Sourcing et négociation' %}
+                                            <i class="fas fa-search" style="font-size: 2rem; color: var(--primary-color);"></i>
+                                        {% elseif service.vars.value == 'Transport et logistique' %}
+                                            <i class="fas fa-shipping-fast" style="font-size: 2rem; color: var(--primary-color);"></i>
+                                        {% else %}
+                                            {{ service.vars.label }}
+                                        {% endif %}
+                                    </span>
                                 </label>
                             </div>
                         {% endfor %}
@@ -290,27 +310,25 @@
             </div>
         </div>
         
+        <h2 class="mt-5 mb-4">4. Informations complémentaires</h2>
         <div class="mb-4">
-            {{ form_label(form.additionalInfo) }}
             {{ form_widget(form.additionalInfo, {'attr': {'class': 'form-control', 'rows': 3}}) }}
             {{ form_errors(form.additionalInfo) }}
         </div>
 
-        <div class="mb-3">
-            {{ form_label(form.referralSource) }}
-            {{ form_widget(form.referralSource, {'attr': {'class': 'form-select'}}) }}
-            {{ form_errors(form.referralSource) }}
-        </div>
-
-        <div class="mb-3 form-check">
-            {{ form_widget(form.privacyPolicy, {'attr': {'class': 'form-check-input'}}) }}
-            <label for="{{ form.privacyPolicy.vars.id }}" class="form-check-label">
+        <div class="mb-3" style="padding-left: 0 !important;">
+            <label for="{{ form.privacyPolicy.vars.id }}" class="form-check-label" style="display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;">
+                {{ form_widget(form.privacyPolicy, {'attr': {'class': 'form-check-input', 'style': 'margin: 0; margin-top: 2px; margin-left: -24px;'}}) }}
                 J'accepte la <a href="{{ path('app_privacy_policy') }}" target="_blank">politique de confidentialité</a>
             </label>
             {{ form_errors(form.privacyPolicy) }}
         </div>
 
-        <div class="text-center">
+        <p class="mb-4">
+            Notre équipe vous contactera dans les 24 à 72 heures avec un devis personnalisé.
+        </p>
+
+        <div class="">
             <button type="submit" class="btn btn-primary" id="submitButton">Soumettre ma demande de devis</button>
         </div>
     {{ form_end(form) }}

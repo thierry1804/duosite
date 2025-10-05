@@ -530,11 +530,11 @@ footer a:hover {
     transition: .4s;
 }
 
-.switch-input:checked + .switch-slider {
+.switch-container:has(.switch-input:checked) .switch-slider {
     background-color: var(--primary-color);
 }
 
-.switch-input:checked + .switch-slider:before {
+.switch-container:has(.switch-input:checked) .switch-slider:before {
     transform: translateX(26px);
 }
 
@@ -574,7 +574,7 @@ footer a:hover {
     text-align: center;
 }
 
-.radio-card-input:checked + .radio-card-content {
+.radio-card:has(.radio-card-input:checked) .radio-card-content {
     border-color: var(--primary-color);
     background-color: rgba(43, 78, 255, 0.1);
     box-shadow: 0 0 0 2px var(--primary-color);
@@ -586,7 +586,7 @@ footer a:hover {
     color: var(--primary-color);
 }
 
-.radio-card-input:checked + .radio-card-content .shipping-icon {
+.radio-card:has(.radio-card-input:checked) .radio-card-content .shipping-icon {
     color: var(--primary-color);
 }
 
