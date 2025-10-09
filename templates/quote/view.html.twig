@@ -37,6 +37,9 @@
                     <i data-lucide="x" class="me-2"></i> Rejeter
                 </a>
             {% endif %}
+            <a href="{{ path('app_tracking_show', {'token': quote.trackingToken}) }}" class="btn btn-info" target="_blank">
+                <i data-lucide="external-link" class="me-2"></i> Voir le suivi public
+            </a>
             <a href="{{ path('app_quote_dashboard') }}" class="btn btn-secondary">
                 <i data-lucide="arrow-left" class="me-2"></i> Retour
             </a>
@@ -82,6 +85,30 @@
                             <div>
                                 <i class="fas fa-box fa-2x text-info me-2"></i>
                                 <span>{{ quote.items|length }} produit(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-key fa-2x text-warning me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Token de suivi</small>
+                                    <code class="text-dark">{{ quote.trackingToken }}</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-link fa-2x text-primary me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Lien de suivi public</small>
+                                    <a href="{{ path('app_tracking_show', {'token': quote.trackingToken}) }}" target="_blank" class="text-primary">
+                                        Voir le suivi public
+                                        <i class="fas fa-external-link-alt ms-1"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -366,6 +393,68 @@
             </div>
         </div>
     </div>
+
+    {# Section historique des changements de statut (admin uniquement) #}
+    {% if is_granted('ROLE_ADMIN') and statusHistory is defined and statusHistory is not empty %}
+    <div class="admin-card mb-4">
+        <div class="admin-card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i data-lucide="history" class="me-2"></i>
+                Historique des changements de statut
+            </h5>
+            <a href="{{ path('app_quote_status_update', {'id': quote.id}) }}" class="btn btn-primary btn-sm">
+                <i data-lucide="edit" class="me-1"></i>
+                Modifier le statut
+            </a>
+        </div>
+        <div class="admin-card-body">
+            <div class="timeline">
+                {% for history in statusHistory %}
+                    <div class="timeline-item {% if loop.first %}current{% endif %}">
+                        <div class="timeline-marker 
+                            {% if history.newStatus == 'completed' or history.newStatus == 'accepted' %}bg-success
+                            {% elseif history.newStatus == 'rejected' or history.newStatus == 'declined' or history.newStatus == 'canceled' %}bg-danger
+                            {% elseif history.newStatus == 'in_progress' %}bg-info
+                            {% elseif history.newStatus == 'pending' %}bg-warning
+                            {% else %}bg-secondary{% endif %}">
+                        </div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">
+                                        {% if history.oldStatus == 'new' %}
+                                            Devis créé
+                                        {% else %}
+                                            {{ history.oldStatusLabel }} → {{ history.newStatusLabel }}
+                                        {% endif %}
+                                    </h6>
+                                    <p class="text-muted mb-1">
+                                        <i data-lucide="clock" class="me-1" style="width: 14px; height: 14px;"></i>
+                                        {{ history.createdAt|date('d/m/Y à H:i') }}
+                                    </p>
+                                    {% if history.comment %}
+                                        <p class="text-muted mb-0">
+                                            <i data-lucide="message-square" class="me-1" style="width: 14px; height: 14px;"></i>
+                                            "{{ history.comment }}"
+                                        </p>
+                                    {% endif %}
+                                </div>
+                                <div class="text-end">
+                                    {% if history.changedBy %}
+                                        <small class="text-muted">
+                                            <i data-lucide="user" class="me-1" style="width: 12px; height: 12px;"></i>
+                                            {{ history.changedBy }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     {# Ajout de la section des offres #}
     {% if quote.status == 'in_progress' and (app.request.get('_route') starts with 'app_admin' or is_granted('ROLE_ADMIN')) %}

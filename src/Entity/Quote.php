@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+// use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: QuoteRepository::class)]
 #[ORM\Table(name: 'quotes')]
@@ -20,6 +21,9 @@ class Quote
 
     #[ORM\Column(length: 20, unique: true)]
     private ?string $quoteNumber = null;
+
+    #[ORM\Column(length: 36, unique: true, nullable: true)]
+    private ?string $trackingToken = null;
 
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: 'Le prénom est obligatoire')]
@@ -103,6 +107,7 @@ class Quote
         $this->status = 'pending';
         $this->items = new ArrayCollection();
         $this->offers = new ArrayCollection();
+        $this->trackingToken = $this->generateUuid();
         $this->generateQuoteNumber();
     }
 
@@ -132,6 +137,17 @@ class Quote
     public function getQuoteNumber(): ?string
     {
         return $this->quoteNumber;
+    }
+
+    public function getTrackingToken(): ?string
+    {
+        return $this->trackingToken;
+    }
+
+    public function setTrackingToken(string $trackingToken): self
+    {
+        $this->trackingToken = $trackingToken;
+        return $this;
     }
 
     public function getFirstName(): ?string
@@ -448,5 +464,20 @@ class Quote
         }
 
         return $this;
+    }
+
+    /**
+     * Génère un UUID v4
+     */
+    private function generateUuid(): string
+    {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
     }
 } 

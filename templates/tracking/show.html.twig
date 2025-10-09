@@ -1,0 +1,436 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi de votre devis - {{ quote.quoteNumber }} - Duo Import MDG{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .tracking-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .tracking-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .tracking-card-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tracking-card-body {
+            padding: 2rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .status-pending { background-color: #ffc107; color: #000; }
+        .status-in_progress { background-color: #17a2b8; color: white; }
+        .status-completed { background-color: #28a745; color: white; }
+        .status-rejected { background-color: #dc3545; color: white; }
+        .status-accepted { background-color: #28a745; color: white; }
+        .status-declined { background-color: #ffc107; color: #000; }
+        .status-shipped { background-color: #6f42c1; color: white; }
+        .status-delivered { background-color: #20c997; color: white; }
+        .status-canceled { background-color: #6c757d; color: white; }
+        
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 2rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -0.5rem;
+            top: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background: #0d6efd;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #dee2e6;
+        }
+        
+        .timeline-item.completed::before {
+            background: #28a745;
+        }
+        
+        .timeline-item.rejected::before {
+            background: #dc3545;
+        }
+        
+        .timeline-item.current::before {
+            background: #ffc107;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+        }
+        
+        .timeline-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .timeline-comment {
+            color: #6c757d;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+        
+        .quote-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .info-value {
+            color: #6c757d;
+        }
+        
+        .share-section {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .share-link {
+            background: white;
+            border: 1px solid #0d6efd;
+            border-radius: 5px;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        
+        .btn-copy {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+        
+        .btn-copy:hover {
+            background: #0b5ed7;
+        }
+        
+        .offers-section {
+            margin-top: 2rem;
+        }
+        
+        .offer-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .offer-status {
+            float: right;
+        }
+        
+        @media (max-width: 768px) {
+            .tracking-header {
+                padding: 2rem 0;
+            }
+            
+            .tracking-card-body {
+                padding: 1rem;
+            }
+            
+            .timeline {
+                padding-left: 1.5rem;
+            }
+            
+            .timeline::before {
+                left: 0.75rem;
+            }
+            
+            .timeline-item {
+                padding-left: 1.5rem;
+            }
+            
+            .timeline-item::before {
+                left: -0.25rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="tracking-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="fas fa-shipping-fast me-3"></i>
+                    Suivi de votre devis
+                </h1>
+                <p class="mb-0 fs-5">Numéro de devis : <strong>{{ quote.quoteNumber }}</strong></p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <span class="status-badge status-{{ quote.status }}">
+                    {{ quoteTrackerService.getStatusLabel(quote.status) }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Informations du devis -->
+    <div class="tracking-card">
+        <div class="tracking-card-header">
+            <h3 class="mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                Informations du devis
+            </h3>
+        </div>
+        <div class="tracking-card-body">
+            <div class="quote-info">
+                <div class="info-row">
+                    <span class="info-label">Numéro de devis :</span>
+                    <span class="info-value">{{ quote.quoteNumber }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Client :</span>
+                    <span class="info-value">{{ quote.fullName }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date de création :</span>
+                    <span class="info-value">{{ quote.createdAt|date('d/m/Y à H:i') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Dernière mise à jour :</span>
+                    <span class="info-value">
+                        {% if quote.updatedAt %}
+                            {{ quote.updatedAt|date('d/m/Y à H:i') }}
+                        {% else %}
+                            {{ quote.createdAt|date('d/m/Y à H:i') }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Statut actuel :</span>
+                    <span class="info-value">
+                        <span class="status-badge status-{{ quote.status }}">
+                            {{ quoteTrackerService.getStatusLabel(quote.status) }}
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline des statuts -->
+    <div class="tracking-card">
+        <div class="tracking-card-header">
+            <h3 class="mb-0">
+                <i class="fas fa-history me-2"></i>
+                Historique des statuts
+            </h3>
+        </div>
+        <div class="tracking-card-body">
+            {% if statusHistory is not empty %}
+                <div class="timeline">
+                    {% for history in statusHistory %}
+                        <div class="timeline-item {% if loop.first %}current{% endif %}">
+                            <div class="timeline-content">
+                                <div class="timeline-date">
+                                    {{ history.createdAt|date('d/m/Y à H:i') }}
+                                </div>
+                                <div class="timeline-title">
+                                    {% if history.oldStatus == 'new' %}
+                                        Devis créé
+                                    {% else %}
+                                        Changement de statut : {{ history.oldStatusLabel }} → {{ history.newStatusLabel }}
+                                    {% endif %}
+                                </div>
+                                {% if history.comment %}
+                                    <div class="timeline-comment">
+                                        "{{ history.comment }}"
+                                    </div>
+                                {% endif %}
+                                {% if history.changedBy %}
+                                    <small class="text-muted">
+                                        Modifié par : {{ history.changedBy }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-info-circle fa-2x mb-3"></i>
+                    <p>Aucun historique disponible pour ce devis.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Offres associées -->
+    {% if offers is not empty %}
+        <div class="tracking-card offers-section">
+            <div class="tracking-card-header">
+                <h3 class="mb-0">
+                    <i class="fas fa-file-invoice me-2"></i>
+                    Offres associées
+                </h3>
+            </div>
+            <div class="tracking-card-body">
+                {% for offer in offers %}
+                    <div class="offer-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="mb-1">{{ offer.title }}</h5>
+                                <p class="text-muted mb-2">{{ offer.description|slice(0, 100) }}{% if offer.description|length > 100 %}...{% endif %}</p>
+                                <small class="text-muted">
+                                    Créée le {{ offer.createdAt|date('d/m/Y à H:i') }}
+                                </small>
+                            </div>
+                            <div class="offer-status">
+                                <span class="status-badge status-{{ offer.status }}">
+                                    {% if offer.status == 'draft' %}Brouillon
+                                    {% elseif offer.status == 'sent' %}Envoyée
+                                    {% elseif offer.status == 'accepted' %}Acceptée
+                                    {% elseif offer.status == 'declined' %}Refusée
+                                    {% else %}{{ offer.status|title }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Partage du lien de suivi -->
+    <div class="share-section">
+        <h4 class="mb-3">
+            <i class="fas fa-share-alt me-2"></i>
+            Partager le suivi
+        </h4>
+        <p class="mb-3">Vous pouvez partager ce lien avec d'autres personnes pour qu'elles puissent suivre l'évolution de votre devis :</p>
+        <div class="d-flex align-items-center">
+            <div class="share-link flex-grow-1">
+                {{ url('app_tracking_show', {'token': trackingToken}) }}
+            </div>
+            <button class="btn-copy" onclick="copyToClipboard()">
+                <i class="fas fa-copy"></i> Copier
+            </button>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="text-center mt-4 mb-5">
+        <a href="{{ path('app_tracking_search') }}" class="btn btn-outline-primary me-3">
+            <i class="fas fa-search me-2"></i>
+            Rechercher un autre devis
+        </a>
+        <a href="{{ path('app_quote') }}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>
+            Nouvelle demande de devis
+        </a>
+    </div>
+</div>
+
+<script>
+function copyToClipboard() {
+    const shareLink = document.querySelector('.share-link');
+    const text = shareLink.textContent;
+    
+    navigator.clipboard.writeText(text).then(function() {
+        const button = document.querySelector('.btn-copy');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copié !';
+        button.style.background = '#28a745';
+        
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.style.background = '#0d6efd';
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Erreur lors de la copie: ', err);
+    });
+}
+
+// Auto-refresh de la page toutes les 5 minutes
+setTimeout(function() {
+    location.reload();
+}, 300000); // 5 minutes
+</script>
+{% endblock %}

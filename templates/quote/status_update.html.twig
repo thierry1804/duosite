@@ -1,0 +1,326 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mise à jour du statut - {{ quote.quoteNumber }} - Duo Import MDG{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .status-update-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .status-update-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .status-update-header-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .status-update-body {
+            padding: 2rem;
+        }
+        
+        .current-status {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #0d6efd;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .status-pending { background-color: #ffc107; color: #000; }
+        .status-in_progress { background-color: #17a2b8; color: white; }
+        .status-completed { background-color: #28a745; color: white; }
+        .status-rejected { background-color: #dc3545; color: white; }
+        .status-accepted { background-color: #28a745; color: white; }
+        .status-declined { background-color: #ffc107; color: #000; }
+        .status-shipped { background-color: #6f42c1; color: white; }
+        .status-delivered { background-color: #20c997; color: white; }
+        .status-canceled { background-color: #6c757d; color: white; }
+        
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+        
+        .transitions-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .transition-item {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            margin: 0.25rem;
+            font-size: 0.9rem;
+        }
+        
+        .quote-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .info-value {
+            color: #6c757d;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="status-update-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="fas fa-edit me-3"></i>
+                    Mise à jour du statut
+                </h1>
+                <p class="mb-0 fs-5">Devis : <strong>{{ quote.quoteNumber }}</strong></p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour au devis
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Informations du devis -->
+    <div class="status-update-card">
+        <div class="status-update-header-card">
+            <h3 class="mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                Informations du devis
+            </h3>
+        </div>
+        <div class="status-update-body">
+            <div class="quote-info">
+                <div class="info-row">
+                    <span class="info-label">Numéro de devis :</span>
+                    <span class="info-value">{{ quote.quoteNumber }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Client :</span>
+                    <span class="info-value">{{ quote.fullName }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Email :</span>
+                    <span class="info-value">{{ quote.email }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Date de création :</span>
+                    <span class="info-value">{{ quote.createdAt|date('d/m/Y à H:i') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire de mise à jour -->
+    <div class="status-update-card">
+        <div class="status-update-header-card">
+            <h3 class="mb-0">
+                <i class="fas fa-edit me-2"></i>
+                Changer le statut
+            </h3>
+        </div>
+        <div class="status-update-body">
+            <div class="current-status">
+                <h5 class="mb-2">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Statut actuel
+                </h5>
+                <span class="status-badge status-{{ currentStatus }}">
+                    {% if currentStatus == 'pending' %}En attente
+                    {% elseif currentStatus == 'in_progress' %}En cours
+                    {% elseif currentStatus == 'completed' %}Terminé
+                    {% elseif currentStatus == 'rejected' %}Rejeté
+                    {% elseif currentStatus == 'accepted' %}Accepté
+                    {% elseif currentStatus == 'declined' %}Refusé
+                    {% elseif currentStatus == 'shipped' %}Expédié
+                    {% elseif currentStatus == 'delivered' %}Livré
+                    {% elseif currentStatus == 'canceled' %}Annulé
+                    {% else %}{{ currentStatus|title }}
+                    {% endif %}
+                </span>
+            </div>
+
+            {{ form_start(form) }}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.status) }}
+                        {{ form_widget(form.status) }}
+                        {{ form_errors(form.status) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Statut actuel
+                        </label>
+                        <div class="form-control-plaintext">
+                            <span class="status-badge status-{{ currentStatus }}">
+                                {% if currentStatus == 'pending' %}En attente
+                                {% elseif currentStatus == 'in_progress' %}En cours
+                                {% elseif currentStatus == 'completed' %}Terminé
+                                {% elseif currentStatus == 'rejected' %}Rejeté
+                                {% elseif currentStatus == 'accepted' %}Accepté
+                                {% elseif currentStatus == 'declined' %}Refusé
+                                {% elseif currentStatus == 'shipped' %}Expédié
+                                {% elseif currentStatus == 'delivered' %}Livré
+                                {% elseif currentStatus == 'canceled' %}Annulé
+                                {% else %}{{ currentStatus|title }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form_label(form.comment) }}
+                    {{ form_widget(form.comment) }}
+                    {{ form_errors(form.comment) }}
+                    <div class="form-text">
+                        <i class="fas fa-lightbulb me-1"></i>
+                        Un commentaire sera ajouté à l'historique et peut être visible par le client.
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>
+                        Annuler
+                    </a>
+                    {{ form_widget(form.submit) }}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <!-- Transitions possibles -->
+    {% if possibleTransitions is not empty %}
+        <div class="transitions-info">
+            <h5 class="mb-3">
+                <i class="fas fa-route me-2"></i>
+                Transitions possibles depuis le statut actuel
+            </h5>
+            <p class="text-muted mb-3">Vous pouvez changer le statut vers :</p>
+            {% for status, label in possibleTransitions %}
+                <span class="transition-item">
+                    <i class="fas fa-arrow-right me-1"></i>
+                    {{ label }}
+                </span>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Avertissement -->
+    <div class="alert alert-warning" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Attention :</strong> Le changement de statut déclenchera automatiquement :
+        <ul class="mb-0 mt-2">
+            <li>L'enregistrement dans l'historique du devis</li>
+            <li>L'envoi d'une notification email au client (si applicable)</li>
+            <li>L'envoi d'une notification email à l'administrateur (si applicable)</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+// Validation du formulaire
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const statusSelect = document.querySelector('select[name="form[status]"]');
+    const submitButton = document.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function(e) {
+        const currentStatus = '{{ currentStatus }}';
+        const newStatus = statusSelect.value;
+        
+        if (currentStatus === newStatus) {
+            e.preventDefault();
+            alert('Le nouveau statut doit être différent du statut actuel.');
+            return;
+        }
+        
+        // Confirmation pour les changements critiques
+        const criticalStatuses = ['rejected', 'canceled', 'declined'];
+        if (criticalStatuses.includes(newStatus)) {
+            const confirmed = confirm('Êtes-vous sûr de vouloir passer le devis au statut "' + newStatus + '" ? Cette action peut avoir des conséquences importantes.');
+            if (!confirmed) {
+                e.preventDefault();
+                return;
+            }
+        }
+        
+        // Désactiver le bouton pour éviter les double-clics
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Mise à jour en cours...';
+    });
+});
+</script>
+{% endblock %}

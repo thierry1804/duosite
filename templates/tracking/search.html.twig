@@ -1,0 +1,353 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rechercher un devis - Duo Import MDG{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .search-header {
+            background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .search-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .search-form {
+            padding: 2rem;
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .btn-search {
+            background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+            color: white;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+        
+        .result-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .result-body {
+            padding: 2rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .status-pending { background-color: #ffc107; color: #000; }
+        .status-in_progress { background-color: #17a2b8; color: white; }
+        .status-completed { background-color: #28a745; color: white; }
+        .status-rejected { background-color: #dc3545; color: white; }
+        .status-accepted { background-color: #28a745; color: white; }
+        .status-declined { background-color: #ffc107; color: #000; }
+        .status-shipped { background-color: #6f42c1; color: white; }
+        .status-delivered { background-color: #20c997; color: white; }
+        .status-canceled { background-color: #6c757d; color: white; }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid #0d6efd;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        
+        .btn-track {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-track:hover {
+            background: #0b5ed7;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .help-text {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .help-text h5 {
+            color: #0d6efd;
+            margin-bottom: 1rem;
+        }
+        
+        .help-text ul {
+            margin-bottom: 0;
+        }
+        
+        .help-text li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="search-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="mb-3">
+                    <i class="fas fa-search me-3"></i>
+                    Rechercher un devis
+                </h1>
+                <p class="mb-0 fs-5">Entrez votre numéro de devis et votre email pour accéder au suivi</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Aide -->
+            <div class="help-text">
+                <h5>
+                    <i class="fas fa-info-circle me-2"></i>
+                    Comment retrouver votre devis ?
+                </h5>
+                <ul>
+                    <li><strong>Numéro de devis :</strong> Trouvez-le dans l'email de confirmation que nous vous avons envoyé</li>
+                    <li><strong>Email :</strong> Utilisez l'adresse email que vous avez fournie lors de la demande de devis</li>
+                    <li><strong>Format du numéro :</strong> DUO-YYYYMMDD-XXXX (ex: DUO-20250101-A1B2)</li>
+                </ul>
+            </div>
+
+            <!-- Formulaire de recherche -->
+            <div class="search-card">
+                <div class="search-form">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="quote_number" class="form-label">
+                                    <i class="fas fa-hashtag me-2"></i>
+                                    Numéro de devis
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="quote_number" 
+                                       name="quote_number" 
+                                       placeholder="DUO-20250101-A1B2"
+                                       value="{{ app.request.request.get('quote_number') }}"
+                                       required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    Adresse email
+                                </label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       placeholder="votre@email.com"
+                                       value="{{ app.request.request.get('email') }}"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-search">
+                                <i class="fas fa-search me-2"></i>
+                                Rechercher mon devis
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Message d'erreur -->
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <!-- Résultat de la recherche -->
+            {% if quote and not error %}
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3 class="mb-0">
+                            <i class="fas fa-check-circle me-2 text-success"></i>
+                            Devis trouvé !
+                        </h3>
+                    </div>
+                    <div class="result-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Numéro de devis</div>
+                                <div class="info-value">{{ quote.quoteNumber }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Client</div>
+                                <div class="info-value">{{ quote.fullName }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Date de création</div>
+                                <div class="info-value">{{ quote.createdAt|date('d/m/Y à H:i') }}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Statut actuel</div>
+                                <div class="info-value">
+                                    <span class="status-badge status-{{ quote.status }}">
+                                        {% if quote.status == 'pending' %}En attente
+                                        {% elseif quote.status == 'in_progress' %}En cours
+                                        {% elseif quote.status == 'completed' %}Terminé
+                                        {% elseif quote.status == 'rejected' %}Rejeté
+                                        {% elseif quote.status == 'accepted' %}Accepté
+                                        {% elseif quote.status == 'declined' %}Refusé
+                                        {% elseif quote.status == 'shipped' %}Expédié
+                                        {% elseif quote.status == 'delivered' %}Livré
+                                        {% elseif quote.status == 'canceled' %}Annulé
+                                        {% else %}{{ quote.status|title }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <a href="{{ path('app_tracking_show', {'token': quote.trackingToken}) }}" class="btn-track">
+                                <i class="fas fa-eye me-2"></i>
+                                Suivre ce devis
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="text-center mt-4 mb-5">
+                <a href="{{ path('app_quote') }}" class="btn btn-outline-primary me-3">
+                    <i class="fas fa-plus me-2"></i>
+                    Nouvelle demande de devis
+                </a>
+                <a href="{{ path('app_contact') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-envelope me-2"></i>
+                    Nous contacter
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-focus sur le premier champ
+document.addEventListener('DOMContentLoaded', function() {
+    const quoteNumberInput = document.getElementById('quote_number');
+    if (quoteNumberInput && !quoteNumberInput.value) {
+        quoteNumberInput.focus();
+    }
+});
+
+// Validation en temps réel
+document.getElementById('quote_number').addEventListener('input', function(e) {
+    const value = e.target.value.toUpperCase();
+    e.target.value = value;
+});
+
+// Soumission du formulaire avec validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const quoteNumber = document.getElementById('quote_number').value.trim();
+    const email = document.getElementById('email').value.trim();
+    
+    if (!quoteNumber || !email) {
+        e.preventDefault();
+        alert('Veuillez remplir tous les champs.');
+        return;
+    }
+    
+    // Validation basique du format du numéro de devis
+    const quotePattern = /^DUO-\d{8}-[A-Z0-9]{4}$/;
+    if (!quotePattern.test(quoteNumber)) {
+        e.preventDefault();
+        alert('Le format du numéro de devis est incorrect. Format attendu : DUO-YYYYMMDD-XXXX');
+        return;
+    }
+});
+</script>
+{% endblock %}

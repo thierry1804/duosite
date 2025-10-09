@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Admin - {{ event.getEmailSubject() }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #dc3545;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .status-info { background-color: #17a2b8; color: white; }
+        .status-success { background-color: #28a745; color: white; }
+        .status-warning { background-color: #ffc107; color: black; }
+        .status-error { background-color: #dc3545; color: white; }
+        .quote-details {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+        .admin-link {
+            background-color: #dc3545;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔔 Notification Admin</h1>
+        <p>Changement de statut de devis</p>
+    </div>
+    
+    <div class="content">
+        <h2>Action requise</h2>
+        
+        <p>Un changement de statut important a été effectué sur un devis :</p>
+        
+        <div class="quote-details">
+            <h3>Détails du devis</h3>
+            <p><strong>Numéro de devis :</strong> {{ quote.quoteNumber }}</p>
+            <p><strong>Client :</strong> {{ quote.firstName }} {{ quote.lastName }}</p>
+            <p><strong>Email :</strong> {{ quote.email }}</p>
+            <p><strong>Téléphone :</strong> {{ quote.phone }}</p>
+            <p><strong>Date de création :</strong> {{ quote.createdAt|date('d/m/Y à H:i') }}</p>
+            
+            <h4>Changement de statut</h4>
+            <p><strong>Ancien statut :</strong> {{ event.getOldStatus() }}</p>
+            <p><strong>Nouveau statut :</strong> 
+                <span class="status-badge status-{{ event.getNotificationType() }}">
+                    {{ event.getNewStatus() }}
+                </span>
+            </p>
+            <p><strong>Modifié par :</strong> {{ event.getChangedBy() }}</p>
+            <p><strong>Date/heure :</strong> {{ "now"|date('d/m/Y à H:i') }}</p>
+            
+            {% if event.getComment() %}
+                <p><strong>Commentaire :</strong> {{ event.getComment() }}</p>
+            {% endif %}
+        </div>
+        
+        {% if event.getNewStatus() == 'accepted' %}
+            <div style="background-color: #d4edda; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <h4>✅ Devis accepté</h4>
+                <p>Le client a accepté le devis. Vous pouvez maintenant procéder à la conversion en commande.</p>
+            </div>
+        {% elseif event.getNewStatus() == 'declined' %}
+            <div style="background-color: #f8d7da; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <h4>❌ Devis refusé</h4>
+                <p>Le client a refusé le devis. Vous pouvez proposer une nouvelle offre ou clôturer le dossier.</p>
+            </div>
+        {% elseif event.getNewStatus() == 'canceled' %}
+            <div style="background-color: #f8d7da; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                <h4>🚫 Devis annulé</h4>
+                <p>Le devis a été annulé. Vérifiez les raisons et prenez les mesures appropriées.</p>
+            </div>
+        {% endif %}
+        
+        <div style="text-align: center;">
+            <a href="{{ url('app_quote_view', {'id': quote.id}) }}" class="admin-link">
+                Voir le devis dans l'admin
+            </a>
+        </div>
+        
+        <p><strong>Actions recommandées :</strong></p>
+        <ul>
+            {% if event.getNewStatus() == 'accepted' %}
+                <li>Convertir le devis en commande</li>
+                <li>Préparer les documents de commande</li>
+                <li>Planifier l'expédition</li>
+            {% elseif event.getNewStatus() == 'declined' %}
+                <li>Analyser les raisons du refus</li>
+                <li>Proposer une contre-offre si approprié</li>
+                <li>Mettre à jour le statut du devis</li>
+            {% elseif event.getNewStatus() == 'canceled' %}
+                <li>Vérifier les raisons de l'annulation</li>
+                <li>Archiver le dossier</li>
+                <li>Notifier l'équipe commerciale</li>
+            {% endif %}
+        </ul>
+    </div>
+    
+    <div class="footer">
+        <p>Duo Import MDG - Système de notification</p>
+        <p>Cet email a été envoyé automatiquement par le système de tracking.</p>
+    </div>
+</body>
+</html>

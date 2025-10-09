@@ -38,5 +38,17 @@ services:
             $entityManager: '@doctrine.orm.entity_manager'
             $quoteRepository: '@App\Repository\QuoteRepository'
 
+    # Service de tracking des devis
+    App\Service\QuoteTrackerService:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $eventDispatcher: '@event_dispatcher'
+            $security: '@security.helper'
+
+    # Event listener pour les changements de statut
+    App\EventListener\QuoteStatusChangeListener:
+        tags:
+            - { name: kernel.event_listener, event: App\Event\QuoteStatusChangedEvent, method: onQuoteStatusChanged }
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

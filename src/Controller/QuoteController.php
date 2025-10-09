@@ -23,6 +23,7 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Address;
 use App\Service\QuoteFeeCalculator;
 use App\Service\UserIdentityTracker;
+use App\Service\QuoteTrackerService;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -190,6 +191,10 @@ class QuoteController extends AbstractController
                     $entityManager->persist($quote);
                     $entityManager->flush();
                     
+                    // Créer l'historique initial du devis
+                    $quoteTrackerService = $this->container->get(QuoteTrackerService::class);
+                    $quoteTrackerService->createInitialHistory($quote, $this->getUser()?->getEmail() ?? 'system');
+                    
                     // Calcul des frais de devis
                     $feeDetails = $feeCalculator->calculateFee($quote);
                     
@@ -301,33 +306,94 @@ class QuoteController extends AbstractController
     }
 
     #[Route('/quote/{id}/status/{status}', name: 'app_quote_status')]
-    public function updateStatus(Quote $quote, string $status, EntityManagerInterface $entityManager): Response
+    public function updateStatus(Quote $quote, string $status, QuoteTrackerService $quoteTrackerService): Response
     {
         // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
-        // Vérifier que le statut est valide
-        $validStatuses = ['pending', 'in_progress', 'completed', 'rejected'];
-        if (!in_array($status, $validStatuses)) {
-            throw $this->createNotFoundException('Statut invalide');
+        try {
+            // Utiliser le service de tracking pour changer le statut
+            $quoteTrackerService->changeStatus($quote, $status, null, $this->getUser()?->getEmail());
+            
+            // Si le statut est "completed", marquer comme traité
+            if ($status === 'completed') {
+                $quote->setProcessed(true);
+                $quoteTrackerService->getEntityManager()->flush();
+            }
+            
+            $this->addFlash('success', 'Le statut du devis a été mis à jour avec succès.');
+            
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', 'Erreur lors de la mise à jour du statut : ' . $e->getMessage());
         }
         
-        // Mettre à jour le statut
-        $quote->setStatus($status);
-        
-        // Si le statut est "completed", marquer comme traité
-        if ($status === 'completed') {
-            $quote->setProcessed(true);
-        }
-        
-        $entityManager->flush();
-        
-        $this->addFlash('success', 'Le statut du devis a été mis à jour.');
         return $this->redirectToRoute('app_quote_dashboard');
     }
 
+    #[Route('/quote/{id}/status-update', name: 'app_quote_status_update', methods: ['GET', 'POST'])]
+    public function updateStatusWithComment(Request $request, Quote $quote, QuoteTrackerService $quoteTrackerService): Response
+    {
+        // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        // Créer un formulaire pour le changement de statut avec commentaire
+        $form = $this->createFormBuilder()
+            ->add('status', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
+                'label' => 'Nouveau statut',
+                'choices' => $quoteTrackerService->getValidStatuses(),
+                'data' => $quote->getStatus(),
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('comment', \Symfony\Component\Form\Extension\Core\Type\TextareaType::class, [
+                'label' => 'Commentaire (optionnel)',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'rows' => 3,
+                    'placeholder' => 'Ajoutez un commentaire pour expliquer le changement de statut...'
+                ]
+            ])
+            ->add('submit', \Symfony\Component\Form\Extension\Core\Type\SubmitType::class, [
+                'label' => 'Mettre à jour le statut',
+                'attr' => ['class' => 'btn btn-primary']
+            ])
+            ->getForm();
+        
+        $form->handleRequest($request);
+        
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $newStatus = $data['status'];
+            $comment = $data['comment'];
+            
+            try {
+                // Utiliser le service de tracking pour changer le statut
+                $quoteTrackerService->changeStatus($quote, $newStatus, $comment, $this->getUser()?->getEmail());
+                
+                // Si le statut est "completed", marquer comme traité
+                if ($newStatus === 'completed') {
+                    $quote->setProcessed(true);
+                    $quoteTrackerService->getEntityManager()->flush();
+                }
+                
+                $this->addFlash('success', 'Le statut du devis a été mis à jour avec succès.');
+                return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+                
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('error', 'Erreur lors de la mise à jour du statut : ' . $e->getMessage());
+            }
+        }
+        
+        return $this->render('quote/status_update.html.twig', [
+            'quote' => $quote,
+            'form' => $form->createView(),
+            'currentStatus' => $quote->getStatus(),
+            'possibleTransitions' => $quoteTrackerService->getPossibleTransitions($quote->getStatus())
+        ]);
+    }
+
     #[Route('/quote/{id}/view', name: 'app_quote_view')]
-    public function viewQuote(Quote $quote, QuoteFeeCalculator $feeCalculator, EntityManagerInterface $entityManager): Response
+    public function viewQuote(Quote $quote, QuoteFeeCalculator $feeCalculator, EntityManagerInterface $entityManager, QuoteTrackerService $quoteTrackerService): Response
     {
         // Vérifier que l'utilisateur a le droit de voir ce devis
         $user = $this->getUser();
@@ -344,18 +410,23 @@ class QuoteController extends AbstractController
         // Calculer les frais de devis pour avoir les informations détaillées
         $feeDetails = $feeCalculator->calculateFee($quote);
         
+        // Récupérer l'historique des changements de statut
+        $statusHistory = $quoteTrackerService->getStatusHistory($quote);
+        
         // Sauvegarder les changements potentiels de statut de paiement
         $entityManager->flush();
         
         return $this->render('quote/view.html.twig', [
             'quote' => $quote,
             'feeDetails' => $feeDetails,
-            'offers' => $offers
+            'offers' => $offers,
+            'statusHistory' => $statusHistory,
+            'quoteTrackerService' => $quoteTrackerService
         ]);
     }
 
     #[Route('/quote/{id}/process', name: 'app_quote_process')]
-    public function processQuote(Quote $quote, EntityManagerInterface $entityManager): Response
+    public function processQuote(Quote $quote, QuoteTrackerService $quoteTrackerService): Response
     {
         // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -369,11 +440,20 @@ class QuoteController extends AbstractController
             }
         }
         
-        // Mettre à jour le statut du devis à "in_progress"
-        $quote->setStatus('in_progress');
-        $entityManager->flush();
-        
-        $this->addFlash('success', 'Le devis a été marqué comme "En cours de traitement".');
+        try {
+            // Utiliser le service de tracking pour changer le statut
+            $quoteTrackerService->changeStatus(
+                $quote, 
+                'in_progress', 
+                'Devis pris en charge par l\'équipe commerciale', 
+                $this->getUser()?->getEmail()
+            );
+            
+            $this->addFlash('success', 'Le devis a été marqué comme "En cours de traitement".');
+            
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', 'Erreur lors de la mise à jour du statut : ' . $e->getMessage());
+        }
         
         // Rediriger vers la page de détail du devis
         return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);

@@ -93,6 +93,43 @@
                         </div>
                     </div>
 
+                    {# Section de suivi #}
+                    <div class="card border-0 bg-light rounded-3 mb-4">
+                        <div class="card-body p-4">
+                            <h5 class="card-title d-flex align-items-center mb-3">
+                                <i class="fas fa-truck text-primary me-2"></i>
+                                Suivi de votre devis
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <p class="text-muted mb-3">
+                                        Suivez l'avancement de votre devis en temps réel grâce à notre système de suivi.
+                                    </p>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ path('app_tracking_show', {'token': quote.trackingToken}) }}" 
+                                           class="btn btn-primary rounded-3 px-4 py-2" 
+                                           target="_blank">
+                                            <i class="fas fa-eye me-2"></i>
+                                            Suivre mon devis
+                                        </a>
+                                        <button type="button" class="btn btn-outline-secondary rounded-3 px-3 py-2" 
+                                                onclick="copyToClipboard('{{ quote.trackingToken }}')"
+                                                title="Copier le token">
+                                            <i class="fas fa-copy me-2"></i>
+                                            Copier le token
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-end">
+                                        <small class="text-muted d-block mb-1">Token de suivi :</small>
+                                        <code class="bg-white p-2 rounded border d-block text-break">{{ quote.trackingToken }}</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card border-0 bg-light rounded-3 mb-4">
                         <div class="card-body p-4">
                             <h5 class="card-title d-flex align-items-center mb-3">
@@ -256,5 +293,26 @@
             });
         });
     });
+
+    // Fonction pour copier le token de suivi
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Afficher une notification de succès
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check me-2"></i>Copié !';
+            button.classList.remove('btn-outline-secondary');
+            button.classList.add('btn-success');
+            
+            setTimeout(function() {
+                button.innerHTML = originalText;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-secondary');
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Erreur lors de la copie: ', err);
+            alert('Erreur lors de la copie du token');
+        });
+    }
 </script>
 {% endblock %} 

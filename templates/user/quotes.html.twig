@@ -47,6 +47,7 @@
                                         <th>Numéro</th>
                                         <th>Date</th>
                                         <th>Statut</th>
+                                        <th>Suivi</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -65,6 +66,14 @@
                                                 {% elseif quote.status == 'rejected' %}
                                                     <span class="badge bg-danger rounded-pill px-3 py-2">Rejeté</span>
                                                 {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ path('app_tracking_show', {'token': quote.trackingToken}) }}" 
+                                                   class="btn btn-sm btn-outline-info rounded-pill" 
+                                                   target="_blank"
+                                                   title="Suivre le devis">
+                                                    <i data-lucide="truck" class="me-1"></i> Suivre
+                                                </a>
                                             </td>
                                             <td>
                                                 <a href="{{ path('app_user_quote_show', {'id': quote.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill">

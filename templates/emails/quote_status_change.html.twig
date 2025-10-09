@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.getEmailSubject() }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .status-info { background-color: #17a2b8; color: white; }
+        .status-success { background-color: #28a745; color: white; }
+        .status-warning { background-color: #ffc107; color: black; }
+        .status-error { background-color: #dc3545; color: white; }
+        .quote-details {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #0d6efd;
+        }
+        .tracking-link {
+            background-color: #0d6efd;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Duo Import MDG</h1>
+        <p>Mise à jour de votre devis</p>
+    </div>
+    
+    <div class="content">
+        <h2>Bonjour {{ quote.firstName }} {{ quote.lastName }},</h2>
+        
+        <p>Nous vous informons que le statut de votre devis a été mis à jour :</p>
+        
+        <div class="quote-details">
+            <h3>Détails du devis</h3>
+            <p><strong>Numéro de devis :</strong> {{ quote.quoteNumber }}</p>
+            <p><strong>Date de création :</strong> {{ quote.createdAt|date('d/m/Y à H:i') }}</p>
+            <p><strong>Nouveau statut :</strong> 
+                <span class="status-badge status-{{ event.getNotificationType() }}">
+                    {{ event.getNotificationMessage() }}
+                </span>
+            </p>
+            
+            {% if event.getComment() %}
+                <p><strong>Commentaire :</strong> {{ event.getComment() }}</p>
+            {% endif %}
+        </div>
+        
+        <p>{{ event.getNotificationMessage() }}</p>
+        
+        {% if event.getNewStatus() == 'waiting_customer' %}
+            <p>Veuillez nous faire savoir si vous acceptez ou refusez cette offre dans les plus brefs délais.</p>
+        {% endif %}
+        
+        <div style="text-align: center;">
+            <a href="{{ url('app_tracking_show', {'token': quote.trackingToken}) }}" class="tracking-link">
+                Suivre mon devis en temps réel
+            </a>
+        </div>
+        
+        <p>Vous pouvez également suivre l'évolution de votre devis à tout moment en utilisant le lien de suivi ci-dessus.</p>
+        
+        <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+        
+        <p>Cordialement,<br>
+        L'équipe Duo Import MDG</p>
+    </div>
+    
+    <div class="footer">
+        <p>Duo Import MDG - Import-Export Madagascar</p>
+        <p>Email: commercial@duoimport.mg | Téléphone: +261 XX XX XX XX</p>
+        <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+    </div>
+</body>
+</html>
