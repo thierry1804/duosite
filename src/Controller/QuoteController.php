@@ -398,11 +398,6 @@ class QuoteController extends AbstractController
         // Charger le devis manuellement
         $quote = $entityManager->getRepository(Quote::class)->find($id);
         
-        // Debug: vérifier ce qui est chargé
-        dump('Quote ID: ' . $id);
-        dump('Quote object: ', $quote);
-        dump('Quote type: ', gettype($quote));
-        
         // Vérifier que le devis existe
         if (!$quote) {
             throw $this->createNotFoundException('Devis introuvable.');
