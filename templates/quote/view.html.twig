@@ -16,664 +16,665 @@
             <p>Le devis demandé n'a pas pu être chargé.</p>
         </div>
     {% else %}
-    {% if app.request.get('_route') starts with 'app_admin' or is_granted('ROLE_ADMIN') %}
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Détails du devis #{{ quote.id }}</h1>
-            <div class="btn-group">
-                {% if quote.status == 'pending' %}
-                    {% if quote.isPaymentRequired and not quote.isPaid %}
-                        <a href="{{ path('app_quote_mark_as_paid', {'id': quote.id}) }}" class="btn btn-success">
-                            <i data-lucide="credit-card" class="me-2"></i> Confirmer paiement
-                        </a>
-                        <button type="button" class="btn btn-info" disabled data-bs-toggle="tooltip" title="Le paiement est requis pour traiter ce devis">
-                            <i data-lucide="play" class="me-2"></i> Traiter
-                        </button>
-                    {% else %}
-                        <a href="{{ path('app_quote_process', {'id': quote.id}) }}" class="btn btn-info">
-                            <i data-lucide="play" class="me-2"></i> Traiter
+        {% if app.request.get('_route') starts with 'app_admin' or is_granted('ROLE_ADMIN') %}
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Détails du devis #{{ quote.id }}</h1>
+                <div class="btn-group">
+                    {% if quote.status == 'pending' %}
+                        {% if quote.isPaymentRequired and not quote.isPaid %}
+                            <a href="{{ path('app_quote_mark_as_paid', {'id': quote.id}) }}" class="btn btn-success">
+                                <i data-lucide="credit-card" class="me-2"></i> Confirmer paiement
+                            </a>
+                            <button type="button" class="btn btn-info" disabled data-bs-toggle="tooltip" title="Le paiement est requis pour traiter ce devis">
+                                <i data-lucide="play" class="me-2"></i> Traiter
+                            </button>
+                        {% else %}
+                            <a href="{{ path('app_quote_process', {'id': quote.id}) }}" class="btn btn-info">
+                                <i data-lucide="play" class="me-2"></i> Traiter
+                            </a>
+                        {% endif %}
+                    {% elseif quote.status == 'in_progress' %}
+                        <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'completed'}) }}" class="btn btn-success">
+                            <i data-lucide="check" class="me-2"></i> Marquer comme complété
                         </a>
                     {% endif %}
-                {% elseif quote.status == 'in_progress' %}
-                    <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'completed'}) }}" class="btn btn-success">
-                        <i data-lucide="check" class="me-2"></i> Marquer comme complété
+                    {% if quote.status != 'rejected' %}
+                        <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
+                            <i data-lucide="x" class="me-2"></i> Rejeter
+                        </a>
+                    {% endif %}
+                    {% if quote.trackingToken %}
+                        <a href="{{ path('app_tracking_show', {'token': quote.trackingToken}) }}" class="btn btn-info" target="_blank">
+                            <i data-lucide="external-link" class="me-2"></i> Voir le suivi public
+                        </a>
+                    {% endif %}
+                    <a href="{{ path('app_quote_dashboard') }}" class="btn btn-secondary">
+                        <i data-lucide="arrow-left" class="me-2"></i> Retour
                     </a>
-                {% endif %}
-                {% if quote.status != 'rejected' %}
-                    <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
-                        <i data-lucide="x" class="me-2"></i> Rejeter
-                    </a>
-                {% endif %}
-                {% if quote.trackingToken %}
-                    <a href="{{ path('app_tracking_show', {'token': quote.trackingToken}) }}" class="btn btn-info" target="_blank">
-                        <i data-lucide="external-link" class="me-2"></i> Voir le suivi public
-                    </a>
-                {% endif %}
-                <a href="{{ path('app_quote_dashboard') }}" class="btn btn-secondary">
-                    <i data-lucide="arrow-left" class="me-2"></i> Retour
-                </a>
-            </div>
-        </div>
-        
-        <div class="row">
-            <div class="col-md-8">
-                <div class="admin-card mb-4">
-                    <div class="admin-card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Informations du devis</h5>
-                        <div class="d-flex gap-2 align-items-center">
-                            {% if quote.isPaymentRequired %}
-                                {% if quote.isPaid %}
-                                    <span class="badge bg-success">Payé</span>
-                                {% else %}
-                                    <span class="badge bg-danger">Paiement requis</span>
-                                {% endif %}
-                            {% endif %}
-                            
-                            {% if quote.status == 'pending' %}
-                                <span class="badge bg-warning text-dark">En attente</span>
-                            {% elseif quote.status == 'in_progress' %}
-                                <span class="badge bg-info">En cours</span>
-                            {% elseif quote.status == 'completed' %}
-                                <span class="badge bg-success">Complété</span>
-                            {% elseif quote.status == 'rejected' %}
-                                <span class="badge bg-danger">Rejeté</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="admin-card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div class="d-flex align-items-center">
-                                <div class="me-4">
-                                    <i class="fas fa-calendar-alt fa-2x text-primary me-2"></i>
-                                    <span>{{ quote.createdAt|date('d/m/Y H:i') }}</span>
-                                </div>
-                                <div class="me-4">
-                                    <i class="fas fa-hashtag fa-2x text-secondary me-2"></i>
-                                    <span>{{ quote.quoteNumber }}</span>
-                                </div>
-                                <div>
-                                    <i class="fas fa-box fa-2x text-info me-2"></i>
-                                    <span>{{ quote.items|length }} produit(s)</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {% if quote.trackingToken %}
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-key fa-2x text-warning me-2"></i>
-                                    <div>
-                                        <small class="text-muted d-block">Token de suivi</small>
-                                        <code class="text-dark">{{ quote.trackingToken }}</code>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-link fa-2x text-primary me-2"></i>
-                                    <div>
-                                        <small class="text-muted d-block">Lien de suivi public</small>
-                                        <a href="{{ path('app_tracking_show', {'token': quote.trackingToken}) }}" target="_blank" class="text-primary">
-                                            Voir le suivi public
-                                            <i class="fas fa-external-link-alt ms-1"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                        
-                        <h6 class="mb-3">Produits demandés</h6>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Type de produit</th>
-                                        <th>Image</th>
-                                        <th>Description</th>
-                                        <th>Quantité</th>
-                                        <th>Budget unitaire</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in quote.items %}
-                                        <tr>
-                                            <td>{{ loop.index }}</td>
-                                            <td>{{ item.productType }}</td>
-                                            <td>
-                                                {% if item.photoFilename %}
-                                                    <a href="#" class="product-image-link" data-bs-toggle="modal" data-bs-target="#imageModal{{ loop.index }}">
-                                                        <i data-lucide="image" class="icon-md text-primary"></i>
-                                                    </a>
-                                                    
-                                                    <!-- Modal pour l'image -->
-                                                    <div class="modal fade" id="imageModal{{ loop.index }}" tabindex="-1" aria-labelledby="imageModalLabel{{ loop.index }}" aria-hidden="true">
-                                                        <div class="modal-dialog modal-dialog-centered">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title" id="imageModalLabel{{ loop.index }}">Image du produit</h5>
-                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                                                                </div>
-                                                                <div class="modal-body text-center">
-                                                                    <img src="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" alt="Image du produit" class="img-fluid">
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <a href="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" class="btn btn-primary" target="_blank">Voir en taille réelle</a>
-                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                {% else %}
-                                                    <span class="text-muted"><i data-lucide="image-off" class="icon-sm"></i></span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% set description = item.description %}
-                                                {% if description|length > 100 %}
-                                                    <div class="position-relative">
-                                                        <div class="description-preview d-flex align-items-center gap-2">
-                                                            <span class="description-short">{{ description|slice(0, 100)|nl2br|autolink|raw }}... <a href="#" class="text-primary description-expand-btn fw-medium">voir plus</a></span>
-                                                            <span class="description-full d-none">{{ description|nl2br|autolink|raw }} <a href="#" class="text-primary description-expand-btn fw-medium">voir moins</a></span>
-                                                        </div>
-                                                    </div>
-                                                {% else %}
-                                                    {{ description|nl2br|autolink|raw }}
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ item.quantity }}</td>
-                                            <td>
-                                                {% if item.budget %}
-                                                    {{ item.budget|number_format(0, ',', ' ') }} Ar
-                                                {% else %}
-                                                    <span class="text-muted">Non spécifié</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        {% if quote.additionalInfo %}
-                            <h6 class="mt-4 mb-3">Informations complémentaires</h6>
-                            <div class="alert alert-info">
-                                {{ quote.additionalInfo|nl2br }}
-                            </div>
-                        {% endif %}
-
-                        {% if quote.services|length > 0 %}
-                            <h6 class="mt-4 mb-3">Services souhaités</h6>
-                            <div class="mb-4">
-                                <div class="d-flex flex-wrap gap-2">
-                                    {% for service in quote.services %}
-                                        <span class="badge bg-light text-dark p-2 d-flex align-items-center">
-                                            <i data-lucide="check-circle" class="icon-sm text-success me-1"></i>
-                                            {{ service }}
-                                        </span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        {% endif %}
-
-                        {% if quote.shippingMethod|length > 0 %}
-                            <h6 class="mt-4 mb-3">Choix d'envoi</h6>
-                            <div class="mb-4">
-                                <div class="d-flex flex-wrap gap-2">
-                                    {% for method in quote.shippingMethod %}
-                                        <span class="badge bg-light text-dark p-2 d-flex align-items-center">
-                                            {% if method == 'maritime' %}
-                                                <i data-lucide="ship" class="icon-sm text-primary me-1"></i>
-                                                Envoi maritime (délai estimé: 50-70 jours)
-                                            {% elseif method == 'air_express' or method == 'aerien_express' %}
-                                                <i data-lucide="plane-takeoff" class="icon-sm text-primary me-1"></i>
-                                                Envoi aérien express (délai estimé: 3-7 jours)
-                                            {% elseif method == 'air_normal' or method == 'aerien_normal' %}
-                                                <i data-lucide="plane" class="icon-sm text-primary me-1"></i>
-                                                Envoi aérien normal (délai estimé: 15-30 jours)
-                                            {% else %}
-                                                <i data-lucide="package" class="icon-sm text-primary me-1"></i>
-                                                {{ method }}
-                                            {% endif %}
-                                        </span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
                 </div>
             </div>
             
-            <div class="col-md-4">
-                <div class="admin-card mb-4">
-                    <div class="admin-card-header">
-                        <h5 class="mb-0">Informations client</h5>
-                    </div>
-                    <div class="admin-card-body">
-                        {% if quote.user %}
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="flex-shrink-0">
-                                    <i data-lucide="user" class="icon-lg text-primary"></i>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <h6 class="mb-0">{{ quote.user.firstName }} {{ quote.user.lastName }}</h6>
-                                    <p class="text-muted mb-0">Compte créé le {{ quote.user.createdAt|date('d/m/Y') }}</p>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center">
-                                    <a href="mailto:{{ quote.user.email }}" class="btn btn-sm btn-light me-2" data-bs-toggle="tooltip" title="Email: {{ quote.user.email }}">
-                                        <i data-lucide="mail" class="icon-sm"></i>
-                                    </a>
-                                    <a href="tel:{{ quote.user.phone }}" class="btn btn-sm btn-light me-2" data-bs-toggle="tooltip" title="Téléphone: {{ quote.user.phone }}">
-                                        <i data-lucide="phone" class="icon-sm"></i>
-                                    </a>
-                                    <span class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Dernière connexion: {% if quote.user.lastLoginAt %}{{ quote.user.lastLoginAt|date('d/m/Y H:i') }}{% else %}Jamais connecté{% endif %}">
-                                        <i data-lucide="clock" class="icon-sm"></i>
-                                    </span>
-                                </div>
-                                <a href="{{ path('app_user_profile') }}" class="btn btn-sm btn-outline-primary">
-                                    <i data-lucide="external-link" class="icon-sm me-1"></i> Profil
-                                </a>
-                            </div>
-                        {% else %}
-                            <div class="alert alert-warning mb-3">
-                                <i data-lucide="alert-triangle" class="icon-sm me-2"></i> Utilisateur non enregistré
-                            </div>
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <h6 class="mb-0">{{ quote.fullName }}</h6>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <a href="mailto:{{ quote.email }}" class="btn btn-sm btn-light me-2" data-bs-toggle="tooltip" title="Email: {{ quote.email }}">
-                                    <i data-lucide="mail" class="icon-sm"></i>
-                                </a>
-                                <a href="tel:{{ quote.phone }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Téléphone: {{ quote.phone }}">
-                                    <i data-lucide="phone" class="icon-sm"></i>
-                                </a>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                {% if quote.isPaymentRequired or is_granted('ROLE_ADMIN') %}
-                <div class="admin-card mb-4">
-                    <div class="admin-card-header">
-                        <h5 class="mb-0">Informations de paiement</h5>
-                    </div>
-                    <div class="admin-card-body">
-                        {% set feeDetails = feeDetails is defined ? feeDetails : {} %}
-                        {% set isFirstQuote = feeDetails.isFirstQuote ?? (quote.user ? (quote.user.quotes|length <= 1) : true) %}
-                        
-                        <div class="mb-3">
-                            <p class="mb-2">
-                                <strong>Statut:</strong> 
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="admin-card mb-4">
+                        <div class="admin-card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Informations du devis</h5>
+                            <div class="d-flex gap-2 align-items-center">
                                 {% if quote.isPaymentRequired %}
                                     {% if quote.isPaid %}
                                         <span class="badge bg-success">Payé</span>
                                     {% else %}
                                         <span class="badge bg-danger">Paiement requis</span>
                                     {% endif %}
-                                {% else %}
-                                    <span class="badge bg-secondary">Non requis</span>
                                 {% endif %}
-                            </p>
-                            
-                            {% if isFirstQuote %}
-                                <div class="alert alert-info mb-3">
-                                    <i data-lucide="info" class="icon-sm me-2"></i>
-                                    <strong>Premier devis</strong> - Les {{ feeDetails.freeItemsLimit|default(3) }} premiers produits sont gratuits.
-                                </div>
-                            {% endif %}
-                            
-                            <div class="d-flex justify-content-between border-bottom py-2">
-                                <span>Nombre total de produits:</span>
-                                <strong>{{ feeDetails.itemCount|default(quote.items|length) }}</strong>
-                            </div>
-                            
-                            {% if feeDetails.freeItems|default(0) > 0 %}
-                                <div class="d-flex justify-content-between border-bottom py-2">
-                                    <span>Produits gratuits:</span>
-                                    <strong>{{ feeDetails.freeItems|default(0) }}</strong>
-                                </div>
-                            {% endif %}
-                            
-                            <div class="d-flex justify-content-between border-bottom py-2">
-                                <span>Produits payants:</span>
-                                <strong>{{ feeDetails.paidItems|default(quote.items|length) }}</strong>
-                            </div>
-                            
-                            {% if feeDetails.paidItems|default(0) > 0 %}
-                                <div class="d-flex justify-content-between border-bottom py-2">
-                                    <span>Prix par produit:</span>
-                                    <strong>{{ feeDetails.itemPrice|default(5000)|number_format(0, ',', ' ') }} Ar</strong>
-                                </div>
                                 
-                                <div class="d-flex justify-content-between py-2">
-                                    <span>Montant total:</span>
-                                    <strong>{{ feeDetails.totalFee|default(feeDetails.paidItems|default(quote.items|length) * feeDetails.itemPrice|default(5000))|number_format(0, ',', ' ') }} Ar</strong>
-                                </div>
-                                
-                                {% if not quote.isPaid and quote.isPaymentRequired %}
-                                    <div class="alert alert-warning mt-3 mb-0">
-                                        <i data-lucide="alert-triangle" class="icon-sm me-2"></i>
-                                        Le paiement doit être confirmé avant de traiter ce devis.
-                                    </div>
+                                {% if quote.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">En attente</span>
+                                {% elseif quote.status == 'in_progress' %}
+                                    <span class="badge bg-info">En cours</span>
+                                {% elseif quote.status == 'completed' %}
+                                    <span class="badge bg-success">Complété</span>
+                                {% elseif quote.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejeté</span>
                                 {% endif %}
-                            {% endif %}
+                            </div>
                         </div>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <div class="admin-card">
-                    <div class="admin-card-header">
-                        <h5 class="mb-0">Historique</h5>
-                    </div>
-                    <div class="admin-card-body">
-                        <ul class="timeline">
-                            <li class="timeline-item">
-                                <div class="timeline-marker bg-primary"></div>
-                                <div class="timeline-content">
-                                    <h6 class="mb-0">Création du devis</h6>
-                                    <p class="text-muted mb-0">{{ quote.createdAt|date('d/m/Y H:i') }}</p>
-                                </div>
-                            </li>
-                            {% if quote.status != 'pending' %}
-                                <li class="timeline-item">
-                                    <div class="timeline-marker bg-info"></div>
-                                    <div class="timeline-content">
-                                        <h6 class="mb-0">Mise en traitement</h6>
-                                        <p class="text-muted mb-0">{{ quote.createdAt|date('d/m/Y H:i') }}</p>
+                        <div class="admin-card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-4">
+                                        <i class="fas fa-calendar-alt fa-2x text-primary me-2"></i>
+                                        <span>{{ quote.createdAt|date('d/m/Y H:i') }}</span>
                                     </div>
-                                </li>
-                            {% endif %}
-                            {% if quote.status == 'completed' or quote.status == 'rejected' %}
-                                <li class="timeline-item">
-                                    <div class="timeline-marker {{ quote.status == 'completed' ? 'bg-success' : 'bg-danger' }}"></div>
-                                    <div class="timeline-content">
-                                        <h6 class="mb-0">{{ quote.status == 'completed' ? 'Devis complété' : 'Devis rejeté' }}</h6>
-                                        <p class="text-muted mb-0">{{ quote.createdAt|date('d/m/Y H:i') }}</p>
+                                    <div class="me-4">
+                                        <i class="fas fa-hashtag fa-2x text-secondary me-2"></i>
+                                        <span>{{ quote.quoteNumber }}</span>
                                     </div>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {# Section historique des changements de statut (admin uniquement) #}
-        {% if is_granted('ROLE_ADMIN') and statusHistory is defined and statusHistory is not empty %}
-        <div class="admin-card mb-4">
-            <div class="admin-card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i data-lucide="history" class="me-2"></i>
-                    Historique des changements de statut
-                </h5>
-                <a href="{{ path('app_quote_status_update', {'id': quote.id}) }}" class="btn btn-primary btn-sm">
-                    <i data-lucide="edit" class="me-1"></i>
-                    Modifier le statut
-                </a>
-            </div>
-            <div class="admin-card-body">
-                <div class="timeline">
-                    {% for history in statusHistory %}
-                        <div class="timeline-item {% if loop.first %}current{% endif %}">
-                            <div class="timeline-marker 
-                                {% if history.newStatus == 'completed' or history.newStatus == 'accepted' %}bg-success
-                                {% elseif history.newStatus == 'rejected' or history.newStatus == 'declined' or history.newStatus == 'canceled' %}bg-danger
-                                {% elseif history.newStatus == 'in_progress' %}bg-info
-                                {% elseif history.newStatus == 'pending' %}bg-warning
-                                {% else %}bg-secondary{% endif %}">
-                            </div>
-                            <div class="timeline-content">
-                                <div class="d-flex justify-content-between align-items-start">
                                     <div>
-                                        <h6 class="mb-1">
-                                            {% if history.oldStatus == 'new' %}
-                                                Devis créé
-                                            {% else %}
-                                                {{ history.oldStatusLabel }} → {{ history.newStatusLabel }}
-                                            {% endif %}
-                                        </h6>
-                                        <p class="text-muted mb-1">
-                                            <i data-lucide="clock" class="me-1" style="width: 14px; height: 14px;"></i>
-                                            {{ history.createdAt|date('d/m/Y à H:i') }}
-                                        </p>
-                                        {% if history.comment %}
-                                            <p class="text-muted mb-0">
-                                                <i data-lucide="message-square" class="me-1" style="width: 14px; height: 14px;"></i>
-                                                "{{ history.comment }}"
-                                            </p>
-                                        {% endif %}
-                                    </div>
-                                    <div class="text-end">
-                                        {% if history.changedBy %}
-                                            <small class="text-muted">
-                                                <i data-lucide="user" class="me-1" style="width: 12px; height: 12px;"></i>
-                                                {{ history.changedBy }}
-                                            </small>
-                                        {% endif %}
+                                        <i class="fas fa-box fa-2x text-info me-2"></i>
+                                        <span>{{ quote.items|length }} produit(s)</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        {# Ajout de la section des offres #}
-        {% if quote.status == 'in_progress' and (app.request.get('_route') starts with 'app_admin' or is_granted('ROLE_ADMIN')) %}
-        <div class="admin-card mb-4">
-            <div class="admin-card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Offres</h5>
-                <a href="{{ path('app_quote_offer_create', {'id': quote.id}) }}" class="btn btn-success rounded-circle p-0" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                    <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                </a>
-            </div>
-            <div class="admin-card-body">
-                {% if offers|length > 0 %}
-                    <div class="table-responsive">
-                        <table class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Titre</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Statut</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Prix total (hors mode d'envoi)</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Créée le</th>
-                                    <th class="text-secondary opacity-7"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for offer in offers %}
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex px-2 py-1">
-                                                <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm">{{ offer.title }}</h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge {{ offer.status == 'draft' ? 'bg-secondary' : (offer.status == 'sent' ? 'bg-info' : (offer.status == 'accepted' ? 'bg-success' : (offer.status == 'pending' ? 'bg-warning' : 'bg-danger'))) }}">
-                                                {{ offer.status == 'draft' ? 'Brouillon' : (offer.status == 'sent' ? 'Envoyée' : (offer.status == 'accepted' ? 'Acceptée' : (offer.status == 'pending' ? 'En attente' : 'Refusée'))) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% set totalPriceMga = offer.calculateTotalPriceInMga() %}
-                                            {% if totalPriceMga is not null %}
-                                                <p class="text-sm font-weight-bold mb-0">{{ totalPriceMga|number_format(2, ',', ' ') }} Ar</p>
-                                            {% else %}
-                                                <p class="text-sm font-weight-bold mb-0 text-muted">Prix en MGA non disponible (taux de change manquant)</p>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <p class="text-sm font-weight-bold mb-0">{{ offer.createdAt|date('d/m/Y H:i:s') }}</p>
-                                        </td>
-                                        <td class="align-middle">
-                                            <div class="d-flex gap-1">
-                                                <a href="{{ path('app_quote_offer_edit', {'id': offer.id}) }}" class="btn btn-xs btn-info" data-toggle="tooltip" data-original-title="Modifier l'offre">
-                                                    <i data-lucide="edit-2" class="icon-xs"></i>
-                                                </a>
-                                                {% if offer.status == 'draft' %}
-                                                    <form method="post" action="{{ path('app_quote_offer_send', {'id': offer.id}) }}" style="display: inline-block">
-                                                        <input type="hidden" name="_token" value="{{ csrf_token('send' ~ offer.id) }}">
-                                                        <button type="submit" class="btn btn-xs btn-success" data-toggle="tooltip" data-original-title="Envoyer l'offre">
-                                                            <i data-lucide="send" class="icon-xs"></i>
-                                                        </button>
-                                                    </form>
-                                                {% endif %}
-                                                <form method="post" action="{{ path('app_quote_offer_delete', {'id': offer.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette offre?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
-                                                    <button type="submit" class="btn btn-xs btn-danger" data-toggle="tooltip" data-original-title="Supprimer l'offre">
-                                                        <i data-lucide="trash-2" class="icon-xs"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="alert alert-info">
-                        Aucune offre n'a été créée pour ce devis. Cliquez sur le bouton + pour commencer.
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-    {% else %}
-    <div class="container my-5">
-        <div class="row">
-            <div class="col-12">
-                <h1 class="mb-4">Détails du devis <span class="text-primary">{{ quote.quoteNumber }}</span></h1>
-                
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Informations générales</h5>
-                        <span class="badge {{ quote.processed ? 'bg-success' : 'bg-warning' }}">
-                            {{ quote.processed ? 'Traité' : 'En attente' }}
-                        </span>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Date de création :</strong> {{ quote.createdAt|date('d/m/Y H:i') }}</p>
-                                <p><strong>Numéro de devis :</strong> {{ quote.quoteNumber }}</p>
+                            
+                            {% if quote.trackingToken %}
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-key fa-2x text-warning me-2"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Token de suivi</small>
+                                            <code class="text-dark">{{ quote.trackingToken }}</code>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-link fa-2x text-primary me-2"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Lien de suivi public</small>
+                                            <a href="{{ path('app_tracking_show', {'token': quote.trackingToken}) }}" target="_blank" class="text-primary">
+                                                Voir le suivi public
+                                                <i class="fas fa-external-link-alt ms-1"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <p><strong>Nom :</strong> {{ quote.fullName }}</p>
-                                <p><strong>Email :</strong> {{ quote.email }}</p>
-                                <p><strong>Téléphone :</strong> {{ quote.phone }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">Produits demandés</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Type de produit</th>
-                                        <th>Image</th>
-                                        <th>Description</th>
-                                        <th>Quantité</th>
-                                        <th>Budget unitaire</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in quote.items %}
+                            {% endif %}
+                            
+                            <h6 class="mb-3">Produits demandés</h6>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
                                         <tr>
-                                            <td>{{ loop.index }}</td>
-                                            <td>{{ item.productType }}</td>
-                                            <td>
-                                                {% if item.photoFilename %}
-                                                    <a href="#" class="product-image-link" data-bs-toggle="modal" data-bs-target="#imageModal{{ loop.index }}">
-                                                        <i data-lucide="image" class="icon-md text-primary"></i>
-                                                    </a>
-                                                    
-                                                    <!-- Modal pour l'image -->
-                                                    <div class="modal fade" id="imageModal{{ loop.index }}" tabindex="-1" aria-labelledby="imageModalLabel{{ loop.index }}" aria-hidden="true">
-                                                        <div class="modal-dialog modal-dialog-centered">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title" id="imageModalLabel{{ loop.index }}">Image du produit</h5>
-                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                                                                </div>
-                                                                <div class="modal-body text-center">
-                                                                    <img src="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" alt="Image du produit" class="img-fluid">
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <a href="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" class="btn btn-primary" target="_blank">Voir en taille réelle</a>
-                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                            <th>#</th>
+                                            <th>Type de produit</th>
+                                            <th>Image</th>
+                                            <th>Description</th>
+                                            <th>Quantité</th>
+                                            <th>Budget unitaire</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in quote.items %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>{{ item.productType }}</td>
+                                                <td>
+                                                    {% if item.photoFilename %}
+                                                        <a href="#" class="product-image-link" data-bs-toggle="modal" data-bs-target="#imageModal{{ loop.index }}">
+                                                            <i data-lucide="image" class="icon-md text-primary"></i>
+                                                        </a>
+                                                        
+                                                        <!-- Modal pour l'image -->
+                                                        <div class="modal fade" id="imageModal{{ loop.index }}" tabindex="-1" aria-labelledby="imageModalLabel{{ loop.index }}" aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="imageModalLabel{{ loop.index }}">Image du produit</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                                                    </div>
+                                                                    <div class="modal-body text-center">
+                                                                        <img src="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" alt="Image du produit" class="img-fluid">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <a href="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" class="btn btn-primary" target="_blank">Voir en taille réelle</a>
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                {% else %}
-                                                    <span class="text-muted"><i data-lucide="image-off" class="icon-sm"></i></span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% set description = item.description %}
-                                                {% if description|length > 100 %}
-                                                    <div class="position-relative">
-                                                        <div class="description-preview d-flex align-items-center gap-2">
-                                                            <span class="description-short">{{ description|slice(0, 100)|nl2br|autolink|raw }}... <a href="#" class="text-primary description-expand-btn fw-medium">voir plus</a></span>
-                                                            <span class="description-full d-none">{{ description|nl2br|autolink|raw }} <a href="#" class="text-primary description-expand-btn fw-medium">voir moins</a></span>
+                                                    {% else %}
+                                                        <span class="text-muted"><i data-lucide="image-off" class="icon-sm"></i></span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% set description = item.description %}
+                                                    {% if description|length > 100 %}
+                                                        <div class="position-relative">
+                                                            <div class="description-preview d-flex align-items-center gap-2">
+                                                                <span class="description-short">{{ description|slice(0, 100)|nl2br|autolink|raw }}... <a href="#" class="text-primary description-expand-btn fw-medium">voir plus</a></span>
+                                                                <span class="description-full d-none">{{ description|nl2br|autolink|raw }} <a href="#" class="text-primary description-expand-btn fw-medium">voir moins</a></span>
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    {% else %}
+                                                        {{ description|nl2br|autolink|raw }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ item.quantity }}</td>
+                                                <td>
+                                                    {% if item.budget %}
+                                                        {{ item.budget|number_format(0, ',', ' ') }} Ar
+                                                    {% else %}
+                                                        <span class="text-muted">Non spécifié</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            {% if quote.additionalInfo %}
+                                <h6 class="mt-4 mb-3">Informations complémentaires</h6>
+                                <div class="alert alert-info">
+                                    {{ quote.additionalInfo|nl2br }}
+                                </div>
+                            {% endif %}
+
+                            {% if quote.services|length > 0 %}
+                                <h6 class="mt-4 mb-3">Services souhaités</h6>
+                                <div class="mb-4">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for service in quote.services %}
+                                            <span class="badge bg-light text-dark p-2 d-flex align-items-center">
+                                                <i data-lucide="check-circle" class="icon-sm text-success me-1"></i>
+                                                {{ service }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if quote.shippingMethod|length > 0 %}
+                                <h6 class="mt-4 mb-3">Choix d'envoi</h6>
+                                <div class="mb-4">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for method in quote.shippingMethod %}
+                                            <span class="badge bg-light text-dark p-2 d-flex align-items-center">
+                                                {% if method == 'maritime' %}
+                                                    <i data-lucide="ship" class="icon-sm text-primary me-1"></i>
+                                                    Envoi maritime (délai estimé: 50-70 jours)
+                                                {% elseif method == 'air_express' or method == 'aerien_express' %}
+                                                    <i data-lucide="plane-takeoff" class="icon-sm text-primary me-1"></i>
+                                                    Envoi aérien express (délai estimé: 3-7 jours)
+                                                {% elseif method == 'air_normal' or method == 'aerien_normal' %}
+                                                    <i data-lucide="plane" class="icon-sm text-primary me-1"></i>
+                                                    Envoi aérien normal (délai estimé: 15-30 jours)
                                                 {% else %}
-                                                    {{ description|nl2br|autolink|raw }}
+                                                    <i data-lucide="package" class="icon-sm text-primary me-1"></i>
+                                                    {{ method }}
+                                                {% endif %}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="admin-card mb-4">
+                        <div class="admin-card-header">
+                            <h5 class="mb-0">Informations client</h5>
+                        </div>
+                        <div class="admin-card-body">
+                            {% if quote.user %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0">
+                                        <i data-lucide="user" class="icon-lg text-primary"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-0">{{ quote.user.firstName }} {{ quote.user.lastName }}</h6>
+                                        <p class="text-muted mb-0">Compte créé le {{ quote.user.createdAt|date('d/m/Y') }}</p>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <a href="mailto:{{ quote.user.email }}" class="btn btn-sm btn-light me-2" data-bs-toggle="tooltip" title="Email: {{ quote.user.email }}">
+                                            <i data-lucide="mail" class="icon-sm"></i>
+                                        </a>
+                                        <a href="tel:{{ quote.user.phone }}" class="btn btn-sm btn-light me-2" data-bs-toggle="tooltip" title="Téléphone: {{ quote.user.phone }}">
+                                            <i data-lucide="phone" class="icon-sm"></i>
+                                        </a>
+                                        <span class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Dernière connexion: {% if quote.user.lastLoginAt %}{{ quote.user.lastLoginAt|date('d/m/Y H:i') }}{% else %}Jamais connecté{% endif %}">
+                                            <i data-lucide="clock" class="icon-sm"></i>
+                                        </span>
+                                    </div>
+                                    <a href="{{ path('app_user_profile') }}" class="btn btn-sm btn-outline-primary">
+                                        <i data-lucide="external-link" class="icon-sm me-1"></i> Profil
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning mb-3">
+                                    <i data-lucide="alert-triangle" class="icon-sm me-2"></i> Utilisateur non enregistré
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h6 class="mb-0">{{ quote.fullName }}</h6>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <a href="mailto:{{ quote.email }}" class="btn btn-sm btn-light me-2" data-bs-toggle="tooltip" title="Email: {{ quote.email }}">
+                                        <i data-lucide="mail" class="icon-sm"></i>
+                                    </a>
+                                    <a href="tel:{{ quote.phone }}" class="btn btn-sm btn-light" data-bs-toggle="tooltip" title="Téléphone: {{ quote.phone }}">
+                                        <i data-lucide="phone" class="icon-sm"></i>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if quote.isPaymentRequired or is_granted('ROLE_ADMIN') %}
+                    <div class="admin-card mb-4">
+                        <div class="admin-card-header">
+                            <h5 class="mb-0">Informations de paiement</h5>
+                        </div>
+                        <div class="admin-card-body">
+                            {% set feeDetails = feeDetails is defined ? feeDetails : {} %}
+                            {% set isFirstQuote = feeDetails.isFirstQuote ?? (quote.user ? (quote.user.quotes|length <= 1) : true) %}
+                            
+                            <div class="mb-3">
+                                <p class="mb-2">
+                                    <strong>Statut:</strong> 
+                                    {% if quote.isPaymentRequired %}
+                                        {% if quote.isPaid %}
+                                            <span class="badge bg-success">Payé</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Paiement requis</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non requis</span>
+                                    {% endif %}
+                                </p>
+                                
+                                {% if isFirstQuote %}
+                                    <div class="alert alert-info mb-3">
+                                        <i data-lucide="info" class="icon-sm me-2"></i>
+                                        <strong>Premier devis</strong> - Les {{ feeDetails.freeItemsLimit|default(3) }} premiers produits sont gratuits.
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-between border-bottom py-2">
+                                    <span>Nombre total de produits:</span>
+                                    <strong>{{ feeDetails.itemCount|default(quote.items|length) }}</strong>
+                                </div>
+                                
+                                {% if feeDetails.freeItems|default(0) > 0 %}
+                                    <div class="d-flex justify-content-between border-bottom py-2">
+                                        <span>Produits gratuits:</span>
+                                        <strong>{{ feeDetails.freeItems|default(0) }}</strong>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-between border-bottom py-2">
+                                    <span>Produits payants:</span>
+                                    <strong>{{ feeDetails.paidItems|default(quote.items|length) }}</strong>
+                                </div>
+                                
+                                {% if feeDetails.paidItems|default(0) > 0 %}
+                                    <div class="d-flex justify-content-between border-bottom py-2">
+                                        <span>Prix par produit:</span>
+                                        <strong>{{ feeDetails.itemPrice|default(5000)|number_format(0, ',', ' ') }} Ar</strong>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between py-2">
+                                        <span>Montant total:</span>
+                                        <strong>{{ feeDetails.totalFee|default(feeDetails.paidItems|default(quote.items|length) * feeDetails.itemPrice|default(5000))|number_format(0, ',', ' ') }} Ar</strong>
+                                    </div>
+                                    
+                                    {% if not quote.isPaid and quote.isPaymentRequired %}
+                                        <div class="alert alert-warning mt-3 mb-0">
+                                            <i data-lucide="alert-triangle" class="icon-sm me-2"></i>
+                                            Le paiement doit être confirmé avant de traiter ce devis.
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h5 class="mb-0">Historique</h5>
+                        </div>
+                        <div class="admin-card-body">
+                            <ul class="timeline">
+                                <li class="timeline-item">
+                                    <div class="timeline-marker bg-primary"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-0">Création du devis</h6>
+                                        <p class="text-muted mb-0">{{ quote.createdAt|date('d/m/Y H:i') }}</p>
+                                    </div>
+                                </li>
+                                {% if quote.status != 'pending' %}
+                                    <li class="timeline-item">
+                                        <div class="timeline-marker bg-info"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-0">Mise en traitement</h6>
+                                            <p class="text-muted mb-0">{{ quote.createdAt|date('d/m/Y H:i') }}</p>
+                                        </div>
+                                    </li>
+                                {% endif %}
+                                {% if quote.status == 'completed' or quote.status == 'rejected' %}
+                                    <li class="timeline-item">
+                                        <div class="timeline-marker {{ quote.status == 'completed' ? 'bg-success' : 'bg-danger' }}"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-0">{{ quote.status == 'completed' ? 'Devis complété' : 'Devis rejeté' }}</h6>
+                                            <p class="text-muted mb-0">{{ quote.createdAt|date('d/m/Y H:i') }}</p>
+                                        </div>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Section historique des changements de statut (admin uniquement) #}
+            {% if is_granted('ROLE_ADMIN') and statusHistory is defined and statusHistory is not empty %}
+            <div class="admin-card mb-4">
+                <div class="admin-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i data-lucide="history" class="me-2"></i>
+                        Historique des changements de statut
+                    </h5>
+                    <a href="{{ path('app_quote_status_update', {'id': quote.id}) }}" class="btn btn-primary btn-sm">
+                        <i data-lucide="edit" class="me-1"></i>
+                        Modifier le statut
+                    </a>
+                </div>
+                <div class="admin-card-body">
+                    <div class="timeline">
+                        {% for history in statusHistory %}
+                            <div class="timeline-item {% if loop.first %}current{% endif %}">
+                                <div class="timeline-marker 
+                                    {% if history.newStatus == 'completed' or history.newStatus == 'accepted' %}bg-success
+                                    {% elseif history.newStatus == 'rejected' or history.newStatus == 'declined' or history.newStatus == 'canceled' %}bg-danger
+                                    {% elseif history.newStatus == 'in_progress' %}bg-info
+                                    {% elseif history.newStatus == 'pending' %}bg-warning
+                                    {% else %}bg-secondary{% endif %}">
+                                </div>
+                                <div class="timeline-content">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                {% if history.oldStatus == 'new' %}
+                                                    Devis créé
+                                                {% else %}
+                                                    {{ history.oldStatusLabel }} → {{ history.newStatusLabel }}
+                                                {% endif %}
+                                            </h6>
+                                            <p class="text-muted mb-1">
+                                                <i data-lucide="clock" class="me-1" style="width: 14px; height: 14px;"></i>
+                                                {{ history.createdAt|date('d/m/Y à H:i') }}
+                                            </p>
+                                            {% if history.comment %}
+                                                <p class="text-muted mb-0">
+                                                    <i data-lucide="message-square" class="me-1" style="width: 14px; height: 14px;"></i>
+                                                    "{{ history.comment }}"
+                                                </p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-end">
+                                            {% if history.changedBy %}
+                                                <small class="text-muted">
+                                                    <i data-lucide="user" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                    {{ history.changedBy }}
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {# Ajout de la section des offres #}
+            {% if quote.status == 'in_progress' and (app.request.get('_route') starts with 'app_admin' or is_granted('ROLE_ADMIN')) %}
+            <div class="admin-card mb-4">
+                <div class="admin-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Offres</h5>
+                    <a href="{{ path('app_quote_offer_create', {'id': quote.id}) }}" class="btn btn-success rounded-circle p-0" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                    </a>
+                </div>
+                <div class="admin-card-body">
+                    {% if offers|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Titre</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Statut</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Prix total (hors mode d'envoi)</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Créée le</th>
+                                        <th class="text-secondary opacity-7"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for offer in offers %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex px-2 py-1">
+                                                    <div class="d-flex flex-column justify-content-center">
+                                                        <h6 class="mb-0 text-sm">{{ offer.title }}</h6>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge {{ offer.status == 'draft' ? 'bg-secondary' : (offer.status == 'sent' ? 'bg-info' : (offer.status == 'accepted' ? 'bg-success' : (offer.status == 'pending' ? 'bg-warning' : 'bg-danger'))) }}">
+                                                    {{ offer.status == 'draft' ? 'Brouillon' : (offer.status == 'sent' ? 'Envoyée' : (offer.status == 'accepted' ? 'Acceptée' : (offer.status == 'pending' ? 'En attente' : 'Refusée'))) }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% set totalPriceMga = offer.calculateTotalPriceInMga() %}
+                                                {% if totalPriceMga is not null %}
+                                                    <p class="text-sm font-weight-bold mb-0">{{ totalPriceMga|number_format(2, ',', ' ') }} Ar</p>
+                                                {% else %}
+                                                    <p class="text-sm font-weight-bold mb-0 text-muted">Prix en MGA non disponible (taux de change manquant)</p>
                                                 {% endif %}
                                             </td>
-                                            <td>{{ item.quantity }}</td>
                                             <td>
-                                                {% if item.budget %}
-                                                    {{ item.budget|number_format(0, ',', ' ') }} Ar
-                                                {% else %}
-                                                    <span class="text-muted">Non spécifié</span>
-                                                {% endif %}
+                                                <p class="text-sm font-weight-bold mb-0">{{ offer.createdAt|date('d/m/Y H:i:s') }}</p>
+                                            </td>
+                                            <td class="align-middle">
+                                                <div class="d-flex gap-1">
+                                                    <a href="{{ path('app_quote_offer_edit', {'id': offer.id}) }}" class="btn btn-xs btn-info" data-toggle="tooltip" data-original-title="Modifier l'offre">
+                                                        <i data-lucide="edit-2" class="icon-xs"></i>
+                                                    </a>
+                                                    {% if offer.status == 'draft' %}
+                                                        <form method="post" action="{{ path('app_quote_offer_send', {'id': offer.id}) }}" style="display: inline-block">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('send' ~ offer.id) }}">
+                                                            <button type="submit" class="btn btn-xs btn-success" data-toggle="tooltip" data-original-title="Envoyer l'offre">
+                                                                <i data-lucide="send" class="icon-xs"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                    <form method="post" action="{{ path('app_quote_offer_delete', {'id': offer.id}) }}" style="display: inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette offre?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ offer.id) }}">
+                                                        <button type="submit" class="btn btn-xs btn-danger" data-toggle="tooltip" data-original-title="Supprimer l'offre">
+                                                            <i data-lucide="trash-2" class="icon-xs"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            Aucune offre n'a été créée pour ce devis. Cliquez sur le bouton + pour commencer.
+                        </div>
+                    {% endif %}
                 </div>
-                
-                {% if quote.additionalInformation %}
+            </div>
+            {% endif %}
+        {% else %}
+        <div class="container my-5">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="mb-4">Détails du devis <span class="text-primary">{{ quote.quoteNumber }}</span></h1>
+                    
                     <div class="card shadow-sm mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Informations complémentaires</h5>
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Informations générales</h5>
+                            <span class="badge {{ quote.processed ? 'bg-success' : 'bg-warning' }}">
+                                {{ quote.processed ? 'Traité' : 'En attente' }}
+                            </span>
                         </div>
                         <div class="card-body">
-                            <p>{{ quote.additionalInformation|nl2br }}</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Date de création :</strong> {{ quote.createdAt|date('d/m/Y H:i') }}</p>
+                                    <p><strong>Numéro de devis :</strong> {{ quote.quoteNumber }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Nom :</strong> {{ quote.fullName }}</p>
+                                    <p><strong>Email :</strong> {{ quote.email }}</p>
+                                    <p><strong>Téléphone :</strong> {{ quote.phone }}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                {% endif %}
-                
-                <div class="d-flex justify-content-between">
-                    <a href="{{ path('app_user_quotes') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-2"></i> Retour à mes devis
-                    </a>
+                    
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Produits demandés</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Type de produit</th>
+                                            <th>Image</th>
+                                            <th>Description</th>
+                                            <th>Quantité</th>
+                                            <th>Budget unitaire</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in quote.items %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>{{ item.productType }}</td>
+                                                <td>
+                                                    {% if item.photoFilename %}
+                                                        <a href="#" class="product-image-link" data-bs-toggle="modal" data-bs-target="#imageModal{{ loop.index }}">
+                                                            <i data-lucide="image" class="icon-md text-primary"></i>
+                                                        </a>
+                                                        
+                                                        <!-- Modal pour l'image -->
+                                                        <div class="modal fade" id="imageModal{{ loop.index }}" tabindex="-1" aria-labelledby="imageModalLabel{{ loop.index }}" aria-hidden="true">
+                                                            <div class="modal-dialog modal-dialog-centered">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="imageModalLabel{{ loop.index }}">Image du produit</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                                                    </div>
+                                                                    <div class="modal-body text-center">
+                                                                        <img src="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" alt="Image du produit" class="img-fluid">
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <a href="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" class="btn btn-primary" target="_blank">Voir en taille réelle</a>
+                                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    {% else %}
+                                                        <span class="text-muted"><i data-lucide="image-off" class="icon-sm"></i></span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% set description = item.description %}
+                                                    {% if description|length > 100 %}
+                                                        <div class="position-relative">
+                                                            <div class="description-preview d-flex align-items-center gap-2">
+                                                                <span class="description-short">{{ description|slice(0, 100)|nl2br|autolink|raw }}... <a href="#" class="text-primary description-expand-btn fw-medium">voir plus</a></span>
+                                                                <span class="description-full d-none">{{ description|nl2br|autolink|raw }} <a href="#" class="text-primary description-expand-btn fw-medium">voir moins</a></span>
+                                                            </div>
+                                                        </div>
+                                                    {% else %}
+                                                        {{ description|nl2br|autolink|raw }}
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ item.quantity }}</td>
+                                                <td>
+                                                    {% if item.budget %}
+                                                        {{ item.budget|number_format(0, ',', ' ') }} Ar
+                                                    {% else %}
+                                                        <span class="text-muted">Non spécifié</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if quote.additionalInformation %}
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Informations complémentaires</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ quote.additionalInformation|nl2br }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ path('app_user_quotes') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Retour à mes devis
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -767,5 +768,4 @@
             });
         });
     </script>
-    {% endif %}
 {% endblock %} 
