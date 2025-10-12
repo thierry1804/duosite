@@ -242,7 +242,7 @@
             </div>
             <div class="col-md-4 text-md-end">
                 <span class="status-badge status-{{ quote.status }}">
-                    {{ quoteTrackerService.getStatusLabel(quote.status) }}
+                    {{ quoteTrackerService.getStatusLabels()[quote.status] ?? quote.status }}
                 </span>
             </div>
         </div>
@@ -286,7 +286,7 @@
                     <span class="info-label">Statut actuel :</span>
                     <span class="info-value">
                         <span class="status-badge status-{{ quote.status }}">
-                            {{ quoteTrackerService.getStatusLabel(quote.status) }}
+                            {{ quoteTrackerService.getStatusLabels()[quote.status] ?? quote.status }}
                         </span>
                     </span>
                 </div>

@@ -94,6 +94,7 @@
                     </div>
 
                     {# Section de suivi #}
+                    {% if quote.trackingToken %}
                     <div class="card border-0 bg-light rounded-3 mb-4">
                         <div class="card-body p-4">
                             <h5 class="card-title d-flex align-items-center mb-3">
@@ -129,6 +130,7 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
 
                     <div class="card border-0 bg-light rounded-3 mb-4">
                         <div class="card-body p-4">

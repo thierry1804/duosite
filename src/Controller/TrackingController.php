@@ -40,7 +40,8 @@ class TrackingController extends AbstractController
             'quote' => $quote,
             'statusHistory' => $statusHistory,
             'offers' => $offers,
-            'trackingToken' => $token
+            'trackingToken' => $token,
+            'quoteTrackerService' => $this->quoteTrackerService
         ]);
     }
 

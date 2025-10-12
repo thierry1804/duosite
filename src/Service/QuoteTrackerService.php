@@ -6,7 +6,7 @@ use App\Entity\Quote;
 use App\Entity\QuoteStatusHistory;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class QuoteTrackerService
 {
@@ -47,7 +47,7 @@ class QuoteTrackerService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private EventDispatcherInterface $eventDispatcher,
-        private Security $security
+        private TokenStorageInterface $tokenStorage
     ) {}
 
     /**
@@ -80,7 +80,7 @@ class QuoteTrackerService
 
         // Déterminer qui a effectué le changement
         if ($changedBy === null) {
-            $user = $this->security->getUser();
+            $user = $this->tokenStorage->getToken()?->getUser();
             $changedBy = $user ? $user->getEmail() : 'system';
         }
 
@@ -186,7 +186,7 @@ class QuoteTrackerService
     public function createInitialHistory(Quote $quote, ?string $changedBy = null): void
     {
         if ($changedBy === null) {
-            $user = $this->security->getUser();
+            $user = $this->tokenStorage->getToken()?->getUser();
             $changedBy = $user ? $user->getEmail() : 'system';
         }
 

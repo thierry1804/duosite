@@ -393,8 +393,21 @@ class QuoteController extends AbstractController
     }
 
     #[Route('/quote/{id}/view', name: 'app_quote_view')]
-    public function viewQuote(Quote $quote, QuoteFeeCalculator $feeCalculator, EntityManagerInterface $entityManager, QuoteTrackerService $quoteTrackerService): Response
+    public function viewQuote(int $id, QuoteFeeCalculator $feeCalculator, EntityManagerInterface $entityManager, QuoteTrackerService $quoteTrackerService): Response
     {
+        // Charger le devis manuellement
+        $quote = $entityManager->getRepository(Quote::class)->find($id);
+        
+        // Debug: vérifier ce qui est chargé
+        dump('Quote ID: ' . $id);
+        dump('Quote object: ', $quote);
+        dump('Quote type: ', gettype($quote));
+        
+        // Vérifier que le devis existe
+        if (!$quote) {
+            throw $this->createNotFoundException('Devis introuvable.');
+        }
+        
         // Vérifier que l'utilisateur a le droit de voir ce devis
         $user = $this->getUser();
         

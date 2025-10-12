@@ -40,10 +40,7 @@ services:
 
     # Service de tracking des devis
     App\Service\QuoteTrackerService:
-        arguments:
-            $entityManager: '@doctrine.orm.entity_manager'
-            $eventDispatcher: '@event_dispatcher'
-            $security: '@security.helper'
+        public: true
 
     # Event listener pour les changements de statut
     App\EventListener\QuoteStatusChangeListener:

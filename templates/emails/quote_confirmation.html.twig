@@ -31,6 +31,7 @@
             <p>Nous avons bien reçu votre demande de devis <strong>{{ quote.quoteNumber }}</strong>. Notre équipe va étudier votre demande dans les plus brefs délais.</p>
             <p>Veuillez conserver ce numéro de devis pour toute communication future concernant cette demande.</p>
             
+            {% if quote.trackingToken %}
             <div style="background-color: #d1ecf1; color: #0c5460; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #17a2b8;">
                 <h3 style="margin-top: 0; color: #0c5460;">
                     <i class="fas fa-truck" style="margin-right: 8px;"></i>
@@ -48,6 +49,7 @@
                     <strong>Token de suivi :</strong> <code style="background: #f8f9fa; padding: 2px 6px; border-radius: 3px;">{{ quote.trackingToken }}</code>
                 </p>
             </div>
+            {% endif %}
             
             {% if feeDetails.paymentRequired|default(false) %}
                 <div style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 20px 0; border-radius: 5px;">
