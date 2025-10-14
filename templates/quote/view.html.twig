@@ -20,6 +20,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1>Détails du devis #{{ quote.id }}</h1>
                 <div class="btn-group">
+                    <!-- Actions contextuelles selon le statut -->
                     {% if quote.status == 'pending' %}
                         {% if quote.isPaymentRequired and not quote.isPaid %}
                             <a href="{{ path('app_quote_mark_as_paid', {'id': quote.id}) }}" class="btn btn-success">
@@ -34,15 +35,38 @@
                             </a>
                         {% endif %}
                     {% elseif quote.status == 'in_progress' %}
-                        <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'completed'}) }}" class="btn btn-success">
-                            <i data-lucide="check" class="me-2"></i> Marquer comme complété
+                        <a href="{{ path('app_quote_offer_create', {'id': quote.id}) }}" class="btn btn-primary">
+                            <i data-lucide="file-plus" class="me-2"></i> Créer une offre
+                        </a>
+                    {% elseif quote.status == 'accepted' %}
+                        <form method="post" action="{{ path('app_quote_convert', {'id': quote.id}) }}" class="d-inline">
+                            <button type="submit" class="btn btn-success" onclick="return confirm('Convertir ce devis en commande ?')">
+                                <i data-lucide="shopping-cart" class="me-2"></i> Convertir en commande
+                            </button>
+                        </form>
+                    {% elseif quote.status == 'converted' %}
+                        <a href="{{ path('app_quote_status_update', {'id': quote.id}) }}" class="btn btn-warning">
+                            <i data-lucide="truck" class="me-2"></i> Marquer comme expédié
+                        </a>
+                    {% elseif quote.status == 'shipped' %}
+                        <a href="{{ path('app_quote_status_update', {'id': quote.id}) }}" class="btn btn-success">
+                            <i data-lucide="package-check" class="me-2"></i> Marquer comme livré
                         </a>
                     {% endif %}
-                    {% if quote.status != 'rejected' %}
+                    
+                    <!-- Bouton de changement de statut général -->
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#statusModal">
+                        <i data-lucide="edit" class="me-2"></i> Changer le statut
+                    </button>
+                    
+                    <!-- Actions de rejet/annulation -->
+                    {% if quote.status not in ['rejected', 'canceled', 'delivered'] %}
                         <a href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
                             <i data-lucide="x" class="me-2"></i> Rejeter
                         </a>
                     {% endif %}
+                    
+                    <!-- Liens utiles -->
                     {% if quote.trackingToken %}
                         <a href="{{ path('app_tracking_show', {'token': quote.trackingToken}) }}" class="btn btn-info" target="_blank">
                             <i data-lucide="external-link" class="me-2"></i> Voir le suivi public
@@ -675,6 +699,56 @@
             </div>
         </div>
         {% endif %}
+    {% endif %}
+
+    <!-- Modal de changement de statut -->
+    {% if app.request.get('_route') starts with 'app_admin' or is_granted('ROLE_ADMIN') %}
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusModalLabel">
+                        <i data-lucide="edit" class="me-2"></i>
+                        Changer le statut du devis
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{{ path('app_quote_status_update', {'id': quote.id}) }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Nouveau statut</label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="{{ quote.status }}" selected>
+                                    {{ quoteTrackerService.getStatusLabels()[quote.status] ?? quote.status }} (actuel)
+                                </option>
+                                {% for status, label in quoteTrackerService.getValidStatuses() %}
+                                    {% if status != quote.status and status in quoteTrackerService.getAllowedTransitions()[quote.status] %}
+                                        <option value="{{ status }}">{{ label }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Commentaire (optionnel)</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="3" 
+                                      placeholder="Ajoutez un commentaire pour expliquer le changement de statut..."></textarea>
+                        </div>
+                        <div class="alert alert-info">
+                            <i data-lucide="info" class="me-2"></i>
+                            <strong>Note :</strong> Ce changement sera enregistré dans l'historique et des notifications seront envoyées automatiquement.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="save" class="me-2"></i>
+                            Mettre à jour le statut
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     {% endif %}
 {% endblock %}
 

@@ -40,7 +40,8 @@ class QuoteController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         SluggerInterface $slugger,
         QuoteFeeCalculator $feeCalculator,
-        UserIdentityTracker $identityTracker
+        UserIdentityTracker $identityTracker,
+        QuoteTrackerService $quoteTrackerService
     ): Response
     {
         $quote = new Quote();
@@ -192,7 +193,6 @@ class QuoteController extends AbstractController
                     $entityManager->flush();
                     
                     // Créer l'historique initial du devis
-                    $quoteTrackerService = $this->container->get(QuoteTrackerService::class);
                     $quoteTrackerService->createInitialHistory($quote, $this->getUser()?->getEmail() ?? 'system');
                     
                     // Calcul des frais de devis
@@ -461,6 +461,37 @@ class QuoteController extends AbstractController
             
         } catch (\InvalidArgumentException $e) {
             $this->addFlash('error', 'Erreur lors de la mise à jour du statut : ' . $e->getMessage());
+        }
+        
+        // Rediriger vers la page de détail du devis
+        return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+    }
+
+    #[Route('/quote/{id}/convert', name: 'app_quote_convert', methods: ['POST'])]
+    public function convertQuote(Quote $quote, QuoteTrackerService $quoteTrackerService): Response
+    {
+        // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        // Vérifier que le devis est accepté
+        if ($quote->getStatus() !== 'accepted') {
+            $this->addFlash('error', 'Vous ne pouvez convertir que des devis acceptés.');
+            return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+        }
+        
+        try {
+            // Utiliser le service de tracking pour changer le statut
+            $quoteTrackerService->changeStatus(
+                $quote, 
+                'converted', 
+                'Devis converti en commande - processus d\'achat et d\'expédition lancé', 
+                $this->getUser()?->getEmail()
+            );
+            
+            $this->addFlash('success', 'Le devis a été converti en commande avec succès.');
+            
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', 'Erreur lors de la conversion : ' . $e->getMessage());
         }
         
         // Rediriger vers la page de détail du devis

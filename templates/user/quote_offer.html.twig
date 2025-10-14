@@ -30,26 +30,40 @@
                             <iframe src="{{ path('app_user_quotes_view_pdf', {'id': quote.id}) }}" class="rounded-3"></iframe>
                         </div>
 
-                        {% if offer.status not in ['accepted', 'declined'] %}
+                        {% if quote.status == 'waiting_customer' and offer.status not in ['accepted', 'declined'] %}
+                            <div class="alert alert-warning text-center mb-4">
+                                <h5 class="alert-heading">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Action requise
+                                </h5>
+                                <p class="mb-3">Cette offre attend votre réponse. Veuillez examiner les détails ci-dessous et indiquer si vous l'acceptez ou la refusez.</p>
+                            </div>
                             <div class="d-flex justify-content-center gap-3">
                                 <form method="post" action="{{ path('app_user_quotes_accept', {'id': quote.id}) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-success rounded-3 px-4 py-2">
+                                    <button type="submit" class="btn btn-success rounded-3 px-4 py-2" 
+                                            onclick="return confirm('Êtes-vous sûr de vouloir accepter cette offre ? Cette action est définitive.')">
                                         <i class="fas fa-check me-2"></i> Accepter l'offre
                                     </button>
                                 </form>
                                 <form method="post" action="{{ path('app_user_quotes_reject', {'id': quote.id}) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-danger rounded-3 px-4 py-2">
+                                    <button type="submit" class="btn btn-danger rounded-3 px-4 py-2"
+                                            onclick="return confirm('Êtes-vous sûr de vouloir refuser cette offre ? Notre équipe vous proposera une nouvelle offre.')">
                                         <i class="fas fa-times me-2"></i> Refuser l'offre
                                     </button>
                                 </form>
                             </div>
-                        {% else %}
+                        {% elseif offer.status in ['accepted', 'declined'] %}
                             <div class="alert {{ offer.status == 'accepted' ? 'alert-success' : 'alert-danger' }} text-center">
                                 {% if offer.status == 'accepted' %}
                                     <i class="fas fa-check-circle me-2"></i> Vous avez accepté cette offre
                                 {% else %}
                                     <i class="fas fa-times-circle me-2"></i> Vous avez refusé cette offre
                                 {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Cette offre n'est pas encore disponible pour consultation.
                             </div>
                         {% endif %}
                     {% else %}

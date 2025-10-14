@@ -42,10 +42,20 @@ services:
     App\Service\QuoteTrackerService:
         public: true
 
+    # Services publics pour les tests
+    App\Service\ExchangeRateService:
+        public: true
+        
+    App\Service\PdfGenerator:
+        public: true
+        
+    App\Service\QuoteFeeCalculator:
+        public: true
+
     # Event listener pour les changements de statut
     App\EventListener\QuoteStatusChangeListener:
         tags:
-            - { name: kernel.event_listener, event: App\Event\QuoteStatusChangedEvent, method: onQuoteStatusChanged }
+            - { name: kernel.event_listener, event: quote.status_changed, method: onQuoteStatusChanged }
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

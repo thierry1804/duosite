@@ -263,4 +263,130 @@ class TrackingController extends AbstractController
             'statistics' => $stats
         ]);
     }
+
+    /**
+     * Page de réponse à l'offre via token de tracking
+     */
+    #[Route('/tracking/{token}/respond', name: 'app_tracking_respond', methods: ['GET'])]
+    public function respond(string $token): Response
+    {
+        $quote = $this->quoteRepository->findOneBy(['trackingToken' => $token]);
+        
+        if (!$quote) {
+            throw $this->createNotFoundException('Token de suivi invalide ou devis introuvable.');
+        }
+
+        if ($quote->getStatus() !== 'waiting_customer') {
+            $this->addFlash('warning', 'Cette offre n\'est plus en attente de réponse.');
+            return $this->redirectToRoute('app_tracking_show', ['token' => $token]);
+        }
+
+        // Récupérer la dernière offre
+        $offer = $quote->getOffers()->last();
+        if (!$offer) {
+            throw $this->createNotFoundException('Aucune offre disponible pour ce devis.');
+        }
+
+        return $this->render('tracking/respond.html.twig', [
+            'quote' => $quote,
+            'offer' => $offer,
+            'trackingToken' => $token
+        ]);
+    }
+
+    /**
+     * Accepter l'offre via token de tracking
+     */
+    #[Route('/tracking/{token}/accept', name: 'app_tracking_accept', methods: ['POST'])]
+    public function acceptOffer(string $token, Request $request): Response
+    {
+        $quote = $this->quoteRepository->findOneBy(['trackingToken' => $token]);
+        
+        if (!$quote) {
+            throw $this->createNotFoundException('Token de suivi invalide ou devis introuvable.');
+        }
+
+        if ($quote->getStatus() !== 'waiting_customer') {
+            $this->addFlash('error', 'Cette offre n\'est plus en attente de réponse.');
+            return $this->redirectToRoute('app_tracking_show', ['token' => $token]);
+        }
+
+        // Récupérer la dernière offre
+        $offer = $quote->getOffers()->last();
+        if (!$offer) {
+            throw $this->createNotFoundException('Aucune offre disponible pour ce devis.');
+        }
+
+        try {
+            // Mettre à jour le statut de l'offre
+            $offer->setStatus('accepted');
+            
+            // Utiliser le service de tracking pour changer le statut du devis
+            $this->quoteTrackerService->changeStatus(
+                $quote, 
+                'accepted', 
+                'Offre acceptée par le client via le système de suivi public', 
+                'client_tracking'
+            );
+            
+            $this->addFlash('success', 'Vous avez accepté l\'offre avec succès. Nous vous contacterons bientôt pour finaliser votre commande.');
+            
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', 'Erreur lors de l\'acceptation de l\'offre : ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_tracking_show', ['token' => $token]);
+    }
+
+    /**
+     * Refuser l'offre via token de tracking
+     */
+    #[Route('/tracking/{token}/decline', name: 'app_tracking_decline', methods: ['POST'])]
+    public function declineOffer(string $token, Request $request): Response
+    {
+        $quote = $this->quoteRepository->findOneBy(['trackingToken' => $token]);
+        
+        if (!$quote) {
+            throw $this->createNotFoundException('Token de suivi invalide ou devis introuvable.');
+        }
+
+        if ($quote->getStatus() !== 'waiting_customer') {
+            $this->addFlash('error', 'Cette offre n\'est plus en attente de réponse.');
+            return $this->redirectToRoute('app_tracking_show', ['token' => $token]);
+        }
+
+        // Récupérer la dernière offre
+        $offer = $quote->getOffers()->last();
+        if (!$offer) {
+            throw $this->createNotFoundException('Aucune offre disponible pour ce devis.');
+        }
+
+        try {
+            // Mettre à jour le statut de l'offre
+            $offer->setStatus('declined');
+            
+            // Utiliser le service de tracking pour changer le statut du devis
+            $this->quoteTrackerService->changeStatus(
+                $quote, 
+                'declined', 
+                'Offre refusée par le client via le système de suivi public', 
+                'client_tracking'
+            );
+            
+            // Remettre en cours de traitement pour nouvelle offre
+            $this->quoteTrackerService->changeStatus(
+                $quote, 
+                'in_progress', 
+                'Devis remis en cours de traitement pour nouvelle offre', 
+                'client_tracking'
+            );
+            
+            $this->addFlash('info', 'Vous avez refusé l\'offre. Notre équipe va vous proposer une nouvelle offre.');
+            
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', 'Erreur lors du refus de l\'offre : ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_tracking_show', ['token' => $token]);
+    }
 }

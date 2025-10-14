@@ -172,15 +172,15 @@ class UserController extends AbstractController
     }
 
     #[Route('/quotes/{id}/accept', name: 'app_user_quotes_accept', methods: ['POST'])]
-    public function acceptQuote(Quote $quote, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    public function acceptQuote(Quote $quote, EntityManagerInterface $entityManager, \App\Service\QuoteTrackerService $quoteTrackerService): Response
     {
         $user = $this->getUser();
         if (!$user || $quote->getUser() !== $user) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande de devis.');
         }
 
-        if ($quote->getStatus() !== 'completed') {
-            throw $this->createAccessDeniedException('Cette offre n\'est pas encore disponible.');
+        if ($quote->getStatus() !== 'waiting_customer') {
+            throw $this->createAccessDeniedException('Cette offre n\'est pas en attente de votre réponse.');
         }
 
         // Récupérer la dernière offre envoyée
@@ -189,40 +189,39 @@ class UserController extends AbstractController
             throw $this->createAccessDeniedException('Aucune offre disponible.');
         }
 
-        // Mettre à jour le statut de l'offre
-        $offer->setStatus('accepted');
+        try {
+            // Mettre à jour le statut de l'offre
+            $offer->setStatus('accepted');
+            
+            // Utiliser le service de tracking pour changer le statut du devis
+            $quoteTrackerService->changeStatus(
+                $quote, 
+                'accepted', 
+                'Offre acceptée par le client via l\'interface utilisateur', 
+                $user->getEmail()
+            );
+            
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Vous avez accepté l\'offre avec succès.');
+            
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', 'Erreur lors de l\'acceptation de l\'offre : ' . $e->getMessage());
+        }
         
-        // Mettre à jour le statut de la demande de devis
-        $quote->setStatus('accepted');
-        
-        $entityManager->flush();
-
-        // Envoyer un email de notification à l'admin
-        $email = (new Email())
-            ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG - Système de gestion des devis'))
-            ->to('commercial@duoimport.mg')
-            ->subject('Offre acceptée - ' . $quote->getQuoteNumber())
-            ->html($this->renderView('emails/quote_offer_accepted.html.twig', [
-                'quote' => $quote,
-                'user' => $user
-            ]));
-
-        $mailer->send($email);
-
-        $this->addFlash('success', 'Vous avez accepté l\'offre avec succès.');
         return $this->redirectToRoute('app_user_quote_show', ['id' => $quote->getId()]);
     }
 
     #[Route('/quotes/{id}/reject', name: 'app_user_quotes_reject', methods: ['POST'])]
-    public function rejectQuote(Quote $quote, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    public function rejectQuote(Quote $quote, EntityManagerInterface $entityManager, \App\Service\QuoteTrackerService $quoteTrackerService): Response
     {
         $user = $this->getUser();
         if (!$user || $quote->getUser() !== $user) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette demande de devis.');
         }
 
-        if ($quote->getStatus() !== 'completed') {
-            throw $this->createAccessDeniedException('Cette offre n\'est pas encore disponible.');
+        if ($quote->getStatus() !== 'waiting_customer') {
+            throw $this->createAccessDeniedException('Cette offre n\'est pas en attente de votre réponse.');
         }
 
         // Récupérer la dernière offre envoyée
@@ -231,27 +230,34 @@ class UserController extends AbstractController
             throw $this->createAccessDeniedException('Aucune offre disponible.');
         }
 
-        // Mettre à jour le statut de l'offre
-        $offer->setStatus('declined');
+        try {
+            // Mettre à jour le statut de l'offre
+            $offer->setStatus('declined');
+            
+            // Utiliser le service de tracking pour changer le statut du devis
+            $quoteTrackerService->changeStatus(
+                $quote, 
+                'declined', 
+                'Offre refusée par le client via l\'interface utilisateur', 
+                $user->getEmail()
+            );
+            
+            // Remettre en cours de traitement pour nouvelle offre
+            $quoteTrackerService->changeStatus(
+                $quote, 
+                'in_progress', 
+                'Devis remis en cours de traitement pour nouvelle offre', 
+                $user->getEmail()
+            );
+            
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Vous avez refusé l\'offre. La demande de devis est remise en cours de traitement.');
+            
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', 'Erreur lors du refus de l\'offre : ' . $e->getMessage());
+        }
         
-        // Remettre la demande de devis en cours
-        $quote->setStatus('in_progress');
-        
-        $entityManager->flush();
-
-        // Envoyer un email de notification à l'admin
-        $email = (new Email())
-            ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG - Système de gestion des devis'))
-            ->to('commercial@duoimport.mg')
-            ->subject('Offre refusée - ' . $quote->getQuoteNumber())
-            ->html($this->renderView('emails/quote_offer_rejected.html.twig', [
-                'quote' => $quote,
-                'user' => $user
-            ]));
-
-        $mailer->send($email);
-
-        $this->addFlash('success', 'Vous avez refusé l\'offre. La demande de devis est remise en cours de traitement.');
         return $this->redirectToRoute('app_user_quote_show', ['id' => $quote->getId()]);
     }
 } 

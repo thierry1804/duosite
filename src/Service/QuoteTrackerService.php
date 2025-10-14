@@ -173,6 +173,22 @@ class QuoteTrackerService
     }
 
     /**
+     * Retourne toutes les transitions autorisées
+     */
+    public function getAllowedTransitions(): array
+    {
+        return self::ALLOWED_TRANSITIONS;
+    }
+
+    /**
+     * Retourne les libellés des statuts
+     */
+    public function getStatusLabels(): array
+    {
+        return self::VALID_STATUSES;
+    }
+
+    /**
      * Retourne le libellé d'un statut
      */
     public function getStatusLabel(string $status): string

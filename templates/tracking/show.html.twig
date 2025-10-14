@@ -341,6 +341,33 @@
         </div>
     </div>
 
+    <!-- Section de réponse à l'offre -->
+    {% if quote.status == 'waiting_customer' %}
+        <div class="tracking-card">
+            <div class="tracking-card-header bg-warning text-dark">
+                <h3 class="mb-0">
+                    <i class="fas fa-handshake me-2"></i>
+                    Action requise - Réponse à l'offre
+                </h3>
+            </div>
+            <div class="tracking-card-body">
+                <div class="alert alert-warning">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Votre réponse est attendue
+                    </h5>
+                    <p class="mb-3">Une offre vous a été envoyée et attend votre réponse. Veuillez examiner l'offre et indiquer si vous l'acceptez ou la refusez.</p>
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a href="{{ path('app_tracking_respond', {'token': trackingToken}) }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-eye me-2"></i>
+                            Voir l'offre et répondre
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     <!-- Offres associées -->
     {% if offers is not empty %}
         <div class="tracking-card offers-section">
@@ -360,6 +387,14 @@
                                 <small class="text-muted">
                                     Créée le {{ offer.createdAt|date('d/m/Y à H:i') }}
                                 </small>
+                                {% if offer.pdfFilePath %}
+                                    <div class="mt-2">
+                                        <a href="{{ asset(offer.pdfFilePath) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <i class="fas fa-file-pdf me-1"></i>
+                                            Télécharger PDF
+                                        </a>
+                                    </div>
+                                {% endif %}
                             </div>
                             <div class="offer-status">
                                 <span class="status-badge status-{{ offer.status }}">

@@ -279,7 +279,8 @@ class QuoteOfferController extends AbstractController
         Request $request,
         QuoteOffer $offer,
         EntityManagerInterface $entityManager,
-        PdfGenerator $pdfGenerator
+        PdfGenerator $pdfGenerator,
+        \App\Service\QuoteTrackerService $quoteTrackerService
     ): Response
     {
         // Vérifier les permissions
@@ -304,9 +305,15 @@ class QuoteOfferController extends AbstractController
                 $pdfPath = $pdfGenerator->generateQuoteOfferPdf($offer);
                 $offer->setPdfFilePath($pdfPath);
                 
-                $entityManager->flush();
+                // Changer le statut du devis vers waiting_customer
+                $quoteTrackerService->changeStatus(
+                    $quote, 
+                    'waiting_customer', 
+                    'Offre envoyée au client - en attente de réponse', 
+                    $this->getUser()?->getEmail()
+                );
                 
-                // TODO: Envoyer un email au client avec l'offre
+                $entityManager->flush();
                 
                 $this->addFlash('success', 'L\'offre a été envoyée au client avec succès et le PDF a été généré.');
             } catch (\Exception $e) {
@@ -387,7 +394,8 @@ class QuoteOfferController extends AbstractController
         Request $request,
         QuoteOffer $offer,
         EntityManagerInterface $entityManager,
-        MailerInterface $mailer
+        MailerInterface $mailer,
+        \App\Service\QuoteTrackerService $quoteTrackerService
     ): Response
     {
         // Vérifier les permissions
@@ -395,6 +403,12 @@ class QuoteOfferController extends AbstractController
         
         // Obtenir le devis associé
         $quote = $offer->getQuote();
+        
+        // Vérifier que le devis est en cours de traitement
+        if ($quote->getStatus() !== 'in_progress') {
+            $this->addFlash('error', 'Vous ne pouvez envoyer une offre que pour un devis en cours de traitement.');
+            return $this->redirectToRoute('app_quote_offer_edit', ['id' => $offer->getId()]);
+        }
         
         // Vérifier le token CSRF
         if ($this->isCsrfTokenValid('send_pdf'.$offer->getId(), $request->request->get('_token'))) {
@@ -425,6 +439,15 @@ class QuoteOfferController extends AbstractController
 
                 // Mettre à jour le statut de l'offre
                 $offer->setStatus('sent');
+                
+                // Changer le statut du devis vers waiting_customer
+                $quoteTrackerService->changeStatus(
+                    $quote, 
+                    'waiting_customer', 
+                    'Offre envoyée par email au client - en attente de réponse', 
+                    $this->getUser()?->getEmail()
+                );
+                
                 $entityManager->flush();
 
                 $this->addFlash('success', 'Le devis a été envoyé par email avec succès.');
