@@ -132,32 +132,67 @@
     </div>
 </section>
 
-<!-- Counter Section -->
-<section class="section-padding">
+<!-- Transport Hero Section -->
+<section class="transport-hero-section position-relative">
+    <div class="transport-hero-background">
+        <img src="{{ asset('images/1000046297.webp') }}" alt="Transport de marchandises" class="transport-hero-image">
+        <div class="transport-hero-overlay"></div>
+    </div>
     <div class="container">
-        <div class="row">
-            <div class="col-lg-3 col-md-6 fade-up">
-                <div class="counter-box">
-                    <div class="counter-number">500+</div>
-                    <div class="counter-text">Projets réalisés</div>
+        <div class="row align-items-center">
+            <div class="col-lg-6 col-xl-7">
+                <div class="transport-hero-content fade-up">
+                    <h2 class="transport-hero-title">
+                        Vos produits arrivent en toute sécurité depuis la Chine
+                    </h2>
+                    <p class="transport-hero-text">
+                        Par transport aérien ou maritime. Nous prenons en charge tout le processus d'importation pour vous garantir rapidité et sérénité.
+                    </p>
+                    <div class="transport-features">
+                        <div class="transport-feature-item fade-up" data-delay="100">
+                            <div class="transport-feature-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 12L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M12 2L20 12L12 22L4 12L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M5 9L12 12L19 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M5 15L12 12L19 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span>Transport aérien</span>
+                        </div>
+                        <div class="transport-feature-item fade-up" data-delay="200">
+                            <div class="transport-feature-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 18C2 18.5304 2.21071 19.0391 2.58579 19.4142C2.96086 19.7893 3.46957 20 4 20H20C20.5304 20 21.0391 19.7893 21.4142 19.4142C21.7893 19.0391 22 18.5304 22 18V10C22 9.46957 21.7893 8.96086 21.4142 8.58579C21.0391 8.21071 20.5304 8 20 8H18L16 4H8L6 8H4C3.46957 8 2.96086 8.21071 2.58579 8.58579C2.21071 8.96086 2 9.46957 2 10V18Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 10H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M6 8H18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M8 14H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M10 16H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span>Transport maritime</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6 fade-up" data-delay="100">
-                <div class="counter-box">
-                    <div class="counter-number">300+</div>
-                    <div class="counter-text">Clients satisfaits</div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 fade-up" data-delay="200">
-                <div class="counter-box">
-                    <div class="counter-number">5+</div>
-                    <div class="counter-text">Années d'expérience</div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 fade-up" data-delay="300">
-                <div class="counter-box">
-                    <div class="counter-number">50+</div>
-                    <div class="counter-text">Fournisseurs partenaires</div>
+            <div class="col-lg-6 col-xl-5">
+                <div class="transport-hero-cta fade-up" data-delay="200">
+                    <div class="transport-cta-card">
+                        <div class="transport-cta-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 11L12 14L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="transport-cta-title">Prêt à démarrer ?</h3>
+                        <p class="transport-cta-text">Obtenez un devis personnalisé en quelques minutes</p>
+                        <a href="{{ path('app_quote') }}" class="transport-cta-button">
+                            <span>Demander un devis</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

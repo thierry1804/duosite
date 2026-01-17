@@ -249,6 +249,322 @@ a:hover {
     color: var(--secondary-color);
 }
 
+/* Transport Hero Section - Design Professionnel */
+.transport-hero-section {
+    position: relative;
+    min-height: 600px;
+    padding: 100px 0;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.transport-hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.transport-hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 8s ease-out;
+}
+
+.transport-hero-section:hover .transport-hero-image {
+    transform: scale(1.1);
+}
+
+.transport-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 0, 0, 0.4) 0%,
+        rgba(0, 0, 0, 0.6) 50%,
+        rgba(43, 78, 255, 0.3) 100%
+    );
+    z-index: 1;
+}
+
+.transport-hero-content {
+    position: relative;
+    z-index: 2;
+    color: #ffffff;
+}
+
+.transport-hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+}
+
+.transport-hero-title::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: var(--primary-color);
+    margin-top: 1.5rem;
+    border-radius: 2px;
+}
+
+.transport-hero-text {
+    font-size: 1.25rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2.5rem;
+    max-width: 90%;
+    font-weight: 400;
+}
+
+.transport-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.transport-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.transport-feature-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.transport-feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(43, 78, 255, 0.2);
+    border-radius: 50%;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.transport-feature-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+}
+
+.transport-hero-cta {
+    position: relative;
+    z-index: 2;
+}
+
+.transport-cta-card {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.transport-cta-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+}
+
+.transport-cta-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 50%;
+    color: #ffffff;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 10px 30px rgba(43, 78, 255, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.transport-cta-card:hover .transport-cta-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.transport-cta-icon svg {
+    width: 40px;
+    height: 40px;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.transport-cta-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
+
+.transport-cta-text {
+    font-size: 1rem;
+    color: var(--secondary-color);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.transport-cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(43, 78, 255, 0.3);
+    border: none;
+    cursor: pointer;
+}
+
+.transport-cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(43, 78, 255, 0.4);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.transport-cta-button:active {
+    transform: translateY(0);
+}
+
+.transport-cta-button svg {
+    transition: transform 0.3s ease;
+}
+
+.transport-cta-button:hover svg {
+    transform: translateX(5px);
+}
+
+/* Responsive Design */
+@media (max-width: 1199px) {
+    .transport-hero-title {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 991px) {
+    .transport-hero-section {
+        min-height: 500px;
+        padding: 80px 0;
+    }
+    
+    .transport-hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .transport-hero-text {
+        font-size: 1.1rem;
+        max-width: 100%;
+    }
+    
+    .transport-features {
+        gap: 1rem;
+    }
+    
+    .transport-cta-card {
+        margin-top: 3rem;
+        padding: 2.5rem 2rem;
+    }
+    
+    .transport-cta-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .transport-hero-section {
+        min-height: 450px;
+        padding: 60px 0;
+    }
+    
+    .transport-hero-title {
+        font-size: 2rem;
+    }
+    
+    .transport-hero-text {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .transport-features {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .transport-feature-item {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .transport-cta-card {
+        padding: 2rem 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .transport-cta-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .transport-cta-icon svg {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .transport-cta-title {
+        font-size: 1.5rem;
+    }
+    
+    .transport-cta-text {
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .transport-cta-button {
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+        width: 100%;
+    }
+}
+
 /* Testimonial Styles */
 .testimonial-card {
     background: #fff;
