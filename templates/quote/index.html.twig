@@ -298,11 +298,14 @@
                         {% endfor %}
                     </div>
                     {{ form_errors(form.shippingMethod) }}
+                    <p class="small text-muted mt-2 fst-italic">
+                        <strong>Les envois aériens</strong> ont un départ hebdomadaire. Les délais de <strong>3 à 5 jours</strong> et <strong>10 à 30 jours</strong> <u>commencent uniquement à partir du départ de l’avion</u>, après réception des marchandises auprès des fournisseurs.
+                    </p>
                 </div>
             </div>
         </div>
         
-        <h2 class="mt-5 mb-4">4. Informations complémentaires</h2>
+        <h2 class="pt-5 mt-5 mb-4">4. Informations complémentaires</h2>
         <div class="mb-4">
             {{ form_widget(form.additionalInfo, {'attr': {'class': 'form-control', 'rows': 3}}) }}
             {{ form_errors(form.additionalInfo) }}
