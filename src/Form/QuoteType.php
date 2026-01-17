@@ -60,7 +60,11 @@ class QuoteType extends AbstractType
                     'Logistique et transport, dédouanement et livraison' => 'Transport et logistique',
                 ],
                 'multiple' => true,
-                'expanded' => true
+                'expanded' => true,
+                'data' => ['Sourcing et négociation', 'Transport et logistique'], // Pré-cocher les deux options
+                'row_attr' => [
+                    'style' => 'display: none;' // Masquer complètement cette section
+                ]
             ])
             ->add('shippingMethod', ChoiceType::class, [
                 'label' => 'Choix de l\'envoi',
@@ -74,9 +78,6 @@ class QuoteType extends AbstractType
                 'required' => true,
                 'attr' => [
                     'class' => 'shipping-method-options',
-                ],
-                'row_attr' => [
-                    'style' => 'display: none;' // Cacher tout le groupe de formulaire par défaut
                 ]
             ])
             ->add('additionalInfo', TextareaType::class, [

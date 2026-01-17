@@ -122,7 +122,12 @@
         object-fit: contain;
     }
 
-    .shipping-method-options .form-check { display: none; }
+    .shipping-method-options .form-check {
+        height: 1px;
+        min-height: 1px;
+        margin: 0;
+    }
+
 </style>
 {% endblock %}
 
@@ -251,44 +256,31 @@
             <i class="fas fa-plus-circle me-2"></i> Ajouter un produit
         </button>
         
-        <h2 class="mt-4">3. Services souhaités</h2>
+        <h2 class="mt-4">3. Choix de l'envoi</h2>
         <div class="row mb-4">
-            <!-- Services souhaités (colonne gauche) -->
-            <div class="col-md-6">
-                <div class="mb-3 h-100">
-                    {{ form_label(form.services, '', {'label_attr': {'class': 'form-label text-white'}}) }}
-                    <div class="services-switches d-flex flex-column h-100">
-                        {% for service in form.services %}
-                            <div class="mb-2 flex-grow-1">
-                                <label class="switch-container h-100 d-flex align-items-center justify-content-between">
-                                    <span class="switch-slider" style="width: 50px;"></span>
-                                    {{ form_widget(service, {'attr': {'class': 'switch-input', 'style': 'margin-right: 10px;'}}) }}
-                                    <span class="switch-label w-25" style="text-align: center;">
-                                        {% if service.vars.value == 'Sourcing et négociation' %}
-                                            <i class="fas fa-search" style="font-size: 2rem; color: var(--primary-color);"></i>
-                                        {% elseif service.vars.value == 'Transport et logistique' %}
-                                            <i class="fas fa-shipping-fast" style="font-size: 2rem; color: var(--primary-color);"></i>
-                                        {% else %}
-                                            {{ service.vars.label }}
-                                        {% endif %}
-                                    </span>
-                                </label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    {{ form_errors(form.services) }}
+            <!-- Services masqués (pré-sélectionnés automatiquement) -->
+            <div style="display: none;">
+                {{ form_row(form.services) }}
+            </div>
+            <div class="col-12">
+                <div class="alert alert-light border d-flex align-items-start gap-3">
+                    <i class="fas fa-check-circle text-primary mt-1"></i>
+                    <p class="mb-0">
+                        Nous gérons le sourcing, la négociation fournisseurs et toute la logistique
+                        (transport, dédouanement, livraison) pour une réception simple et sans stress.<br/>
+                        Vous devez juste définir le mode d'envoi. <strong>Cliquez donc sur le ou les modes d'envoi qui vous conviennent et nous nous occuperons du reste.</strong>
+                    </p>
                 </div>
             </div>
-            
-            <!-- Choix de l'envoi (colonne droite) -->
-            <div class="col-md-6">
-                <div class="mb-3 shipping-method-container h-100">
-                    {{ form_label(form.shippingMethod) }}
-                    <div class="shipping-method-options row h-100">
+            <!-- Choix de l'envoi (pleine largeur) -->
+            <div class="col-12">
+                <div class="mb-3 shipping-method-container">
+                    {{ form_label(form.shippingMethod, null, {'label_attr': {'class': 'd-none'}}) }}
+                    <div class="shipping-method-options row px-2">
                         {% for choice in form.shippingMethod %}
                             <div class="col-4 col-sm-4 col-md-4 col-lg-4 mb-2">
                                 <label class="radio-card h-100">
-                                    {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}}) }}
+                                    {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}, 'label': false, 'label_attr': {'class': 'd-none'}}) }}
                                     <div class="radio-card-content">
                                         <div class="shipping-icon">
                                             {% if choice.vars.value == 'maritime' %}

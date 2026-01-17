@@ -46,6 +46,9 @@ class QuoteController extends AbstractController
     {
         $quote = new Quote();
         
+        // Pré-sélectionner automatiquement les deux services
+        $quote->setServices(['Sourcing et négociation', 'Transport et logistique']);
+        
         // Si l'utilisateur est connecté, pré-remplir les informations
         $user = $this->getUser();
         if ($user) {
