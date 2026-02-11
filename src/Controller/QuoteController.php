@@ -24,6 +24,8 @@ use Symfony\Component\Mime\Address;
 use App\Service\QuoteFeeCalculator;
 use App\Service\UserIdentityTracker;
 use App\Service\QuoteTrackerService;
+use App\Event\QuoteCreatedEvent;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -41,7 +43,8 @@ class QuoteController extends AbstractController
         SluggerInterface $slugger,
         QuoteFeeCalculator $feeCalculator,
         UserIdentityTracker $identityTracker,
-        QuoteTrackerService $quoteTrackerService
+        QuoteTrackerService $quoteTrackerService,
+        EventDispatcherInterface $eventDispatcher
     ): Response
     {
         $quote = new Quote();
@@ -194,6 +197,9 @@ class QuoteController extends AbstractController
                     // Sauvegarde dans la base de données
                     $entityManager->persist($quote);
                     $entityManager->flush();
+
+                    // Alerte SMS nouveau devis
+                    $eventDispatcher->dispatch(new QuoteCreatedEvent($quote), QuoteCreatedEvent::NAME);
                     
                     // Créer l'historique initial du devis
                     $quoteTrackerService->createInitialHistory($quote, $this->getUser()?->getEmail() ?? 'system');

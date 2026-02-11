@@ -1,0 +1,13 @@
+# Orange SMS Africa & Middle East - https://developer.orange.com/apis/sms/getting-started
+parameters:
+    orange_sms.client_id: '%env(ORANGE_SMS_CLIENT_ID)%'
+    orange_sms.client_secret: '%env(ORANGE_SMS_CLIENT_SECRET)%'
+    orange_sms.sender: '%env(ORANGE_SMS_SENDER)%'
+    orange_sms.test_recipient: '%env(ORANGE_SMS_TEST_RECIPIENT)%'
+    # Liste des numéros pour les alertes (séparés par des virgules dans .env)
+    orange_sms.alert_recipients: '%env(csv:ORANGE_SMS_ALERT_RECIPIENTS)%'
+    # Alertes par email (nouveau devis, devis en attente)
+    alert_email_to: '%env(ALERT_EMAIL_TO)%'
+    alert_email_cc: '%env(ALERT_EMAIL_CC)%'
+    # Lien tableau de bord devis (utilisé dans les emails d'alerte)
+    alert_dashboard_url: '%env(ALERT_DASHBOARD_URL)%'

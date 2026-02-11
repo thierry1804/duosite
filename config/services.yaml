@@ -57,5 +57,36 @@ services:
         tags:
             - { name: kernel.event_listener, event: quote.status_changed, method: onQuoteStatusChanged }
 
+    # Event listener alerte SMS + email nouveau devis
+    App\EventListener\QuoteCreatedListener:
+        arguments:
+            $alertRecipients: '%orange_sms.alert_recipients%'
+            $alertEmailTo: '%alert_email_to%'
+            $alertEmailCc: '%alert_email_cc%'
+            $dashboardUrl: '%alert_dashboard_url%'
+        tags:
+            - { name: kernel.event_listener, event: quote.created, method: onQuoteCreated }
+
+    # Orange SMS (Africa & Middle East)
+    App\Service\OrangeSmsTokenProvider:
+        arguments:
+            $clientId: '%orange_sms.client_id%'
+            $clientSecret: '%orange_sms.client_secret%'
+
+    App\Service\OrangeSmsSender:
+        arguments:
+            $sender: '%orange_sms.sender%'
+
+    App\Command\OrangeSmsSendTestCommand:
+        arguments:
+            $testRecipient: '%orange_sms.test_recipient%'
+
+    App\Command\OrangeSmsAlertPendingCommand:
+        arguments:
+            $alertRecipients: '%orange_sms.alert_recipients%'
+            $alertEmailTo: '%alert_email_to%'
+            $alertEmailCc: '%alert_email_cc%'
+            $dashboardUrl: '%alert_dashboard_url%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

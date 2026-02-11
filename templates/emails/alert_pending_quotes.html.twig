@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerte – Devis en attente</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #dc3545; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+        .alert-box { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107; }
+        .btn-dashboard { background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0; font-weight: bold; }
+        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Devis en attente</h1>
+        <p>Duo Import MDG – Alerte plateforme</p>
+    </div>
+
+    <div class="content">
+        <p>Ce message vous rappelle l’état des devis non traités sur la plateforme.</p>
+
+        <div class="alert-box">
+            <h3 style="margin-top: 0;">Résumé</h3>
+            {% if count > 0 %}
+                <p><strong>{{ count }} devis</strong> sont en attente depuis plus de <strong>{{ days }} jour(s)</strong> et n’ont pas encore été traités.</p>
+                <p>Merci de consulter le tableau de bord pour les traiter.</p>
+            {% else %}
+                <p>Aucun devis en attente depuis plus de {{ days }} jour(s).</p>
+            {% endif %}
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{{ dashboard_url }}" class="btn-dashboard">Voir les devis – Tableau de bord</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>Duo Import MDG</strong> – Système de notification</p>
+        <p>Cet email a été envoyé automatiquement par la plateforme.</p>
+    </div>
+</body>
+</html>

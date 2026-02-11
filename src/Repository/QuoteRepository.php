@@ -70,6 +70,23 @@ class QuoteRepository extends ServiceEntityRepository
     }
 
     /**
+     * Compte les devis en attente (status = pending) non traités depuis plus de X jours.
+     */
+    public function countPendingOlderThanDays(int $days): int
+    {
+        $limit = (new \DateTimeImmutable())->modify("-{$days} days");
+
+        return (int) $this->createQueryBuilder('q')
+            ->select('COUNT(q.id)')
+            ->where('q.status = :status')
+            ->andWhere('q.createdAt <= :limit')
+            ->setParameter('status', 'pending')
+            ->setParameter('limit', $limit)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Trouve un devis avec ses offres pré-chargées
      */
     public function findOneWithOffers(int $id): ?Quote
