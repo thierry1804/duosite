@@ -11,3 +11,5 @@ parameters:
     alert_email_cc: '%env(ALERT_EMAIL_CC)%'
     # Lien tableau de bord devis (utilisé dans les emails d'alerte)
     alert_dashboard_url: '%env(ALERT_DASHBOARD_URL)%'
+    # Token pour appeler /quote/notifier (cron) sans authentification
+    notifier_secret: '%env(NOTIFIER_SECRET)%'

@@ -77,16 +77,22 @@ services:
         arguments:
             $sender: '%orange_sms.sender%'
 
-    App\Command\OrangeSmsSendTestCommand:
-        arguments:
-            $testRecipient: '%orange_sms.test_recipient%'
-
-    App\Command\OrangeSmsAlertPendingCommand:
+    App\Service\PendingQuoteAlertService:
         arguments:
             $alertRecipients: '%orange_sms.alert_recipients%'
             $alertEmailTo: '%alert_email_to%'
             $alertEmailCc: '%alert_email_cc%'
             $dashboardUrl: '%alert_dashboard_url%'
+
+    App\Command\OrangeSmsSendTestCommand:
+        arguments:
+            $testRecipient: '%orange_sms.test_recipient%'
+
+    App\Command\OrangeSmsAlertPendingCommand: ~
+
+    App\Controller\QuoteNotifierController:
+        arguments:
+            $notifierSecret: '%notifier_secret%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

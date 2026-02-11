@@ -2,18 +2,13 @@
 
 namespace App\Command;
 
-use App\Repository\QuoteRepository;
-use App\Service\OrangeSmsSender;
+use App\Service\PendingQuoteAlertService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
-use Symfony\Component\Mime\Email;
-use Twig\Environment;
 
 #[AsCommand(
     name: 'app:sms:alert-pending',
@@ -21,17 +16,8 @@ use Twig\Environment;
 )]
 class OrangeSmsAlertPendingCommand extends Command
 {
-    private const PENDING_DAYS = 2;
-
     public function __construct(
-        private QuoteRepository $quoteRepository,
-        private OrangeSmsSender $smsSender,
-        private MailerInterface $mailer,
-        private Environment $twig,
-        private array $alertRecipients,
-        private string $alertEmailTo,
-        private string $alertEmailCc,
-        private string $dashboardUrl
+        private PendingQuoteAlertService $pendingQuoteAlertService
     ) {
         parent::__construct();
     }
@@ -39,67 +25,36 @@ class OrangeSmsAlertPendingCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addOption('days', 'd', InputOption::VALUE_REQUIRED, 'Nombre de jours sans traitement pour considérer un devis en retard', self::PENDING_DAYS)
+            ->addOption('days', 'd', InputOption::VALUE_REQUIRED, 'Nombre de jours sans traitement pour considérer un devis en retard', 2)
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'Envoyer l\'alerte même si le nombre de devis en attente est 0');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-
-        $recipients = array_filter(array_map('trim', $this->alertRecipients));
-        if ($recipients === []) {
-            $io->error('ORANGE_SMS_ALERT_RECIPIENTS n\'est pas configuré.');
-            return Command::FAILURE;
-        }
-
-        $days = (int) ($input->getOption('days') ?? self::PENDING_DAYS);
-        $count = $this->quoteRepository->countPendingOlderThanDays($days);
+        $days = (int) ($input->getOption('days') ?? 2);
         $force = $input->getOption('force');
 
-        if ($count === 0 && !$force) {
-            $io->success('Aucun devis en attente depuis plus de ' . $days . ' jour(s). Pas d\'envoi.');
+        $result = $this->pendingQuoteAlertService->run($days, $force);
+
+        if ($result['sms_sent'] === 0 && !$result['email_sent'] && $result['count'] === 0) {
+            $io->success($result['message']);
             return Command::SUCCESS;
         }
 
-        $message = $count === 0
-            ? sprintf('Duosite: Aucun devis en attente depuis plus de %d jour(s).', $days)
-            : sprintf('Duosite: %d devis en attente depuis plus de %d jour(s).', $count, $days);
-
-        $failed = [];
-        foreach ($recipients as $recipient) {
-            try {
-                $this->smsSender->send($recipient, $message);
-                $io->success('Alerte SMS envoyée vers ' . $recipient . ' : ' . $message);
-            } catch (\Throwable $e) {
-                $failed[] = $recipient . ' (' . $e->getMessage() . ')';
-            }
-        }
-        if ($failed !== []) {
-            $io->error('Échec pour : ' . implode(' ; ', $failed));
+        if ($result['sms_failures'] !== []) {
+            $io->error('Échec SMS : ' . implode(' ; ', array_map(fn ($f) => $f['recipient'] . ' (' . $f['error'] . ')', $result['sms_failures'])));
             return Command::FAILURE;
         }
 
-        if (trim($this->alertEmailTo) !== '') {
-            try {
-                $html = $this->twig->render('emails/alert_pending_quotes.html.twig', [
-                    'count' => $count,
-                    'days' => $days,
-                    'dashboard_url' => $this->dashboardUrl,
-                ]);
-                $email = (new Email())
-                    ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG - Alertes'))
-                    ->to(trim($this->alertEmailTo))
-                    ->subject($message)
-                    ->html($html);
-                if (trim($this->alertEmailCc) !== '') {
-                    $email->cc(trim($this->alertEmailCc));
-                }
-                $this->mailer->send($email);
-                $io->success('Alerte email envoyée vers ' . trim($this->alertEmailTo));
-            } catch (\Throwable $e) {
-                $io->warning('Échec envoi alerte email : ' . $e->getMessage());
-            }
+        if ($result['sms_sent'] > 0) {
+            $io->success(sprintf('Alerte SMS envoyée vers %d numéro(s) : %s', $result['sms_sent'], $result['message']));
+        }
+        if ($result['email_sent']) {
+            $io->success('Alerte email envoyée.');
+        }
+        if ($result['email_error'] !== null) {
+            $io->warning('Échec envoi alerte email : ' . $result['email_error']);
         }
 
         return Command::SUCCESS;
