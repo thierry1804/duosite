@@ -304,15 +304,16 @@ class QuoteOfferController extends AbstractController
             try {
                 $pdfPath = $pdfGenerator->generateQuoteOfferPdf($offer);
                 $offer->setPdfFilePath($pdfPath);
-                
-                // Changer le statut du devis vers waiting_customer
-                $quoteTrackerService->changeStatus(
-                    $quote, 
-                    'waiting_customer', 
-                    'Offre envoyée au client - en attente de réponse', 
-                    $this->getUser()?->getEmail()
-                );
-                
+
+                // Changer le statut du devis vers waiting_customer uniquement si la transition est autorisée (ex. in_progress → waiting_customer)
+                if ($quoteTrackerService->isTransitionAllowed($quote->getStatus(), 'waiting_customer')) {
+                    $quoteTrackerService->changeStatus(
+                        $quote,
+                        'waiting_customer',
+                        'Offre envoyée au client - en attente de réponse',
+                        $this->getUser()?->getEmail()
+                    );
+                }
                 $entityManager->flush();
                 
                 $this->addFlash('success', 'L\'offre a été envoyée au client avec succès et le PDF a été généré.');
@@ -439,15 +440,16 @@ class QuoteOfferController extends AbstractController
 
                 // Mettre à jour le statut de l'offre
                 $offer->setStatus('sent');
-                
-                // Changer le statut du devis vers waiting_customer
-                $quoteTrackerService->changeStatus(
-                    $quote, 
-                    'waiting_customer', 
-                    'Offre envoyée par email au client - en attente de réponse', 
-                    $this->getUser()?->getEmail()
-                );
-                
+
+                // Changer le statut du devis vers waiting_customer uniquement si la transition est autorisée
+                if ($quoteTrackerService->isTransitionAllowed($quote->getStatus(), 'waiting_customer')) {
+                    $quoteTrackerService->changeStatus(
+                        $quote,
+                        'waiting_customer',
+                        'Offre envoyée par email au client - en attente de réponse',
+                        $this->getUser()?->getEmail()
+                    );
+                }
                 $entityManager->flush();
 
                 $this->addFlash('success', 'Le devis a été envoyé par email avec succès.');

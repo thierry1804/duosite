@@ -311,15 +311,8 @@ class Quote
 
     public function getStatus(): ?string
     {
-        // Si le statut est 'in_progress', et que la dernière offre a été envoyée, alors on change le statut en 'completed'
-        if ($this->status === 'in_progress') {
-            if (count($this->offers) && $this->offers->last()?->getStatus() === 'sent') {
-                $this->status = 'completed';
-
-                // Enregistrer le changement de statut
-                $this->setStatus($this->status);
-            }
-        }
+        // Le statut est géré explicitement par QuoteTrackerService (ex. in_progress → waiting_customer à l'envoi d'une offre).
+        // Ne pas déduire le statut depuis l'état des offres pour éviter des transitions refusées.
         return $this->status;
     }
 
