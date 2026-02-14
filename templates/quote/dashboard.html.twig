@@ -69,7 +69,7 @@
                                             <td>
                                                 {% if quote.user %}
                                                     {{ quote.user.email }}
-                                                    {% if quote.user.quotes|length <= 1 %}
+                                                    {% if quote.id in firstQuoteQuoteIds %}
                                                         <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
                                                     {% endif %}
                                                 {% else %}
@@ -83,7 +83,7 @@
                                                 {% if quote.isPaymentRequired %}
                                                     <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
                                                           title="Ce devis contient des produits payants">
-                                                        {{ quote.user and quote.user.quotes|length <= 1 ? (quote.items|length - freeItemsLimit) : quote.items|length }} payant(s)
+                                                        {{ quote.id in firstQuoteQuoteIds ? (quote.items|length - freeItemsLimit) : quote.items|length }} payant(s)
                                                     </span>
                                                 {% endif %}
                                             </td>
@@ -169,7 +169,7 @@
                                             <td>
                                                 {% if quote.user %}
                                                     {{ quote.user.email }}
-                                                    {% if quote.user.quotes|length <= 1 %}
+                                                    {% if quote.id in firstQuoteQuoteIds %}
                                                         <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
                                                     {% endif %}
                                                 {% else %}
@@ -183,7 +183,7 @@
                                                 {% if quote.isPaymentRequired %}
                                                     <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
                                                           title="Ce devis contient des produits payants">
-                                                        {{ quote.user and quote.user.quotes|length <= 1 ? (quote.items|length - 3) : quote.items|length }} payant(s)
+                                                        {{ quote.id in firstQuoteQuoteIds ? (quote.items|length - freeItemsLimit) : quote.items|length }} payant(s)
                                                     </span>
                                                 {% endif %}
                                             </td>
@@ -245,7 +245,7 @@
                                             <td>
                                                 {% if quote.user %}
                                                     {{ quote.user.email }}
-                                                    {% if quote.user.quotes|length <= 1 %}
+                                                    {% if quote.id in firstQuoteQuoteIds %}
                                                         <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
                                                     {% endif %}
                                                 {% else %}
@@ -259,7 +259,7 @@
                                                 {% if quote.isPaymentRequired %}
                                                     <span class="badge bg-warning text-dark" data-bs-toggle="tooltip"
                                                           title="Ce devis contient des produits payants">
-                                                        {{ quote.user and quote.user.quotes|length <= 1 ? (quote.items|length - freeItemsLimit) : quote.items|length }} payant(s)
+                                                        {{ quote.id in firstQuoteQuoteIds ? (quote.items|length - freeItemsLimit) : quote.items|length }} payant(s)
                                                     </span>
                                                 {% endif %}
                                             </td>
@@ -326,7 +326,7 @@
                                             <td>
                                                 {% if quote.user %}
                                                     {{ quote.user.email }}
-                                                    {% if quote.user.quotes|length <= 1 %}
+                                                    {% if quote.id in firstQuoteQuoteIds %}
                                                         <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
                                                     {% endif %}
                                                 {% else %}
@@ -340,7 +340,7 @@
                                                 {% if quote.isPaymentRequired %}
                                                     <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
                                                           title="Ce devis contient des produits payants">
-                                                        {{ quote.user and quote.user.quotes|length <= 1 ? (quote.items|length - 3) : quote.items|length }} payant(s)
+                                                        {{ quote.id in firstQuoteQuoteIds ? (quote.items|length - freeItemsLimit) : quote.items|length }} payant(s)
                                                     </span>
                                                 {% endif %}
                                             </td>
@@ -391,7 +391,7 @@
                                             <td>
                                                 {% if quote.user %}
                                                     {{ quote.user.email }}
-                                                    {% if quote.user.quotes|length <= 1 %}
+                                                    {% if quote.id in firstQuoteQuoteIds %}
                                                         <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
                                                     {% endif %}
                                                 {% else %}
@@ -405,7 +405,7 @@
                                                 {% if quote.isPaymentRequired %}
                                                     <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
                                                           title="Ce devis contient des produits payants">
-                                                        {{ quote.user and quote.user.quotes|length <= 1 ? (quote.items|length - 3) : quote.items|length }} payant(s)
+                                                        {{ quote.id in firstQuoteQuoteIds ? (quote.items|length - freeItemsLimit) : quote.items|length }} payant(s)
                                                     </span>
                                                 {% endif %}
                                             </td>

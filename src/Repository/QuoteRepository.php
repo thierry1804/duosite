@@ -64,6 +64,49 @@ class QuoteRepository extends ServiceEntityRepository
     }
 
     /**
+     * Même chose que findRecentWithoutOfferSent mais avec user pré-chargé (évite N+1 sur le dashboard admin).
+     *
+     * @return Quote[]
+     */
+    public function findRecentWithoutOfferSentWithUser(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('q')
+            ->leftJoin('q.user', 'u')
+            ->addSelect('u')
+            ->where('q.status IN (:statuses)')
+            ->setParameter('statuses', ['pending', 'in_progress'])
+            ->orderBy('q.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Tous les devis dont le user_id est dans la liste (avec user pré-chargé).
+     * Permet de détecter la fraude pour tous les users en une seule requête.
+     *
+     * @param int[] $userIds
+     * @return Quote[]
+     */
+    public function findQuotesByUserIds(array $userIds): array
+    {
+        if (empty($userIds)) {
+            return [];
+        }
+        $userIds = array_unique(array_filter($userIds));
+        if (empty($userIds)) {
+            return [];
+        }
+        return $this->createQueryBuilder('q')
+            ->leftJoin('q.user', 'u')
+            ->addSelect('u')
+            ->where('q.user IN (:ids)')
+            ->setParameter('ids', $userIds)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Devis « complétés » : terminé, accepté, converti, expédié ou livré.
      *
      * @return Quote[]
@@ -89,6 +132,58 @@ class QuoteRepository extends ServiceEntityRepository
             ->setParameter('statuses', ['completed', 'accepted', 'converted', 'shipped', 'delivered'])
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * Devis pour le dashboard avec items et user pré-chargés (évite N+1).
+     *
+     * @param string[] $statuses un ou plusieurs statuts (ex. ['pending'], ['completed','accepted',...])
+     * @return Quote[]
+     */
+    public function findForDashboard(array $statuses, string $order = 'DESC'): array
+    {
+        if (empty($statuses)) {
+            return [];
+        }
+        return $this->createQueryBuilder('q')
+            ->leftJoin('q.items', 'i')
+            ->addSelect('i')
+            ->leftJoin('q.user', 'u')
+            ->addSelect('u')
+            ->where('q.status IN (:statuses)')
+            ->setParameter('statuses', $statuses)
+            ->orderBy('q.createdAt', $order)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Compte les devis par user_id pour une liste d'ids (une seule requête).
+     *
+     * @param int[] $userIds
+     * @return array<int, int> [user_id => nombre de devis]
+     */
+    public function countByUserIds(array $userIds): array
+    {
+        if (empty($userIds)) {
+            return [];
+        }
+        $userIds = array_unique(array_filter($userIds));
+        if (empty($userIds)) {
+            return [];
+        }
+        $rs = $this->createQueryBuilder('q')
+            ->select('IDENTITY(q.user) AS uid', 'COUNT(q.id) AS cnt')
+            ->where('q.user IN (:ids)')
+            ->setParameter('ids', $userIds)
+            ->groupBy('q.user')
+            ->getQuery()
+            ->getArrayResult();
+        $map = [];
+        foreach ($rs as $row) {
+            $map[(int) $row['uid']] = (int) $row['cnt'];
+        }
+        return $map;
     }
 
     /**

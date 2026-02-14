@@ -12,6 +12,9 @@ class QuoteFeeCalculator
     private QuoteRepository $quoteRepository;
     private QuoteSettingsRepository $settingsRepository;
 
+    /** Cache des paramètres pour éviter une requête par devis (même requête). */
+    private ?\App\Entity\QuoteSettings $cachedSettings = null;
+
     public function __construct(
         QuoteRepository $quoteRepository,
         QuoteSettingsRepository $settingsRepository
@@ -20,10 +23,16 @@ class QuoteFeeCalculator
         $this->settingsRepository = $settingsRepository;
     }
 
-    public function calculateFee(Quote $quote): array
+    /**
+     * @param array<int, int>|null $userQuotesCountMap [user_id => nombre de devis] pour éviter N+1 (optionnel)
+     */
+    public function calculateFee(Quote $quote, ?array $userQuotesCountMap = null): array
     {
-        // Récupérer les paramètres, avec des valeurs par défaut si non configurés
-        $settings = $this->settingsRepository->getSettings();
+        // Paramètres mis en cache pour toute la requête
+        if ($this->cachedSettings === null) {
+            $this->cachedSettings = $this->settingsRepository->getSettings();
+        }
+        $settings = $this->cachedSettings;
         $freeItemsLimit = $settings ? $settings->getFreeItemsLimit() : 3;
         $itemPrice = $settings ? $settings->getItemPrice() : 5000;
         
@@ -31,7 +40,7 @@ class QuoteFeeCalculator
         $itemCount = count($quote->getItems());
         
         // Si c'est le premier devis de l'utilisateur
-        if ($this->isFirstQuote($user)) {
+        if ($this->isFirstQuote($user, $userQuotesCountMap)) {
             // Les premiers X articles sont gratuits
             if ($itemCount <= $freeItemsLimit) {
                 // Pas de frais à payer
@@ -104,16 +113,21 @@ class QuoteFeeCalculator
         }
     }
 
-    private function isFirstQuote(?User $user): bool
+    /**
+     * @param array<int, int>|null $userQuotesCountMap [user_id => count] pré-calculé pour éviter N+1
+     */
+    private function isFirstQuote(?User $user, ?array $userQuotesCountMap = null): bool
     {
         if (!$user) {
             return true; // Si pas d'utilisateur, on considère que c'est le premier devis
         }
         
-        // Compter les devis de cet utilisateur
-        $quotesCount = $this->quoteRepository->countByUser($user);
+        if ($userQuotesCountMap !== null) {
+            $quotesCount = $userQuotesCountMap[$user->getId()] ?? 0;
+        } else {
+            $quotesCount = $this->quoteRepository->countByUser($user);
+        }
         
-        // Si c'est le premier devis (en comptant le devis actuel)
         return $quotesCount <= 1;
     }
 } 

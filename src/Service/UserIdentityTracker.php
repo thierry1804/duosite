@@ -56,27 +56,19 @@ class UserIdentityTracker
         
         foreach ($quotes as $quote) {
             $originalData = $quote->getOriginalUserData();
-            
-            // Si pas de données originales, passer au suivant
             if (!$originalData) {
                 continue;
             }
-            
-            // S'assurer que les données sont bien sous forme de tableau
             if (is_string($originalData)) {
                 $originalData = json_decode($originalData, true) ?: [];
             }
-            
-            // Collecter les différentes valeurs utilisées
             if (!empty($originalData['email']) && !in_array($originalData['email'], $emails)) {
                 $emails[] = $originalData['email'];
             }
-            
             if (!empty($originalData['phone']) && !in_array($originalData['phone'], $phones)) {
                 $phones[] = $originalData['phone'];
             }
-            
-            $fullName = trim($originalData['firstName'] . ' ' . $originalData['lastName']);
+            $fullName = trim(($originalData['firstName'] ?? '') . ' ' . ($originalData['lastName'] ?? ''));
             if (!empty($fullName) && !in_array($fullName, $names)) {
                 $names[] = $fullName;
             }
@@ -94,12 +86,67 @@ class UserIdentityTracker
             $fraudDetails[] = 'Changements fréquents de nom';
         }
         
+        return $this->buildFraudResult($suspiciousActivity, $emails, $phones, $names, $fraudDetails);
+    }
+
+    /**
+     * Même logique que detectPotentialFraud mais avec les devis déjà chargés (évite N requêtes).
+     *
+     * @param Quote[] $quotes devis de l'utilisateur (pré-chargés)
+     */
+    public function detectPotentialFraudWithQuotes(User $user, array $quotes): array
+    {
+        $emails = [];
+        $phones = [];
+        $names = [];
+        $suspiciousActivity = false;
+        $fraudDetails = [];
+        
+        foreach ($quotes as $quote) {
+            $originalData = $quote->getOriginalUserData();
+            
+            if (!$originalData) {
+                continue;
+            }
+            
+            if (is_string($originalData)) {
+                $originalData = json_decode($originalData, true) ?: [];
+            }
+            
+            if (!empty($originalData['email']) && !in_array($originalData['email'], $emails)) {
+                $emails[] = $originalData['email'];
+            }
+            if (!empty($originalData['phone']) && !in_array($originalData['phone'], $phones)) {
+                $phones[] = $originalData['phone'];
+            }
+            $fullName = trim(($originalData['firstName'] ?? '') . ' ' . ($originalData['lastName'] ?? ''));
+            if (!empty($fullName) && !in_array($fullName, $names)) {
+                $names[] = $fullName;
+            }
+        }
+        
+        if (count($emails) > 2 || count($phones) > 2) {
+            $suspiciousActivity = true;
+            $fraudDetails[] = 'Utilisation de multiples identités';
+        }
+        if (count($names) > 2) {
+            $suspiciousActivity = true;
+            $fraudDetails[] = 'Changements fréquents de nom';
+        }
+        
+        return $this->buildFraudResult($suspiciousActivity, $emails, $phones, $names, $fraudDetails);
+    }
+
+    private function buildFraudResult(bool $suspiciousActivity, array $emails, array $phones, array $names, array $fraudDetails): array
+    {
+        $reason = $fraudDetails ? implode(' ; ', $fraudDetails) : '';
         return [
             'suspiciousActivity' => $suspiciousActivity,
             'emails' => $emails,
             'phones' => $phones,
             'names' => $names,
-            'details' => $fraudDetails
+            'details' => $fraudDetails,
+            'reason' => $reason,
         ];
     }
 } 

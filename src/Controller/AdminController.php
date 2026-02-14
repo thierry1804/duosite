@@ -28,21 +28,28 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
-        // Récupération des statistiques
+        // Récupération des statistiques (4 requêtes légères)
         $pendingQuotesCount = $quoteRepository->count(['status' => 'pending']);
         $completedQuotesCount = $quoteRepository->countCompleted();
         $totalUsersCount = $userRepository->count([]);
         
-        // Devis récents sans offre envoyée (pending ou in_progress uniquement)
-        $recentQuotes = $quoteRepository->findRecentWithoutOfferSent(5);
+        // Devis récents avec user pré-chargé (1 requête, pas de N+1)
+        $recentQuotes = $quoteRepository->findRecentWithoutOfferSentWithUser(5);
         
-        // Récupération des utilisateurs suspects
+        // Utilisateurs suspects : 1 requête users + 1 requête tous les devis des users (au lieu de N)
         $users = $userRepository->findAll();
+        $userIds = array_map(fn (User $u) => $u->getId(), $users);
+        $allQuotesForUsers = $quoteRepository->findQuotesByUserIds($userIds);
+        $quotesByUserId = [];
+        foreach ($allQuotesForUsers as $quote) {
+            $uid = $quote->getUser()?->getId();
+            if ($uid !== null) {
+                $quotesByUserId[$uid][] = $quote;
+            }
+        }
         $suspiciousUsers = [];
-        
         foreach ($users as $user) {
-            $fraudCheck = $identityTracker->detectPotentialFraud($user);
-            
+            $fraudCheck = $identityTracker->detectPotentialFraudWithQuotes($user, $quotesByUserId[$user->getId()] ?? []);
             if ($fraudCheck['suspiciousActivity']) {
                 $suspiciousUsers[] = [
                     'user' => $user,
@@ -50,7 +57,6 @@ class AdminController extends AbstractController
                 ];
             }
         }
-        
         $suspiciousUsersCount = count($suspiciousUsers);
         
         return $this->render('admin/dashboard.html.twig', [
@@ -92,16 +98,24 @@ class AdminController extends AbstractController
     #[Route('/users/suspicious', name: 'app_admin_suspicious_users')]
     public function suspiciousUsers(
         UserRepository $userRepository,
+        QuoteRepository $quoteRepository,
         UserIdentityTracker $identityTracker
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
         $users = $userRepository->findAll();
+        $userIds = array_map(fn (User $u) => $u->getId(), $users);
+        $allQuotesForUsers = $quoteRepository->findQuotesByUserIds($userIds);
+        $quotesByUserId = [];
+        foreach ($allQuotesForUsers as $quote) {
+            $uid = $quote->getUser()?->getId();
+            if ($uid !== null) {
+                $quotesByUserId[$uid][] = $quote;
+            }
+        }
         $suspiciousUsers = [];
-        
         foreach ($users as $user) {
-            $fraudCheck = $identityTracker->detectPotentialFraud($user);
-            
+            $fraudCheck = $identityTracker->detectPotentialFraudWithQuotes($user, $quotesByUserId[$user->getId()] ?? []);
             if ($fraudCheck['suspiciousActivity']) {
                 $suspiciousUsers[] = [
                     'user' => $user,

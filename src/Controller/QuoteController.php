@@ -285,26 +285,36 @@ class QuoteController extends AbstractController
         // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
-        // Récupération des devis non traités
+        // Récupération des devis avec items et user pré-chargés (une requête par statut, sans N+1)
         $quoteRepository = $entityManager->getRepository(Quote::class);
-        $pendingQuotes = $quoteRepository->findBy(['status' => 'pending'], ['createdAt' => 'DESC']);
-        $inProgressQuotes = $quoteRepository->findBy(['status' => 'in_progress'], ['createdAt' => 'DESC']);
-        $waitingCustomerQuotes = $quoteRepository->findBy(['status' => 'waiting_customer'], ['createdAt' => 'DESC']);
-        $completedQuotes = $quoteRepository->findCompletedQuotes();
-        $rejectedQuotes = $quoteRepository->findBy(['status' => 'rejected'], ['createdAt' => 'DESC']);
+        $pendingQuotes = $quoteRepository->findForDashboard(['pending']);
+        $inProgressQuotes = $quoteRepository->findForDashboard(['in_progress']);
+        $waitingCustomerQuotes = $quoteRepository->findForDashboard(['waiting_customer']);
+        $completedQuotes = $quoteRepository->findForDashboard(['completed', 'accepted', 'converted', 'shipped', 'delivered']);
+        $rejectedQuotes = $quoteRepository->findForDashboard(['rejected']);
 
-        // Récupérer freeItemsLimit
+        $allQuotes = array_merge($pendingQuotes, $inProgressQuotes, $waitingCustomerQuotes, $completedQuotes, $rejectedQuotes);
+
+        // Un seul chargement des paramètres + une requête pour les comptes par user (au lieu de N)
         $quoteSettings = $entityManager->getRepository(QuoteSettings::class)->findOneBy([]);
-        $freeItemsLimit = $quoteSettings->getFreeItemsLimit();
-        
-        // Recalculer les frais pour tous les devis pour s'assurer que le statut de paiement est à jour
-        foreach (array_merge($pendingQuotes, $inProgressQuotes, $waitingCustomerQuotes, $completedQuotes, $rejectedQuotes) as $quote) {
-            $feeCalculator->calculateFee($quote);
+        $freeItemsLimit = $quoteSettings ? $quoteSettings->getFreeItemsLimit() : 3;
+        $userIds = array_unique(array_filter(array_map(fn (Quote $q) => $q->getUser()?->getId(), $allQuotes)));
+        $userQuotesCountMap = $quoteRepository->countByUserIds($userIds);
+
+        foreach ($allQuotes as $quote) {
+            $feeCalculator->calculateFee($quote, $userQuotesCountMap);
         }
-        
-        // Sauvegarder les mises à jour potentielles du statut de paiement
         $entityManager->flush();
-        
+
+        // IDs des devis "premier devis" du client (pour le badge "1er" sans charger quote.user.quotes)
+        $firstQuoteQuoteIds = [];
+        foreach ($allQuotes as $quote) {
+            $user = $quote->getUser();
+            if (!$user || ($userQuotesCountMap[$user->getId()] ?? 0) <= 1) {
+                $firstQuoteQuoteIds[] = $quote->getId();
+            }
+        }
+
         return $this->render('quote/dashboard.html.twig', [
             'pendingQuotes' => $pendingQuotes,
             'inProgressQuotes' => $inProgressQuotes,
@@ -313,6 +323,7 @@ class QuoteController extends AbstractController
             'rejectedQuotes' => $rejectedQuotes,
             'processedQuotes' => array_merge($completedQuotes, $rejectedQuotes),
             'freeItemsLimit' => $freeItemsLimit,
+            'firstQuoteQuoteIds' => $firstQuoteQuoteIds,
         ]);
     }
 
