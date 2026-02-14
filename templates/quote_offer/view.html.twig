@@ -78,7 +78,7 @@
                     {% if offer.pdfFilePath %}
                     <hr>
                     <div class="text-center">
-                        <a href="/perso/duosite/public{{ asset(offer.pdfFilePath) }}" class="btn btn-sm btn-primary" target="_blank">
+                        <a href="/{{ asset(offer.pdfFilePath) }}" class="btn btn-sm btn-primary" target="_blank">
                             <i data-lucide="file-text" class="me-2"></i> Télécharger le PDF
                         </a>
                     </div>
