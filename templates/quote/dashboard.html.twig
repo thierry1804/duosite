@@ -26,6 +26,11 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="waiting-customer-tab" data-bs-toggle="tab" data-bs-target="#waiting-customer" type="button" role="tab" aria-controls="waiting-customer" aria-selected="false">
+                        <i data-lucide="timer"></i> En attente du client <span class="badge bg-secondary ms-1">{{ waitingCustomerQuotes|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="false">
                         <i data-lucide="check-circle"></i> Complétés <span class="badge bg-success ms-1">{{ completedQuotes|length }}</span>
                     </button>
@@ -202,6 +207,87 @@
                                                         <li>
                                                             <a class="dropdown-item text-danger" href="{{ path('app_quote_status', {'id': quote.id, 'status': 'rejected'}) }}" onclick="return confirm('Êtes-vous sûr de vouloir rejeter ce devis ?');">
                                                                 <i data-lucide="x" class="icon-sm me-2"></i> Rejeter
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Devis en attente du client -->
+                <div class="tab-pane fade" id="waiting-customer" role="tabpanel" aria-labelledby="waiting-customer-tab">
+                    {% if waitingCustomerQuotes is empty %}
+                        <div class="alert alert-info">
+                            <i data-lucide="info"></i> Aucun devis en attente de réponse client.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Date</th>
+                                        <th>Produits</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for quote in waitingCustomerQuotes %}
+                                        <tr>
+                                            <td>#{{ quote.id }}</td>
+                                            <td>
+                                                {% if quote.user %}
+                                                    {{ quote.user.email }}
+                                                    {% if quote.user.quotes|length <= 1 %}
+                                                        <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    {{ quote.email }}
+                                                    <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Premier devis">1er</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
+                                            <td>
+                                                {{ quote.items|length }} produit(s)
+                                                {% if quote.isPaymentRequired %}
+                                                    <span class="badge bg-warning text-dark" data-bs-toggle="tooltip"
+                                                          title="Ce devis contient des produits payants">
+                                                        {{ quote.user and quote.user.quotes|length <= 1 ? (quote.items|length - freeItemsLimit) : quote.items|length }} payant(s)
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle p-1" type="button" id="dropdownActionsWaitingCustomer{{ quote.id }}" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.8rem;">
+                                                        <i data-lucide="more-vertical" class="icon-sm"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownActionsWaitingCustomer{{ quote.id }}">
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ path('app_quote_view', {'id': quote.id}) }}">
+                                                                <i data-lucide="eye" class="icon-sm me-2"></i> Voir le détail
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item text-success" href="{{ path('app_quote_status', {'id': quote.id, 'status': 'accepted'}) }}">
+                                                                <i data-lucide="check" class="icon-sm me-2"></i> Marquer accepté
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item text-warning" href="{{ path('app_quote_status', {'id': quote.id, 'status': 'declined'}) }}" onclick="return confirm('Le client a refusé l\'offre ?');">
+                                                                <i data-lucide="x" class="icon-sm me-2"></i> Marquer refusé
+                                                            </a>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <a class="dropdown-item" href="{{ path('app_quote_status', {'id': quote.id, 'status': 'in_progress'}) }}">
+                                                                <i data-lucide="rotate-ccw" class="icon-sm me-2"></i> Remettre en cours
                                                             </a>
                                                         </li>
                                                     </ul>

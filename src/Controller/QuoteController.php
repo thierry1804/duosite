@@ -289,7 +289,8 @@ class QuoteController extends AbstractController
         $quoteRepository = $entityManager->getRepository(Quote::class);
         $pendingQuotes = $quoteRepository->findBy(['status' => 'pending'], ['createdAt' => 'DESC']);
         $inProgressQuotes = $quoteRepository->findBy(['status' => 'in_progress'], ['createdAt' => 'DESC']);
-        $completedQuotes = $quoteRepository->findBy(['status' => 'completed'], ['createdAt' => 'DESC']);
+        $waitingCustomerQuotes = $quoteRepository->findBy(['status' => 'waiting_customer'], ['createdAt' => 'DESC']);
+        $completedQuotes = $quoteRepository->findCompletedQuotes();
         $rejectedQuotes = $quoteRepository->findBy(['status' => 'rejected'], ['createdAt' => 'DESC']);
 
         // Récupérer freeItemsLimit
@@ -297,7 +298,7 @@ class QuoteController extends AbstractController
         $freeItemsLimit = $quoteSettings->getFreeItemsLimit();
         
         // Recalculer les frais pour tous les devis pour s'assurer que le statut de paiement est à jour
-        foreach (array_merge($pendingQuotes, $inProgressQuotes, $completedQuotes, $rejectedQuotes) as $quote) {
+        foreach (array_merge($pendingQuotes, $inProgressQuotes, $waitingCustomerQuotes, $completedQuotes, $rejectedQuotes) as $quote) {
             $feeCalculator->calculateFee($quote);
         }
         
@@ -307,6 +308,7 @@ class QuoteController extends AbstractController
         return $this->render('quote/dashboard.html.twig', [
             'pendingQuotes' => $pendingQuotes,
             'inProgressQuotes' => $inProgressQuotes,
+            'waitingCustomerQuotes' => $waitingCustomerQuotes,
             'completedQuotes' => $completedQuotes,
             'rejectedQuotes' => $rejectedQuotes,
             'processedQuotes' => array_merge($completedQuotes, $rejectedQuotes),

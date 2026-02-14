@@ -48,6 +48,50 @@ class QuoteRepository extends ServiceEntityRepository
     }
 
     /**
+     * Devis récents qui n'ont pas encore d'offre envoyée (statut pending ou in_progress).
+     *
+     * @return Quote[]
+     */
+    public function findRecentWithoutOfferSent(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('q')
+            ->where('q.status IN (:statuses)')
+            ->setParameter('statuses', ['pending', 'in_progress'])
+            ->orderBy('q.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Devis « complétés » : terminé, accepté, converti, expédié ou livré.
+     *
+     * @return Quote[]
+     */
+    public function findCompletedQuotes(): array
+    {
+        return $this->createQueryBuilder('q')
+            ->where('q.status IN (:statuses)')
+            ->setParameter('statuses', ['completed', 'accepted', 'converted', 'shipped', 'delivered'])
+            ->orderBy('q.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Compte les devis complétés (terminé, accepté, converti, expédié, livré).
+     */
+    public function countCompleted(): int
+    {
+        return (int) $this->createQueryBuilder('q')
+            ->select('COUNT(q.id)')
+            ->where('q.status IN (:statuses)')
+            ->setParameter('statuses', ['completed', 'accepted', 'converted', 'shipped', 'delivered'])
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Compte le nombre de devis pour un utilisateur donné
      */
     public function countByUser(User $user): int

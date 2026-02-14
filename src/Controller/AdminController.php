@@ -30,11 +30,11 @@ class AdminController extends AbstractController
         
         // Récupération des statistiques
         $pendingQuotesCount = $quoteRepository->count(['status' => 'pending']);
-        $completedQuotesCount = $quoteRepository->count(['status' => 'completed']);
+        $completedQuotesCount = $quoteRepository->countCompleted();
         $totalUsersCount = $userRepository->count([]);
         
-        // Récupération des devis récents
-        $recentQuotes = $quoteRepository->findBy([], ['createdAt' => 'DESC'], 5);
+        // Devis récents sans offre envoyée (pending ou in_progress uniquement)
+        $recentQuotes = $quoteRepository->findRecentWithoutOfferSent(5);
         
         // Récupération des utilisateurs suspects
         $users = $userRepository->findAll();
