@@ -30,7 +30,7 @@ class QuoteTrackerService
     // Transitions autorisées (statut actuel => [statuts possibles])
     public const ALLOWED_TRANSITIONS = [
         'new' => ['pending', 'viewed', 'canceled'],
-        'pending' => ['viewed', 'in_progress', 'canceled'],
+        'pending' => ['viewed', 'in_progress', 'rejected', 'canceled'],
         'viewed' => ['in_progress', 'pending', 'canceled'],
         'in_progress' => ['waiting_customer', 'completed', 'rejected', 'canceled'],
         'waiting_customer' => ['accepted', 'declined', 'in_progress', 'canceled'],
