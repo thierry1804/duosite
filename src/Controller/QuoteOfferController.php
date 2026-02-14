@@ -68,12 +68,17 @@ class QuoteOfferController extends AbstractController
                 'aerien_express' => 7,
                 'aerien_normal' => 15
             ];
+            $shippingDescriptions = [
+                'aerien_express' => "Les départs sont effectués chaque lundi et jeudi matin. Après la validation de votre commande, la réception des articles à l'entrepôt peut prendre 2 à 7 jours, selon le fournisseur et sa province.\nLe délai de transport express (3 à 5 jours) commence à être compté à partir du jour du départ du vol.\nLe poids minimum facturé est de 250 g. Tout article de moins de 250 g sera donc facturé à 250 g.\nLes frais d'expédition sont calculés au kilo.",
+                'aerien_normal' => "Le départ est effectué tout les vendredis matin. Après la validation de votre commande, la réception des articles à l'entrepôt peut prendre 2 à 7 jours, selon le fournisseur et sa province.\nLe délai de transport normal (10 à 15 jours) commence à être compté à partir du jour du départ du vol.\nLe poids minimum facturé est de 250 g. Tout article de moins de 250 g sera donc facturé à 250 g.\nLes frais d'expédition sont calculés au kilo.",
+                'maritime' => "Il y a deux départs chaque semaine (les jours exacts peuvent varier selon le planning des navires). Après la validation de votre commande, la réception des articles à l'entrepôt peut prendre 2 à 7 jours, selon le fournisseur et sa province.\nLe délai de transport maritime est estimé entre 55 et 75 jours, à compter du départ du bateau.\nLes frais d'expédition sont calculés au CBM (mètre cube). Pour les volumes inférieurs à 0,25 CBM, le tarif appliqué est plus élevé que pour les volumes supérieurs à 0,25 CBM.",
+            ];
             
             foreach ($shippingMethods as $methodCode) {
                 if (isset($shippingNames[$methodCode])) {
                     $shippingOption = new ShippingOption();
                     $shippingOption->setName($shippingNames[$methodCode]);
-                    $shippingOption->setDescription('Option d\'expédition choisie par le client');
+                    $shippingOption->setDescription($shippingDescriptions[$methodCode] ?? 'Option d\'expédition choisie par le client');
                     $shippingOption->setPrice(0); // Prix à définir par l'administrateur
                     
                     if (isset($deliveryDays[$methodCode])) {

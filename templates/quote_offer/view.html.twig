@@ -241,7 +241,7 @@
                                             <td>
                                                 <strong>{{ option.name }}</strong>
                                                 {% if option.description %}
-                                                    <p class="small text-muted mb-0">{{ option.description }}</p>
+                                                    <p class="small text-muted mb-0">{{ option.description|nl2br }}</p>
                                                 {% endif %}
                                             </td>
                                             <td>{{ option.price|number_format(2, ',', ' ') }} €</td>

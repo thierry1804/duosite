@@ -282,7 +282,7 @@
                     {% for option in offer.shippingOptions %}
                     <tr>
                         <td>{{ option.name }}</td>
-                        <td>{{ option.description ?: 'Aucune description' }}</td>
+                        <td>{{ (option.description ?: 'Aucune description')|nl2br }}</td>
                         <td>{{ option.estimatedDeliveryDays ? option.estimatedDeliveryDays ~ ' jours' : 'Non défini' }}</td>
                         <td>{{ option.price|number_format(2, ',', ' ') }} Ar</td>
                     </tr>
