@@ -1,0 +1,1003 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Passer commande - Duo Import MDG{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .import-products-section { margin-bottom: 1.5rem; }
+        .order-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.85fr) minmax(260px, 0.75fr);
+            gap: 1.25rem;
+            align-items: start;
+        }
+        .order-products-panel,
+        .order-details-panel {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 1.25rem;
+        }
+        .order-panel-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 1rem;
+        }
+        .order-customer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+        .order-details-panel .form-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.35rem;
+        }
+        .order-details-panel .form-control,
+        .order-details-panel .form-select {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 0.6rem 0.75rem;
+            font-size: 0.95rem;
+        }
+        .order-details-panel .form-control:focus,
+        .order-details-panel .form-select:focus {
+            border-color: #4A6FA5;
+            box-shadow: 0 0 0 3px rgba(74,111,165,0.12);
+        }
+        .order-details-divider {
+            border-color: #e5e7eb;
+            margin: 1.1rem 0;
+        }
+        .order-cgv-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.75rem;
+            background: #fafafa;
+            margin-bottom: 0.85rem;
+        }
+        .order-submit-wrap .btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        .import-products-header {
+            display: flex; flex-wrap: wrap; align-items: flex-start;
+            justify-content: space-between; gap: 8px; margin-bottom: 6px;
+        }
+        .import-products-title {
+            font-size: 1.625rem; font-weight: 800; color: #1a1a1a;
+            letter-spacing: -0.02em; margin: 0;
+        }
+        .import-products-count { font-size: 0.8125rem; color: #6b7280; margin: 2px 0 0; }
+        .import-products-total { text-align: right; flex-shrink: 0; }
+        .import-products-total-label {
+            font-size: 0.625rem; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; color: #6b7280; margin: 0 0 2px;
+        }
+        .import-products-total-amount {
+            font-size: 1.625rem; font-weight: 800; color: #1a1a1a;
+            font-variant-numeric: tabular-nums; margin: 0;
+        }
+        .import-products-total-pieces { font-size: 0.8125rem; color: #6b7280; text-align: right; margin: 0 0 14px; }
+        .import-products-list { display: flex; flex-direction: column; gap: 14px; }
+        .import-products-footer { margin-top: 14px; }
+        .import-products-hint { font-size: 0.75rem; color: #9ca3af; margin-top: 12px; line-height: 1.5; }
+
+        .item-row {
+            background: #fff; border: 2px solid #4A6FA5;
+            border-radius: 12px; position: relative;
+            padding: 18px 20px;
+        }
+        .item-row.is-verified { padding: 0; overflow: visible; }
+        .item-badge {
+            position: absolute; top: 14px; left: 16px;
+            width: 26px; height: 26px; border-radius: 50%;
+            background: #f3f4f6; color: #4b5563;
+            font-size: 0.6875rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .item-row.is-verified .item-badge { display: none; }
+        .item-row-inner { margin-left: 34px; }
+        .item-row:not(.is-verified) .item-row-inner { display: block; }
+        .item-row.is-verified .item-row-inner {
+            display: flex; margin-left: 0; min-height: 110px;
+        }
+        .item-row:not(.is-verified) .item-col-photo,
+        .item-row:not(.is-verified) .item-col-fields { display: none; }
+        .item-row.is-verified .item-col-photo {
+            display: flex; width: 110px; flex-shrink: 0;
+            background: #f3f4f6; border-right: 1px solid #eee;
+            align-items: center; justify-content: center;
+        }
+        .item-row.is-verified .item-preview-photo {
+            width: 100%; align-self: stretch; border-radius: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: #f3f4f6; overflow: hidden;
+        }
+        .item-row.is-verified .item-col-content {
+            flex: 1; padding: 16px 20px; padding-right: 48px;
+            display: grid;
+            grid-template-columns: minmax(130px, 1.2fr) minmax(100px, 1fr) auto 1fr;
+            gap: 20px; align-items: center;
+        }
+        .item-row.is-verified .item-col-fields { display: contents; }
+        .item-row.is-verified .item-code-wrap { display: none; }
+        .item-row.is-verified .item-col-code {
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .item-row .item-product-info { display: none; }
+        .item-row.is-verified .item-product-info { display: block; }
+        .item-row.is-verified .item-label-code { display: none; }
+        .item-label-product { display: none; }
+        .item-row.is-verified .item-label-product { display: block; }
+        .item-code-text {
+            display: none; font-size: 0.6875rem; font-weight: 600;
+            color: #9ca3af; letter-spacing: 0.04em; margin-bottom: 2px;
+        }
+        .item-row.is-verified .item-code-text { display: block; }
+        .item-product-info .item-name {
+            display: block; font-size: 0.9375rem; font-weight: 700; color: #1a1a1a;
+            line-height: 1.3;
+        }
+        .item-product-info .item-unit-price {
+            display: block; font-size: 0.8125rem; font-weight: 400; color: #6b7280;
+            font-variant-numeric: tabular-nums; margin-top: 2px;
+        }
+
+        .item-label {
+            font-size: 0.625rem; font-weight: 600;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            color: #6b7280; margin-bottom: 6px; display: block;
+        }
+        .item-code-wrap {
+            display: flex; gap: 8px; align-items: center;
+        }
+        .item-code-wrap .form-control {
+            font-size: 0.875rem; font-weight: 500; padding: 8px 12px;
+            border: 1.5px solid #d1d5db; border-radius: 8px;
+            background: #fff; color: #1a1a1a; width: 100px; flex-shrink: 0;
+        }
+        .item-code-wrap .form-control:focus {
+            border-color: #4A6FA5; box-shadow: 0 0 0 3px rgba(74,111,165,0.1);
+        }
+        .item-row .btn-verify-product {
+            font-size: 0.75rem; font-weight: 600; padding: 5px 14px;
+            border-radius: 6px; border: 1.5px solid #d1d5db;
+            background: #f9fafb; color: #4b5563; white-space: nowrap;
+        }
+        .item-row .btn-verify-product:hover { background: #f3f4f6; }
+        .item-row .btn-verify-product.is-verified {
+            background: #22c55e; color: #fff; border-color: #22c55e; cursor: default;
+        }
+        .item-row .btn-verify-product.is-verified:hover { background: #22c55e; }
+        .item-row .btn-verify-product.is-loading { opacity: 0.7; cursor: wait; pointer-events: none; }
+
+        .item-preview-photo {
+            overflow: hidden; background: #f3f4f6;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .item-preview-photo .item-photo {
+            width: 100%; height: 100%; display: block; object-fit: cover;
+        }
+        .item-preview-photo.no-image .item-photo { display: none !important; }
+        .item-preview-photo.no-image .item-no-photo-text {
+            display: block; text-align: center; color: #9ca3af;
+            font-size: 0.625rem; line-height: 1.3;
+        }
+        .item-preview-photo:not(.no-image) .item-no-photo-text { display: none; }
+        .item-preview-photo.is-loading-photo::after {
+            content: ''; width: 1.25rem; height: 1.25rem;
+            border: 2px solid #d1d5db; border-top-color: #4A6FA5;
+            border-radius: 50%; animation: import-photo-spin 0.65s linear infinite;
+        }
+        @keyframes import-photo-spin { to { transform: rotate(360deg); } }
+
+        .item-col-fields {
+            display: grid; grid-template-columns: 1fr auto auto;
+            gap: 18px; align-items: start;
+        }
+
+        .item-color-combo {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .item-field-color { position: relative; }
+        .item-color-dot {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: #ccc; border: 2px solid transparent;
+            flex-shrink: 0; transition: background 0.15s;
+        }
+        .item-color-dot.is-light { border-color: #d1d5db; }
+        .item-color-input {
+            font-size: 0.8125rem; padding: 7px 10px;
+            border: 1.5px solid #d1d5db; border-radius: 8px;
+            background: #fff; color: #1a1a1a; min-width: 0; flex: 1;
+        }
+        .item-color-input:focus { border-color: #4A6FA5; box-shadow: 0 0 0 3px rgba(74,111,165,0.1); }
+        .item-color-toggle {
+            width: 32px;
+            height: 32px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            background: #fff;
+            color: #4b5563;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .item-color-toggle:hover { background: #f9fafb; }
+        .item-color-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 32px;
+            right: 0;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #fff;
+            overflow: hidden;
+            max-height: 170px;
+            overflow-y: auto;
+            z-index: 20;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+        .item-color-option {
+            width: 100%;
+            border: none;
+            background: #fff;
+            text-align: left;
+            padding: 8px 10px;
+            font-size: 0.8125rem;
+            color: #1a1a1a;
+            cursor: pointer;
+        }
+        .item-color-option:hover { background: #f3f4f6; }
+        .item-color-option.is-active {
+            background: #4A6FA5;
+            color: #fff;
+        }
+
+        .item-qty-stepper {
+            display: inline-flex; align-items: center;
+            border: 1.5px solid #d1d5db; border-radius: 8px; overflow: hidden;
+        }
+        .item-qty-stepper button {
+            width: 36px; height: 36px; border: none; background: #f9fafb;
+            color: #4b5563; font-size: 1.125rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .item-qty-stepper button:hover { background: #f3f4f6; }
+        .item-qty-stepper .item-qty-input {
+            width: 44px; text-align: center; border: none;
+            border-left: 1.5px solid #d1d5db; border-right: 1.5px solid #d1d5db;
+            font-size: 1.0625rem; font-weight: 700; color: #1a1a1a;
+            font-variant-numeric: tabular-nums;
+            -moz-appearance: textfield;
+        }
+        .item-qty-stepper .item-qty-input::-webkit-outer-spin-button,
+        .item-qty-stepper .item-qty-input::-webkit-inner-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
+        .item-field-subtotal { text-align: right; }
+        .item-subtotal {
+            font-size: 1.125rem; font-weight: 800; color: #1a1a1a;
+            font-variant-numeric: tabular-nums; white-space: nowrap;
+        }
+
+        .btn-remove-item {
+            position: absolute; top: 10px; right: 10px;
+            background: transparent; border: none; color: #ef4444;
+            width: 32px; height: 32px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0; cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-remove-item:hover { background: #fef2f2; }
+
+        .btn-add-line {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            width: 100%; padding: 18px;
+            border: 2px dashed #d1d5db; border-radius: 12px;
+            background: #fafafa; color: #6b7280;
+            font-size: 0.9375rem; font-weight: 600; cursor: pointer;
+        }
+        .btn-add-line:hover { border-color: #4A6FA5; color: #4A6FA5; background: #f8f9fa; }
+
+        @media (max-width: 820px) {
+            .order-layout {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .order-customer-grid {
+                grid-template-columns: 1fr;
+            }
+            .item-row.is-verified .item-col-photo { width: 90px; }
+            .item-row.is-verified .item-col-content {
+                display: block; padding: 14px 16px; padding-right: 44px;
+            }
+            .item-row.is-verified .item-col-fields {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 12px; margin-top: 12px; padding-top: 10px;
+                border-top: 1px solid #f0f1f3; align-items: start;
+            }
+        }
+        @media (max-width: 580px) {
+            .item-row { padding: 14px 12px; }
+            .item-badge { top: 8px; left: 10px; }
+            .import-products-title { font-size: 1.25rem; }
+            .import-products-total-amount { font-size: 1.25rem; }
+            .item-row.is-verified .item-row-inner { flex-direction: column; }
+            .item-row.is-verified .item-col-photo {
+                width: 100%; height: 160px;
+                border-right: none; border-bottom: 1px solid #eee;
+            }
+            .item-row.is-verified .item-col-content {
+                display: block; padding: 12px;
+            }
+            .item-row.is-verified .item-col-fields {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px; margin-top: 12px;
+            }
+            .item-col-fields .item-field-subtotal {
+                grid-column: 1 / -1;
+                padding-top: 10px; border-top: 1px solid #f3f4f6;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<section class="py-5">
+    <div class="container">
+        <h1 class="mb-4">Passer commande</h1>
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+
+        <div class="mb-4">
+            {{ form_start(form, {'attr': {'id': 'importOrderForm'}}) }}
+                <div class="order-layout">
+                    <section class="order-products-panel">
+                        <div class="import-products-section mb-0">
+                            <div class="import-products-header">
+                                <div>
+                                    <h2 class="import-products-title">Produits</h2>
+                                    <p class="import-products-count" id="products-count">0 article dans la commande</p>
+                                </div>
+                                <div class="import-products-total">
+                                    <p class="import-products-total-label">Total estimé</p>
+                                    <p class="import-products-total-amount" id="products-total-amount">0 MGA</p>
+                                </div>
+                            </div>
+                            <p class="import-products-total-pieces" id="products-total-pieces">0 pièce</p>
+
+                            <div id="items-container" class="import-products-list">
+                                {% for item in form.items %}
+                                    <article class="item-row" data-index="{{ item.vars.name }}" aria-label="Ligne produit">
+                                        <span class="item-badge" aria-hidden="true">{{ '%02d'|format(loop.index) }}</span>
+                                        <button type="button" class="btn-remove-item remove-item" aria-label="Retirer cette ligne"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5h11M5.5 4.5V3a1 1 0 011-1h3a1 1 0 011 1v1.5m1.5 0v8a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 014 12.5v-8h8z"/><path d="M6.5 7v4M9.5 7v4"/></svg></button>
+                                        <div class="item-row-inner">
+                                            <div class="item-col-photo">
+                                                <div class="item-preview-photo no-image">
+                                                    <img class="item-photo" alt="" style="display:none;">
+                                                    <span class="item-no-photo-text">Pas de<br>photo</span>
+                                                </div>
+                                            </div>
+                                            <div class="item-col-content">
+                                                <div class="item-col-code">
+                                                    <label class="item-label item-label-code" for="item-{{ item.vars.name }}-code">Code Produit</label>
+                                                    <span class="item-label item-label-product">Produit</span>
+                                                    <div class="item-code-wrap">
+                                                        {{ form_widget(item.productCode, {'attr': {'class': 'form-control item-product-code', 'placeholder': 'Ex: C001', 'id': 'item-' ~ item.vars.name ~ '-code'}}) }}
+                                                        <button type="button" class="btn-verify-product" aria-label="Vérifier le code produit">Vérifier</button>
+                                                    </div>
+                                                    <div class="product-error small text-danger mt-1" style="display:none;" role="alert"></div>
+                                                    <span class="item-code-text"></span>
+                                                    <div class="item-product-info">
+                                                        <span class="item-name"></span>
+                                                        <span class="item-unit-price" data-unit-price=""></span>
+                                                    </div>
+                                                </div>
+                                                <div class="item-col-fields">
+                                                    <div class="item-field-color">
+                                                        <span class="item-label">Couleur</span>
+                                                        <div class="item-color-combo">
+                                                            <span class="item-color-dot"></span>
+                                                            {{ form_widget(item.color, {'attr': {'class': 'form-control item-color-input', 'placeholder': 'Choisir ou saisir', 'list': 'colors-' ~ item.vars.name, 'autocomplete': 'off'}}) }}
+                                                            <button type="button" class="item-color-toggle" aria-label="Afficher les couleurs">
+                                                                <span aria-hidden="true">▼</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="item-color-menu" style="display:none;"></div>
+                                                        <datalist id="colors-{{ item.vars.name }}" class="item-color-datalist"></datalist>
+                                                        {{ form_errors(item.color) }}
+                                                    </div>
+                                                    <div class="item-field-qty">
+                                                        <span class="item-label">Quantité</span>
+                                                        <div class="item-qty-stepper">
+                                                            <button type="button" class="item-qty-minus" aria-label="Diminuer">−</button>
+                                                            {{ form_widget(item.quantity, {'attr': {'class': 'form-control item-qty-input', 'min': 1}}) }}
+                                                            <button type="button" class="item-qty-plus" aria-label="Augmenter">+</button>
+                                                        </div>
+                                                        {{ form_errors(item.quantity) }}
+                                                    </div>
+                                                    <div class="item-field-subtotal">
+                                                        <span class="item-label">Sous-total</span>
+                                                        <span class="item-subtotal item-subtotal-value">0 MGA</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </article>
+                                {% endfor %}
+                            </div>
+                            <div class="import-products-footer">
+                                <button type="button" class="btn-add-line" id="add-item-btn">+ Ajouter un produit</button>
+                            </div>
+                            <p class="import-products-hint">Saisissez un code (C001, C002, C003) puis cliquez « Vérifier » pour charger les détails du produit.</p>
+                        </div>
+                        {{ form_errors(form.items) }}
+
+                        <div id="item-prototype" data-prototype="{{ include('import_order/_item_prototype.html.twig', { 'item': form.items.vars.prototype })|e('html_attr') }}" style="display:none"></div>
+                    </section>
+
+                    <aside class="order-details-panel">
+                        <h2 class="order-panel-title">Informations de livraison</h2>
+                        <div class="order-customer-grid">
+                            <div>
+                                {{ form_row(form.fullName, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                            <div>
+                                {{ form_row(form.phone, {'attr': {'class': 'form-control', 'id': 'phoneInput', 'placeholder': '020 22 123 45 ou 033 12 345 67', 'autocomplete': 'tel'}}) }}
+                            </div>
+                        </div>
+                        {{ form_row(form.email, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(form.deliveryAddress, {'attr': {'class': 'form-control'}}) }}
+
+                        <hr class="order-details-divider">
+
+                        <h2 class="order-panel-title">Paiement</h2>
+                        {{ form_row(form.paymentMethod, {'attr': {'class': 'form-select', 'id': 'paymentMethodSelect'}}) }}
+                        <div id="paymentReferenceWrapper" class="mb-3">
+                            {{ form_row(form.paymentReference, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+
+                        <div class="order-cgv-box">
+                            {{ form_row(form.cgvAccepted, {
+                                label: 'J\'accepte les <a href="' ~ path('app_cgv') ~ '" target="_blank" rel="noopener">conditions générales de vente</a>',
+                                label_html: true,
+                                row_attr: { class: 'mb-0' }
+                            }) }}
+                        </div>
+
+                        <div class="order-submit-wrap">
+                            <button type="submit" class="btn btn-primary">Valider la commande</button>
+                        </div>
+                    </aside>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    (function() {
+        function run() {
+        var form = document.getElementById('importOrderForm');
+        var phoneInput = document.getElementById('phoneInput') || (form && form.querySelector('input[name*="[phone]"]'));
+        var paymentMethodSelect = document.getElementById('paymentMethodSelect') || (form && form.querySelector('select[name*="[paymentMethod]"]'));
+        var paymentReferenceWrapper = document.getElementById('paymentReferenceWrapper');
+
+        function togglePaymentReference() {
+            if (!paymentReferenceWrapper || !paymentMethodSelect) return;
+            var refInput = paymentReferenceWrapper.querySelector('input');
+            if (paymentMethodSelect.value === 'cash') {
+                paymentReferenceWrapper.style.display = 'none';
+                if (refInput) {
+                    refInput.removeAttribute('required');
+                    refInput.disabled = true;
+                    refInput.value = '';
+                }
+            } else {
+                paymentReferenceWrapper.style.display = 'block';
+                if (refInput) {
+                    refInput.required = true;
+                    refInput.disabled = false;
+                }
+            }
+        }
+        if (paymentMethodSelect) {
+            paymentMethodSelect.addEventListener('change', togglePaymentReference);
+            togglePaymentReference();
+        }
+
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function() {
+                var v = this.value.replace(/\D/g, '');
+                if (v.length >= 3 && v.substring(0, 3) === '261') v = v.substring(3);
+                if (v.charAt(0) === '0') {
+                    if (v.length > 10) v = v.substring(0, 10);
+                    if (v.length >= 2 && v.charAt(1) !== '2' && v.charAt(1) !== '3') v = v.substring(0, 1);
+                    if (v.length >= 3 && v.charAt(1) === '2' && v.charAt(2) !== '0') v = v.substring(0, 2);
+                } else {
+                    if (v.length > 9) v = v.substring(0, 9);
+                }
+                if (v.length === 0) { this.value = ''; return; }
+                var formatted = '';
+                if (v.charAt(0) === '0' && v.length >= 3) {
+                    formatted = v.substring(0, 3);
+                    if (v.length > 3) formatted += ' ' + v.substring(3, 5);
+                    if (v.length > 5) formatted += ' ' + v.substring(5, 8);
+                    if (v.length > 8) formatted += ' ' + v.substring(8, 10);
+                } else if (v.charAt(0) === '0') {
+                    formatted = v;
+                } else if (v.length >= 2) {
+                    formatted = v.substring(0, 2);
+                    if (v.length > 2) formatted += ' ' + v.substring(2, 4);
+                    if (v.length > 4) formatted += ' ' + v.substring(4, 7);
+                    if (v.length > 7) formatted += ' ' + v.substring(7, 9);
+                } else {
+                    formatted = v;
+                }
+                this.value = formatted;
+            });
+            phoneInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value.replace(/\D/g, '').length <= 1) this.value = '';
+            });
+        }
+
+        var apiProductBase = '{{ path('api_import_product_by_code', { code: 'CODE' }) }}'.replace('CODE', '');
+        if (!apiProductBase || apiProductBase.indexOf('CODE') !== -1) apiProductBase = '/api/import-product/';
+        var container = document.getElementById('items-container');
+        var addBtn = document.getElementById('add-item-btn');
+        var prototypeEl = document.getElementById('item-prototype');
+
+        var colorCatalog = [
+            { label: 'Noir', hex: '#1a1a1a', aliases: ['noir', 'black', 'ebene', 'charbon'] },
+            { label: 'Blanc', hex: '#f5f5f5', aliases: ['blanc', 'white', 'ivoire', 'creme', 'off white', 'casse'] },
+            { label: 'Gris', hex: '#6c757d', aliases: ['gris', 'gray', 'grey', 'ardoise', 'anthracite', 'graphite'] },
+            { label: 'Gris clair', hex: '#c7cdd3', aliases: ['gris clair', 'argent clair'] },
+            { label: 'Gris fonce', hex: '#3f4750', aliases: ['gris fonce', 'gris sombre'] },
+            { label: 'Argent', hex: '#c0c0c0', aliases: ['argent', 'silver', 'metal', 'metallise'] },
+            { label: 'Dore', hex: '#c9a227', aliases: ['dore', 'doré', 'gold', 'or'] },
+
+            { label: 'Bleu', hex: '#2563eb', aliases: ['bleu', 'blue'] },
+            { label: 'Bleu roi', hex: '#4169e1', aliases: ['bleu roi', 'royal blue', 'royal'] },
+            { label: 'Bleu marine', hex: '#1B2A4A', aliases: ['bleu marine', 'marine', 'navy', 'bleu nuit'] },
+            { label: 'Bleu ciel', hex: '#7ec8ff', aliases: ['bleu ciel', 'ciel', 'sky blue'] },
+            { label: 'Bleu canard', hex: '#0f6a78', aliases: ['bleu canard', 'canard', 'teal blue'] },
+            { label: 'Bleu turquoise', hex: '#28b5b5', aliases: ['bleu turquoise', 'turquoise'] },
+            { label: 'Bleu petrol', hex: '#1f4e5f', aliases: ['bleu petrol', 'petrol'] },
+            { label: 'Bleu paon', hex: '#1f5f8b', aliases: ['bleu paon', 'paon'] },
+            { label: 'Bleu indigo', hex: '#3f51b5', aliases: ['indigo', 'bleu indigo'] },
+            { label: 'Bleu electrique', hex: '#0066ff', aliases: ['bleu electrique', 'electrique'] },
+
+            { label: 'Rouge', hex: '#C0392B', aliases: ['rouge', 'red'] },
+            { label: 'Rouge brique', hex: '#b55239', aliases: ['rouge brique', 'brique'] },
+            { label: 'Rouge cerise', hex: '#c21833', aliases: ['rouge cerise', 'cerise'] },
+            { label: 'Bordeaux', hex: '#722f37', aliases: ['bordeaux', 'vin'] },
+            { label: 'Grenat', hex: '#7b1e3a', aliases: ['grenat', 'burgundy'] },
+            { label: 'Corail', hex: '#ff6f61', aliases: ['corail', 'coral', 'saumon corail'] },
+
+            { label: 'Rose', hex: '#E8A0BF', aliases: ['rose', 'pink'] },
+            { label: 'Rose poudre', hex: '#e7b8c6', aliases: ['rose poudre', 'poudre'] },
+            { label: 'Rose fuchsia', hex: '#d63384', aliases: ['fuchsia', 'rose fuchsia', 'magenta'] },
+            { label: 'Vieux rose', hex: '#c08081', aliases: ['vieux rose'] },
+            { label: 'Saumon', hex: '#f4a28c', aliases: ['saumon', 'salmon'] },
+
+            { label: 'Orange', hex: '#fd7e14', aliases: ['orange'] },
+            { label: 'Terracotta', hex: '#c96f4a', aliases: ['terracotta', 'terre cuite'] },
+            { label: 'Abricot', hex: '#f4a460', aliases: ['abricot', 'peche'] },
+            { label: 'Cuivre', hex: '#b87333', aliases: ['cuivre', 'copper'] },
+
+            { label: 'Jaune', hex: '#f7c35f', aliases: ['jaune', 'yellow'] },
+            { label: 'Moutarde', hex: '#c99700', aliases: ['moutarde'] },
+            { label: 'Ocre', hex: '#cc7722', aliases: ['ocre'] },
+            { label: 'Citron', hex: '#d4e157', aliases: ['citron', 'lime yellow'] },
+
+            { label: 'Vert', hex: '#198754', aliases: ['vert', 'green'] },
+            { label: 'Vert olive', hex: '#708238', aliases: ['vert olive', 'olive'] },
+            { label: 'Kaki', hex: '#7a8450', aliases: ['kaki', 'khaki'] },
+            { label: 'Vert emeraude', hex: '#2e8b57', aliases: ['vert emeraude', 'emeraude', 'emerald'] },
+            { label: 'Vert menthe', hex: '#98ff98', aliases: ['vert menthe', 'menthe', 'mint'] },
+            { label: 'Vert sapin', hex: '#0f5132', aliases: ['vert sapin', 'sapin', 'forest'] },
+            { label: 'Vert anis', hex: '#9acd32', aliases: ['vert anis', 'anis'] },
+
+            { label: 'Violet', hex: '#6f42c1', aliases: ['violet', 'purple'] },
+            { label: 'Lavande', hex: '#b497d6', aliases: ['lavande', 'lavender'] },
+            { label: 'Prune', hex: '#6d3b5b', aliases: ['prune', 'aubergine fonce'] },
+            { label: 'Mauve', hex: '#9b6fa8', aliases: ['mauve'] },
+            { label: 'Lilas', hex: '#c8a2c8', aliases: ['lilas'] },
+
+            { label: 'Marron', hex: '#6B3A2A', aliases: ['marron', 'brown'] },
+            { label: 'Chocolat', hex: '#4e342e', aliases: ['chocolat', 'choco'] },
+            { label: 'Cafe', hex: '#6f4e37', aliases: ['cafe', 'mocha'] },
+            { label: 'Camel', hex: '#C19A6B', aliases: ['camel', 'caramel'] },
+            { label: 'Beige', hex: '#D4C5A9', aliases: ['beige', 'nude', 'sable'] },
+            { label: 'Taupe', hex: '#8b8589', aliases: ['taupe', 'grege'] },
+            { label: 'Ecru', hex: '#f3ecd3', aliases: ['ecru'] }
+        ];
+        var lightColors = ['blanc', 'beige', 'jaune', 'argent', 'dore', 'ecru', 'citron', 'vert menthe', 'bleu ciel', 'rose poudre', 'lavande'];
+        var colorTokenFallbacks = [
+            { tokens: ['bleu', 'roi'], label: 'Bleu roi' },
+            { tokens: ['bleu', 'marine'], label: 'Bleu marine' },
+            { tokens: ['bleu', 'ciel'], label: 'Bleu ciel' },
+            { tokens: ['bleu', 'canard'], label: 'Bleu canard' },
+            { tokens: ['bleu', 'petrol'], label: 'Bleu petrol' },
+            { tokens: ['bleu'], label: 'Bleu' },
+            { tokens: ['vert', 'olive'], label: 'Vert olive' },
+            { tokens: ['vert', 'emeraude'], label: 'Vert emeraude' },
+            { tokens: ['vert', 'menthe'], label: 'Vert menthe' },
+            { tokens: ['vert', 'sapin'], label: 'Vert sapin' },
+            { tokens: ['vert'], label: 'Vert' },
+            { tokens: ['rouge', 'brique'], label: 'Rouge brique' },
+            { tokens: ['rouge', 'cerise'], label: 'Rouge cerise' },
+            { tokens: ['rouge'], label: 'Rouge' },
+            { tokens: ['grenat'], label: 'Grenat' },
+            { tokens: ['bordeaux'], label: 'Bordeaux' },
+            { tokens: ['fuchsia'], label: 'Rose fuchsia' },
+            { tokens: ['rose', 'poudre'], label: 'Rose poudre' },
+            { tokens: ['rose'], label: 'Rose' },
+            { tokens: ['violet'], label: 'Violet' },
+            { tokens: ['lavande'], label: 'Lavande' },
+            { tokens: ['lilas'], label: 'Lilas' },
+            { tokens: ['marron'], label: 'Marron' },
+            { tokens: ['chocolat'], label: 'Chocolat' },
+            { tokens: ['cafe'], label: 'Cafe' },
+            { tokens: ['camel'], label: 'Camel' },
+            { tokens: ['beige'], label: 'Beige' },
+            { tokens: ['taupe'], label: 'Taupe' },
+            { tokens: ['gris'], label: 'Gris' },
+            { tokens: ['noir'], label: 'Noir' },
+            { tokens: ['blanc'], label: 'Blanc' },
+            { tokens: ['argent'], label: 'Argent' },
+            { tokens: ['dore'], label: 'Dore' }
+        ];
+        var colorAliasToEntry = {};
+        var colorLabelToEntry = {};
+
+        function normalizeColorName(value) {
+            return String(value || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        colorCatalog.forEach(function(entry) {
+            colorLabelToEntry[normalizeColorName(entry.label)] = entry;
+            (entry.aliases || []).forEach(function(alias) {
+                colorAliasToEntry[normalizeColorName(alias)] = entry;
+            });
+        });
+
+        function getColorEntry(name) {
+            var normalized = normalizeColorName(name);
+            if (!normalized) return null;
+            var direct = colorAliasToEntry[normalized] || colorLabelToEntry[normalized] || null;
+            if (direct) return direct;
+
+            for (var i = 0; i < colorTokenFallbacks.length; i += 1) {
+                var fallback = colorTokenFallbacks[i];
+                var isMatch = fallback.tokens.every(function(token) {
+                    return normalized.indexOf(token) !== -1;
+                });
+                if (isMatch) {
+                    return colorLabelToEntry[normalizeColorName(fallback.label)] || null;
+                }
+            }
+            return null;
+        }
+
+        function getFrenchColorLabel(name) {
+            var entry = getColorEntry(name);
+            return entry ? entry.label : String(name || '').trim();
+        }
+
+        function hexFor(name) {
+            if (!name) return '#ccc';
+            var entry = getColorEntry(name);
+            return entry ? entry.hex : '#ccc';
+        }
+        function isLight(name) {
+            if (!name) return false;
+            return lightColors.indexOf(normalizeColorName(name)) !== -1;
+        }
+
+        function fmtMga(value) {
+            var n = typeof value === 'string' ? parseFloat(String(value).replace(/\s/g, '').replace(',', '.')) : Number(value);
+            if (isNaN(n)) return '0';
+            return Math.round(n).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+
+        function buildColorOptions(row, colors) {
+            var datalist = row.querySelector('.item-color-datalist');
+            var colorInput = row.querySelector('.item-color-input');
+            var colorMenu = row.querySelector('.item-color-menu');
+            var colorToggle = row.querySelector('.item-color-toggle');
+            if (!datalist) return;
+            if (!datalist.id) {
+                var idx = row.getAttribute('data-index') || '0';
+                datalist.id = 'colors-' + idx;
+                if (colorInput) colorInput.setAttribute('list', datalist.id);
+            }
+            var normalizedColors = (colors || []).map(function(c) {
+                return String(c || '').trim();
+            }).filter(function(c) { return c.length > 0; });
+            normalizedColors = normalizedColors.map(function(c) {
+                return getFrenchColorLabel(c);
+            });
+            normalizedColors = normalizedColors.filter(function(color, index, array) {
+                return array.indexOf(color) === index;
+            });
+
+            row.dataset.availableColors = JSON.stringify(normalizedColors);
+
+            datalist.innerHTML = '';
+            normalizedColors.forEach(function(c) {
+                var opt = document.createElement('option');
+                opt.value = c;
+                datalist.appendChild(opt);
+            });
+
+            if (!colorInput) return;
+            if (normalizedColors.length > 0 && !colorInput.value.trim()) {
+                colorInput.value = normalizedColors[0];
+            }
+
+            if (colorMenu) {
+                colorMenu.innerHTML = '';
+                normalizedColors.forEach(function(c) {
+                    var button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'item-color-option';
+                    button.setAttribute('data-color', c);
+                    button.textContent = c;
+                    colorMenu.appendChild(button);
+                });
+                colorMenu.style.display = 'none';
+            }
+            if (colorToggle) {
+                colorToggle.style.display = normalizedColors.length > 0 ? 'inline-flex' : 'none';
+                colorToggle.setAttribute('aria-expanded', 'false');
+            }
+
+            updateColorDot(row);
+        }
+
+        function updateColorDot(row) {
+            var colorInput = row.querySelector('.item-color-input');
+            var dot = row.querySelector('.item-color-dot');
+            if (!colorInput || !dot) return;
+            var val = (colorInput.value || '').trim();
+            dot.style.background = hexFor(val);
+            if (isLight(val)) { dot.classList.add('is-light'); } else { dot.classList.remove('is-light'); }
+
+            row.querySelectorAll('.item-color-option').forEach(function(option) {
+                if ((option.getAttribute('data-color') || '').toLowerCase() === val.toLowerCase()) {
+                    option.classList.add('is-active');
+                } else {
+                    option.classList.remove('is-active');
+                }
+            });
+        }
+
+        function closeAllColorMenus(exceptRow) {
+            if (!container) return;
+            container.querySelectorAll('.item-row').forEach(function(row) {
+                if (exceptRow && row === exceptRow) return;
+                var menu = row.querySelector('.item-color-menu');
+                var toggle = row.querySelector('.item-color-toggle');
+                if (menu) menu.style.display = 'none';
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        function updateSubtotalsAndTotal() {
+            if (!container) return;
+            var total = 0, pieces = 0;
+            container.querySelectorAll('.item-row').forEach(function(row) {
+                var priceEl = row.querySelector('.item-unit-price');
+                var qtyInput = row.querySelector('.item-qty-input');
+                var subEl = row.querySelector('.item-subtotal-value');
+                if (!subEl) return;
+                var unitPrice = (priceEl && priceEl.dataset.unitPrice) ? (parseFloat(priceEl.dataset.unitPrice) || 0) : 0;
+                var qty = (qtyInput && qtyInput.value) ? (parseInt(qtyInput.value, 10) || 1) : 1;
+                var sub = unitPrice * qty;
+                total += sub; pieces += qty;
+                subEl.textContent = fmtMga(sub) + ' MGA';
+            });
+            var countEl = document.getElementById('products-count');
+            var totalEl = document.getElementById('products-total-amount');
+            var piecesEl = document.getElementById('products-total-pieces');
+            var n = container.querySelectorAll('.item-row').length;
+            if (countEl) countEl.textContent = n + ' article' + (n > 1 ? 's' : '') + ' dans la commande';
+            if (totalEl) totalEl.textContent = fmtMga(total) + ' MGA';
+            if (piecesEl) piecesEl.textContent = pieces + ' pièce' + (pieces > 1 ? 's' : '');
+        }
+
+        function renumberBadges() {
+            if (!container) return;
+            container.querySelectorAll('.item-row').forEach(function(row, i) {
+                var badge = row.querySelector('.item-badge');
+                if (badge) badge.textContent = String(i + 1).padStart(2, '0');
+            });
+        }
+
+        function onVerifyProduct(ev) {
+            ev.preventDefault(); ev.stopPropagation();
+            var row = ev.target.closest('.item-row');
+            if (!row) return;
+            var btn = row.querySelector('.btn-verify-product');
+            if (btn && btn.classList.contains('is-verified')) return;
+            var codeInput = row.querySelector('.item-product-code');
+            var photoImg = row.querySelector('.item-photo');
+            var nameEl = row.querySelector('.item-name');
+            var priceEl = row.querySelector('.item-unit-price');
+            var errEl = row.querySelector('.product-error');
+            if (!codeInput) return;
+            var code = (codeInput.value || '').trim();
+            if (!code) {
+                if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Veuillez entrer un code.'; }
+                return;
+            }
+            if (errEl) errEl.style.display = 'none';
+            var photoWrap = photoImg ? photoImg.closest('.item-preview-photo') : null;
+            if (photoWrap) { photoWrap.classList.remove('no-image'); photoWrap.classList.add('is-loading-photo'); }
+            if (photoImg) { photoImg.removeAttribute('src'); photoImg.style.display = 'none'; }
+            if (btn) {
+                btn.disabled = true; btn.classList.add('is-loading');
+                if (!btn.dataset.labelDefault) btn.dataset.labelDefault = btn.textContent;
+                btn.textContent = 'Vérification…';
+            }
+            fetch(apiProductBase + encodeURIComponent(code))
+                .then(function(r) { return r.ok ? r.json() : Promise.reject(); })
+                .then(function(data) {
+                    if (errEl) errEl.style.display = 'none';
+                    var codeTextEl = row.querySelector('.item-code-text');
+                    if (codeTextEl) codeTextEl.textContent = code;
+                    row.classList.add('is-verified');
+                    if (photoImg) {
+                        var wrap = photoImg.closest('.item-preview-photo');
+                        var rawUrl = data.photoUrl || data.photo_url || '';
+                        if (typeof rawUrl === 'string') rawUrl = rawUrl.replace(/\\/g, '');
+                        if (rawUrl) {
+                            var url = rawUrl.indexOf('/') === 0 ? rawUrl : ('/' + rawUrl);
+                            if (wrap) wrap.classList.remove('no-image');
+                            photoImg.onerror = function() { this.style.display = 'none'; var w = this.closest('.item-preview-photo'); if (w) { w.classList.add('no-image'); w.classList.remove('is-loading-photo'); } };
+                            photoImg.onload = function() { this.style.display = 'block'; var w = this.closest('.item-preview-photo'); if (w) { w.classList.remove('no-image'); w.classList.remove('is-loading-photo'); } };
+                            photoImg.src = url;
+                            if (photoImg.complete && photoImg.naturalHeight > 0) photoImg.onload();
+                        } else {
+                            photoImg.removeAttribute('src'); photoImg.style.display = 'none';
+                            if (wrap) { wrap.classList.add('no-image'); wrap.classList.remove('is-loading-photo'); }
+                        }
+                    }
+                    if (nameEl) nameEl.textContent = data.name || '';
+                    if (priceEl) {
+                        var p = data.price != null ? data.price : '';
+                        if (p !== '' && p !== null) {
+                            var num = parseFloat(String(p).replace(',', '.'));
+                            priceEl.dataset.unitPrice = isNaN(num) ? '' : String(num);
+                            priceEl.textContent = fmtMga(p) + ' MGA';
+                        }
+                    }
+                    buildColorOptions(row, data.availableColors || []);
+                    if (btn) { btn.textContent = 'Vérifié'; btn.classList.add('is-verified'); btn.classList.remove('is-loading'); btn.removeAttribute('disabled'); }
+                    updateSubtotalsAndTotal();
+                })
+                .catch(function() {
+                    row.classList.remove('is-verified');
+                    if (photoWrap) { photoWrap.classList.remove('is-loading-photo'); photoWrap.classList.add('no-image'); }
+                    if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Code invalide ou service indisponible.'; }
+                })
+                .finally(function() {
+                    if (btn && !btn.classList.contains('is-verified')) {
+                        btn.disabled = false; btn.classList.remove('is-loading');
+                        btn.textContent = btn.dataset.labelDefault || 'Vérifier';
+                    }
+                });
+        }
+
+        if (container) container.addEventListener('click', function(ev) {
+            if (ev.target.closest('.btn-verify-product')) { onVerifyProduct(ev); return; }
+            if (ev.target.closest('.item-color-toggle')) {
+                var rowToggle = ev.target.closest('.item-row');
+                if (!rowToggle) return;
+                var menuToggle = rowToggle.querySelector('.item-color-menu');
+                var btnToggle = rowToggle.querySelector('.item-color-toggle');
+                if (!menuToggle || !btnToggle || btnToggle.style.display === 'none') return;
+                var isOpen = menuToggle.style.display !== 'none';
+                closeAllColorMenus(rowToggle);
+                menuToggle.style.display = isOpen ? 'none' : 'block';
+                btnToggle.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+                return;
+            }
+            if (ev.target.closest('.item-color-option')) {
+                var option = ev.target.closest('.item-color-option');
+                var rowOption = option.closest('.item-row');
+                var inputOption = rowOption && rowOption.querySelector('.item-color-input');
+                if (inputOption) {
+                    inputOption.value = option.getAttribute('data-color') || '';
+                    updateColorDot(rowOption);
+                    closeAllColorMenus();
+                    inputOption.focus();
+                }
+                return;
+            }
+            if (ev.target.closest('.remove-item')) {
+                var row = ev.target.closest('.item-row');
+                if (row && container.querySelectorAll('.item-row').length > 1) { row.remove(); renumberBadges(); updateSubtotalsAndTotal(); }
+            }
+            if (ev.target.classList.contains('item-qty-minus')) {
+                var row = ev.target.closest('.item-row'), input = row && row.querySelector('.item-qty-input');
+                if (input) { var v = parseInt(input.value, 10) || 1; if (v > 1) { input.value = v - 1; updateSubtotalsAndTotal(); } }
+            }
+            if (ev.target.classList.contains('item-qty-plus')) {
+                var row = ev.target.closest('.item-row'), input = row && row.querySelector('.item-qty-input');
+                if (input) { input.value = (parseInt(input.value, 10) || 0) + 1; updateSubtotalsAndTotal(); }
+            }
+        });
+
+        if (container) {
+            container.addEventListener('change', function(ev) {
+                if (ev.target.classList.contains('item-qty-input')) updateSubtotalsAndTotal();
+                if (ev.target.classList.contains('item-color-input')) {
+                    var row = ev.target.closest('.item-row');
+                    if (row) updateColorDot(row);
+                }
+            });
+            container.addEventListener('input', function(ev) {
+                if (ev.target.classList.contains('item-qty-input')) updateSubtotalsAndTotal();
+                if (ev.target.classList.contains('item-color-input')) {
+                    var row = ev.target.closest('.item-row');
+                    if (row) updateColorDot(row);
+                }
+            });
+        }
+
+        document.addEventListener('click', function(ev) {
+            if (!container) return;
+            if (ev.target.closest('.item-color-combo') || ev.target.closest('.item-color-menu')) return;
+            closeAllColorMenus();
+        });
+
+        if (addBtn && prototypeEl) {
+            addBtn.addEventListener('click', function() {
+                var count = container.querySelectorAll('.item-row').length;
+                var proto = prototypeEl.getAttribute('data-prototype');
+                if (!proto) return;
+                proto = proto.replace(/__name__/g, count);
+                var wrapper = document.createElement('article');
+                wrapper.className = 'item-row';
+                wrapper.setAttribute('data-index', count);
+                wrapper.setAttribute('aria-label', 'Ligne produit');
+                wrapper.innerHTML = '<span class="item-badge" aria-hidden="true">01</span><button type="button" class="btn-remove-item remove-item" aria-label="Retirer cette ligne"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5h11M5.5 4.5V3a1 1 0 011-1h3a1 1 0 011 1v1.5m1.5 0v8a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 014 12.5v-8h8z"/><path d="M6.5 7v4M9.5 7v4"/></svg></button><div class="item-row-inner">' + proto + '</div>';
+                container.appendChild(wrapper);
+                renumberBadges(); updateSubtotalsAndTotal();
+            });
+        }
+
+        renumberBadges(); updateSubtotalsAndTotal();
+        }
+        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', run); } else { run(); }
+    })();
+    </script>
+{% endblock %}

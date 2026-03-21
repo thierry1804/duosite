@@ -6,6 +6,7 @@
 parameters:
     quote_photos_directory: '%kernel.project_dir%/public/uploads/quote_photos'
     product_proposal_images_directory: '%kernel.project_dir%/public/uploads/product_proposals'
+    import_product_photos_directory: '%kernel.project_dir%/public/uploads/import_products'
 
 services:
     # default configuration for services in *this* file
@@ -56,6 +57,11 @@ services:
     App\EventListener\QuoteStatusChangeListener:
         tags:
             - { name: kernel.event_listener, event: quote.status_changed, method: onQuoteStatusChanged }
+
+    # Event listener pour les changements de statut des commandes d'import
+    App\EventListener\ImportOrderStatusChangeListener:
+        tags:
+            - { name: kernel.event_listener, event: import_order.status_changed, method: onImportOrderStatusChanged }
 
     # Event listener alerte SMS + email nouveau devis
     App\EventListener\QuoteCreatedListener:

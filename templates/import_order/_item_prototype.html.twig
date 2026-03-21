@@ -1,0 +1,48 @@
+<div class="item-col-photo">
+    <div class="item-preview-photo no-image">
+        <img class="item-photo" alt="" style="display:none;">
+        <span class="item-no-photo-text">Pas de<br>photo</span>
+    </div>
+</div>
+<div class="item-col-content">
+    <div class="item-col-code">
+        <label class="item-label item-label-code">Code Produit</label>
+        <span class="item-label item-label-product">Produit</span>
+        <div class="item-code-wrap">
+            {{ form_widget(item.productCode, {'attr': {'class': 'form-control item-product-code', 'placeholder': 'Ex: C001'}}) }}
+            <button type="button" class="btn-verify-product" aria-label="Vérifier le code produit">Vérifier</button>
+        </div>
+        <div class="product-error small text-danger mt-1" style="display:none;" role="alert"></div>
+        <span class="item-code-text"></span>
+        <div class="item-product-info">
+            <span class="item-name"></span>
+            <span class="item-unit-price" data-unit-price=""></span>
+        </div>
+    </div>
+    <div class="item-col-fields">
+        <div class="item-field-color">
+            <span class="item-label">Couleur</span>
+            <div class="item-color-combo">
+                <span class="item-color-dot"></span>
+                {{ form_widget(item.color, {'attr': {'class': 'form-control item-color-input', 'placeholder': 'Choisir ou saisir', 'autocomplete': 'off'}}) }}
+                <button type="button" class="item-color-toggle" aria-label="Afficher les couleurs">
+                    <span aria-hidden="true">▼</span>
+                </button>
+            </div>
+            <div class="item-color-menu" style="display:none;"></div>
+            <datalist class="item-color-datalist"></datalist>
+        </div>
+        <div class="item-field-qty">
+            <span class="item-label">Quantité</span>
+            <div class="item-qty-stepper">
+                <button type="button" class="item-qty-minus" aria-label="Diminuer">−</button>
+                {{ form_widget(item.quantity, {'attr': {'class': 'form-control item-qty-input', 'min': 1}}) }}
+                <button type="button" class="item-qty-plus" aria-label="Augmenter">+</button>
+            </div>
+        </div>
+        <div class="item-field-subtotal">
+            <span class="item-label">Sous-total</span>
+            <span class="item-subtotal item-subtotal-value">0 MGA</span>
+        </div>
+    </div>
+</div>

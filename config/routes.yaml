@@ -4,6 +4,12 @@ controllers:
         namespace: App\Controller
     type: attribute
 
+admin_import:
+    resource:
+        path: ../src/Controller/Admin/
+        namespace: App\Controller\Admin
+    type: attribute
+
 app_user_register:
     path: /register
     controller: App\Controller\UserController::register

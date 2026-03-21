@@ -1,0 +1,107 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Commande {{ order.orderNumber }} - Administration{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_import_orders') }}">Commandes d'import</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ order.orderNumber }}</li>
+{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Commande {{ order.orderNumber }}</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="admin-card">
+                <div class="admin-card-header">Client et commande</div>
+                <div class="admin-card-body">
+                    <p><strong>Nom :</strong> {{ order.fullName }}</p>
+                    <p><strong>Email :</strong> {{ order.email }}</p>
+                    <p><strong>Téléphone :</strong> {{ order.phone }}</p>
+                    <p><strong>Adresse de livraison :</strong><br>{{ order.deliveryAddress|nl2br }}</p>
+                    {% if order.items|length > 0 %}
+                        <p><strong>Produits :</strong></p>
+                        <ul class="mb-2 list-unstyled">
+                            {% for item in order.items %}
+                                <li class="d-flex align-items-center gap-2 mb-2">
+                                    {% if item.productPhotoFilename %}
+                                        <img src="{{ asset('uploads/import_products/' ~ item.productPhotoFilename) }}" alt="" class="rounded" style="width: 36px; height: 36px; object-fit: cover;">
+                                    {% endif %}
+                                    <span>{{ item.productName }} ({{ item.productCode }}) — {{ item.productPrice }} MGA × {{ item.quantity }} — {{ item.color }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p><strong>Produit :</strong> {{ order.productName }} ({{ order.productCode }}) — {{ order.productPrice }} MGA</p>
+                        <p><strong>Couleur :</strong> {{ order.color }}</p>
+                    {% endif %}
+                    <p><strong>Paiement :</strong> {{ order.paymentMethodLabel }} — Réf. {{ order.paymentReference ?? '-' }}</p>
+                    <p><strong>Date :</strong> {{ order.createdAt|date('d/m/Y H:i') }}</p>
+                    <p class="mb-0"><strong>Lien de suivi :</strong> <a href="{{ trackingUrl }}" target="_blank" rel="noopener">{{ trackingUrl }}</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="admin-card">
+                <div class="admin-card-header">Informations et statut</div>
+                <div class="admin-card-body">
+                    <form method="post" action="{{ path('app_admin_import_order_show', { id: order.id }) }}">
+                        <div class="mb-3">
+                            <label class="form-label">Poids</label>
+                            <input type="text" name="weight" class="form-control" value="{{ order.weight ?? '' }}" placeholder="Ex: 1.2 kg">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Dimensions</label>
+                            <input type="text" name="dimensions" class="form-control" value="{{ order.dimensions ?? '' }}" placeholder="Ex: 30 x 20 x 10 cm">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Estimation frais / volume</label>
+                            <input type="text" name="shippingEstimate" class="form-control" value="{{ order.shippingEstimate ?? '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Informations d'expédition</label>
+                            <textarea name="shippingInfo" class="form-control" rows="3">{{ order.shippingInfo ?? '' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Statut</label>
+                            <select name="status" class="form-control form-select">
+                                <option value="{{ order.status }}" selected>{{ statusLabels[order.status] ?? order.status }}</option>
+                                {% for statusKey, statusLabel in possibleTransitions %}
+                                    <option value="{{ statusKey }}">{{ statusLabel }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Commentaire (optionnel)</label>
+                            <input type="text" name="comment" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-card">
+        <div class="admin-card-header">Historique des statuts</div>
+        <div class="admin-card-body">
+            {% if order.statusHistory|length > 0 %}
+                <ul class="list-unstyled mb-0">
+                    {% for entry in order.statusHistory %}
+                    <li class="mb-2">{{ entry.createdAt|date('d/m/Y H:i') }} — {{ entry.newStatusLabel }} (par {{ entry.changedBy ?? 'system' }})</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">Enregistrée le {{ order.createdAt|date('d/m/Y à H:i') }}.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouveau produit d'import - Administration{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_import_products') }}">Produits d'import</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Nouveau</li>
+{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Nouveau produit d'import</h1>
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="admin-card">
+        <div class="admin-card-body">
+            {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+            {{ form_row(form.code, {'attr': {'class': 'form-control'}}) }}
+            {{ form_row(form.name, {'attr': {'class': 'form-control'}}) }}
+            {{ form_row(form.price, {'attr': {'class': 'form-control'}}) }}
+            {{ form_row(form.availableColorsText, {'attr': {'class': 'form-control'}}) }}
+            {{ form_row(form.photoFile, {'attr': {'class': 'form-control'}}) }}
+            {{ form_row(form.active) }}
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="{{ path('app_admin_import_products') }}" class="btn btn-outline-secondary">Annuler</a>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

@@ -44,3 +44,5 @@ Thumbs.db
 
 /public/uploads/quote_photos/*
 /public/uploads/quote_photos/.*
+/public/uploads/import_products/*
+/public/uploads/import_products/.*

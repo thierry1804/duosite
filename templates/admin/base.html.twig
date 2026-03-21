@@ -49,6 +49,16 @@
                         <i data-lucide="user-cog"></i> <span>Utilisateurs suspects</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ path('app_admin_import_products') }}" class="{{ app.request.get('_route') starts with 'app_admin_import_product' ? 'active' : '' }}">
+                        <i data-lucide="package"></i> <span>Produits d'import</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_admin_import_orders') }}" class="{{ app.request.get('_route') starts with 'app_admin_import_order' ? 'active' : '' }}">
+                        <i data-lucide="shopping-cart"></i> <span>Commandes d'import</span>
+                    </a>
+                </li>
             </ul>
             
             <ul class="bottom-menu">

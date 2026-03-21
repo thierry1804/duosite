@@ -155,6 +155,9 @@
                         <a href="{{ path('app_quote_dashboard') }}" class="btn btn-outline-primary">
                             <i data-lucide="file-text"></i> Gérer les devis
                         </a>
+                        <a href="{{ path('app_admin_import_orders') }}" class="btn btn-outline-primary">
+                            <i data-lucide="shopping-cart"></i> Commandes d'import ({{ importOrdersCount|default(0) }} en attente)
+                        </a>
                         <a href="{{ path('app_admin_quote_settings') }}" class="btn btn-outline-secondary">
                             <i data-lucide="settings"></i> Paramètres des devis
                         </a>

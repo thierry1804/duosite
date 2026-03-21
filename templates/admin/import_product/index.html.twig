@@ -1,0 +1,68 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Produits d'import - Administration{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Produits d'import</li>
+{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Produits d'import</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="mb-3">
+        <a href="{{ path('app_admin_import_product_new') }}" class="btn btn-primary">Ajouter un produit</a>
+    </div>
+
+    <div class="admin-card">
+        <div class="admin-card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>Code</th>
+                            <th>Nom</th>
+                            <th>Prix</th>
+                            <th>Couleurs</th>
+                            <th>Actif</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>
+                                {% if product.photoFilename %}
+                                    <img src="{{ asset('uploads/import_products/' ~ product.photoFilename) }}" alt="" class="rounded" style="width: 36px; height: 36px; object-fit: cover;">
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ product.code }}</td>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.price|number_format(0, ' ', ' ') }} MGA</td>
+                            <td>{{ product.availableColors|join(', ') }}</td>
+                            <td>{{ product.active ? 'Oui' : 'Non' }}</td>
+                            <td>
+                                <a href="{{ path('app_admin_import_product_edit', { id: product.id }) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-muted">Aucun produit.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

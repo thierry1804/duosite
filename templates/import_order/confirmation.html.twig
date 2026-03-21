@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande enregistrée - Duo Import MDG{% endblock %}
+
+{% block body %}
+<section class="py-5">
+    <div class="container">
+        <div class="alert alert-success">
+            <p class="mb-2"><strong>Votre commande a été enregistrée avec succès.</strong></p>
+            <p class="mb-0">Nous vous informerons dès que votre marchandise quittera la Chine. Vous pourrez suivre l'évolution de votre commande directement sur notre site web.</p>
+        </div>
+        <p class="mb-2">Numéro de commande : <strong>{{ order.orderNumber }}</strong></p>
+        <p>
+            <a href="{{ path('app_import_order_tracking_show', { token: order.trackingToken }) }}" class="btn btn-primary">Suivre ma commande</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

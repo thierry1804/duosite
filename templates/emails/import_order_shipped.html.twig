@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votre commande {{ order.orderNumber }} a quitté la Chine</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .content { padding: 20px 0; }
+        .tracking-link { display: inline-block; padding: 12px 24px; background-color: #0d6efd; color: white; text-decoration: none; border-radius: 6px; margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <p>Bonjour {{ order.fullName }},</p>
+    <p>Nous vous informons que votre marchandise a quitté la Chine. Vous pouvez suivre l'évolution de votre commande jusqu'à la livraison à Madagascar.</p>
+    <p><strong>Commande :</strong> {{ order.orderNumber }}</p>
+    <p><a href="{{ trackingUrl }}" class="tracking-link">Suivre ma commande</a></p>
+    <p>Cordialement,<br>L'équipe Duo Import MDG</p>
+</body>
+</html>

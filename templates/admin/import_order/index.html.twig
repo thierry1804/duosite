@@ -1,0 +1,68 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Commandes d'import - Administration{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Commandes d'import</li>
+{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Commandes d'import</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <div class="admin-card">
+        <div class="admin-card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>N° commande</th>
+                            <th>Date</th>
+                            <th>Client</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Produits</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>{{ order.orderNumber }}</td>
+                            <td>{{ order.createdAt|date('d/m/Y H:i') }}</td>
+                            <td>{{ order.fullName }}</td>
+                            <td>{{ order.email }}</td>
+                            <td>{{ order.phone }}</td>
+                            <td>
+                                {% if order.items|length > 0 %}
+                                    {% for item in order.items %}
+                                        {{ item.productName }} × {{ item.quantity }}{% if not loop.last %}<br>{% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    {{ order.productName }} — {{ order.color }}
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-secondary">{{ order.statusLabel }}</span></td>
+                            <td>
+                                <a href="{{ path('app_admin_import_order_show', { id: order.id }) }}" class="btn btn-sm btn-outline-primary">Voir / Modifier</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-muted">Aucune commande.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

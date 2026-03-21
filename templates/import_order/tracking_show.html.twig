@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suivi de votre commande {{ order.orderNumber }} - Duo Import MDG{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .tracking-timeline {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            overflow-x: auto;
+            padding: 0.25rem 0 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .tracking-step {
+            min-width: 170px;
+            flex: 0 0 auto;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+        }
+        .tracking-step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #212529;
+            margin-top: 0.25rem;
+            flex-shrink: 0;
+        }
+        .tracking-step.is-current .tracking-step-dot {
+            background: #198754;
+        }
+        .tracking-step-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+        .tracking-step-label {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #1f2937;
+            line-height: 1.2;
+        }
+        .tracking-step-date {
+            font-size: 0.78rem;
+            color: #6b7280;
+            line-height: 1.2;
+        }
+        .tracking-step-line {
+            height: 1px;
+            width: 46px;
+            background: #d1d5db;
+            margin-top: 0.55rem;
+            flex-shrink: 0;
+        }
+        @media (max-width: 768px) {
+            .tracking-timeline {
+                display: block;
+                overflow: visible;
+                padding: 0;
+            }
+            .tracking-step {
+                min-width: 0;
+                width: 100%;
+                gap: 0.55rem;
+                margin-bottom: 0.65rem;
+            }
+            .tracking-step-line {
+                width: 1px;
+                height: 20px;
+                margin-top: 0.1rem;
+                margin-left: 5px;
+                margin-right: 0.1rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<section class="py-5">
+    <div class="container">
+        <h1 class="mb-4">Suivi de votre commande</h1>
+
+        {% set timelineEntries = statusHistory|reverse %}
+        <div class="tracking-timeline" aria-label="Historique de statut">
+            <div class="tracking-step {{ timelineEntries|length == 0 ? 'is-current' : '' }}">
+                <span class="tracking-step-dot" aria-hidden="true"></span>
+                <div class="tracking-step-content">
+                    <span class="tracking-step-label">Enregistrée</span>
+                    <span class="tracking-step-date">{{ order.createdAt|date('d/m/Y H:i') }}</span>
+                </div>
+                {% if timelineEntries|length > 0 %}
+                    <span class="tracking-step-line" aria-hidden="true"></span>
+                {% endif %}
+            </div>
+            {% for entry in timelineEntries %}
+                <div class="tracking-step {{ loop.last ? 'is-current' : '' }}">
+                    <span class="tracking-step-dot" aria-hidden="true"></span>
+                    <div class="tracking-step-content">
+                        <span class="tracking-step-label">{{ entry.newStatusLabel }}</span>
+                        <span class="tracking-step-date">{{ entry.createdAt|date('d/m/Y H:i') }}</span>
+                    </div>
+                    {% if not loop.last %}
+                        <span class="tracking-step-line" aria-hidden="true"></span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <p class="mb-2">Numéro : <strong>{{ order.orderNumber }}</strong></p>
+                <p class="mb-2">Statut : <span class="badge bg-secondary">{{ order.statusLabel }}</span></p>
+                {% if order.items|length > 0 %}
+                    <p class="mb-1">Produits :</p>
+                    <ul class="mb-0 list-unstyled">
+                        {% for item in order.items %}
+                            <li class="d-flex align-items-center gap-2 mb-2">
+                                {% if item.productPhotoFilename %}
+                                    <img src="{{ asset('uploads/import_products/' ~ item.productPhotoFilename) }}" alt="" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% endif %}
+                                <span>{{ item.productName }} — {{ item.productPrice }} MGA × {{ item.quantity }} — {{ item.color }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="mb-0">Produit : {{ order.productName }} — {{ order.productPrice }} MGA — Couleur : {{ order.color }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if order.weight or order.dimensions or order.shippingInfo %}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light">Informations complémentaires</div>
+            <div class="card-body p-4">
+                {% if order.weight %}<p class="mb-1">Poids : {{ order.weight }}</p>{% endif %}
+                {% if order.dimensions %}<p class="mb-1">Dimensions : {{ order.dimensions }}</p>{% endif %}
+                {% if order.shippingEstimate %}<p class="mb-1">Estimation : {{ order.shippingEstimate }}</p>{% endif %}
+                {% if order.shippingInfo %}<p class="mb-0">{{ order.shippingInfo|nl2br }}</p>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
