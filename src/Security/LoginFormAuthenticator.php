@@ -2,12 +2,13 @@
 
 namespace App\Security;
 
+use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
@@ -22,9 +23,10 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public const LOGIN_ROUTE = 'app_login';
 
-    public function __construct(private UrlGeneratorInterface $urlGenerator)
-    {
-    }
+    public function __construct(
+        private UrlGeneratorInterface $urlGenerator,
+        private UserRepository $userRepository
+    ) {}
 
     public function authenticate(Request $request): Passport
     {
@@ -33,7 +35,23 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
         $request->getSession()->set('_security.last_username', $email);
 
         return new Passport(
-            new UserBadge($email),
+            new UserBadge($email, function (string $userIdentifier) {
+                $user = $this->userRepository->findOneBy(['email' => $userIdentifier]);
+
+                if (!$user) {
+                    throw new CustomUserMessageAuthenticationException('Identifiants invalides.');
+                }
+
+                if (!$user->isEnabled()) {
+                    throw new CustomUserMessageAuthenticationException('Votre compte n\'est pas encore activé. Vérifiez vos emails.');
+                }
+
+                if ($user->isAdmin() && null === $user->getAdminActivatedAt()) {
+                    throw new CustomUserMessageAuthenticationException('Activation administrateur incomplète. Vérifiez vos emails.');
+                }
+
+                return $user;
+            }),
             new PasswordCredentials($request->request->get('password', '')),
             [
                 new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),

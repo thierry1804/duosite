@@ -50,6 +50,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ path('app_admin_admin_users_index') }}" class="{{ app.request.get('_route') starts with 'app_admin_admin_users_' ? 'active' : '' }}">
+                        <i data-lucide="users"></i> <span>Administrateurs</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ path('app_admin_import_products') }}" class="{{ app.request.get('_route') starts with 'app_admin_import_product' ? 'active' : '' }}">
                         <i data-lucide="package"></i> <span>Produits d'import</span>
                     </a>

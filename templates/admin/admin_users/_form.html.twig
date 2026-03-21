@@ -1,0 +1,24 @@
+{{ form_start(form) }}
+    <div class="row g-3">
+        <div class="col-md-6">
+            {{ form_row(form.firstName) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.lastName) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.email) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.phone) }}
+        </div>
+        <div class="col-12">
+            {{ form_row(form.company) }}
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">{{ submit_label|default('Enregistrer') }}</button>
+        <a class="btn btn-outline-secondary" href="{{ path('app_admin_admin_users_index') }}">Annuler</a>
+    </div>
+{{ form_end(form) }}

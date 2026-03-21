@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Activation administrateur - {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-7 col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h1 class="h4 mb-0">Activation du compte administrateur</h1>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            Bonjour {{ admin.fullName }}, saisissez le code reçu par email puis choisissez votre mot de passe.
+                        </p>
+
+                        {{ form_start(form) }}
+                            {{ form_row(form.otpCode) }}
+                            {{ form_row(form.plainPassword.first) }}
+                            {{ form_row(form.plainPassword.second) }}
+                            <button class="btn btn-primary w-100" type="submit">Activer mon compte</button>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

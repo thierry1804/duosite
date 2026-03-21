@@ -1,0 +1,65 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Administrateurs - Duo Import MDG{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Administrateurs</li>
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Utilisateurs administrateurs</h1>
+        <a href="{{ path('app_admin_admin_users_new') }}" class="btn btn-primary">Ajouter un administrateur</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Statut</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admin in admins %}
+                            <tr>
+                                <td>{{ admin.fullName }}</td>
+                                <td>{{ admin.email }}</td>
+                                <td>{{ admin.phone ?: '-' }}</td>
+                                <td>
+                                    {% if admin.isEnabled %}
+                                        <span class="badge bg-success">Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">En attente d'activation</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if admin.id == currentUserId %}
+                                        <span class="text-muted">Compte courant</span>
+                                    {% else %}
+                                        <a href="{{ path('app_admin_admin_users_edit', {id: admin.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                                        <form action="{{ path('app_admin_admin_users_delete', {id: admin.id}) }}" method="post" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_admin_' ~ admin.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer cet administrateur ?')">
+                                                Supprimer
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4">Aucun administrateur trouvé.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

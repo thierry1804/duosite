@@ -57,6 +57,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastLoginAt = null;
 
+    #[ORM\Column(options: ['default' => true])]
+    private bool $isEnabled = true;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $adminInvitationToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $adminInvitationExpiresAt = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $adminOtpCodeHash = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $adminOtpExpiresAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $adminActivatedAt = null;
+
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Quote::class, orphanRemoval: true)]
     private Collection $quotes;
 
@@ -207,6 +225,83 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->lastLoginAt = $lastLoginAt;
 
         return $this;
+    }
+
+    public function isEnabled(): bool
+    {
+        return $this->isEnabled;
+    }
+
+    public function setIsEnabled(bool $isEnabled): self
+    {
+        $this->isEnabled = $isEnabled;
+
+        return $this;
+    }
+
+    public function getAdminInvitationToken(): ?string
+    {
+        return $this->adminInvitationToken;
+    }
+
+    public function setAdminInvitationToken(?string $adminInvitationToken): self
+    {
+        $this->adminInvitationToken = $adminInvitationToken;
+
+        return $this;
+    }
+
+    public function getAdminInvitationExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->adminInvitationExpiresAt;
+    }
+
+    public function setAdminInvitationExpiresAt(?\DateTimeImmutable $adminInvitationExpiresAt): self
+    {
+        $this->adminInvitationExpiresAt = $adminInvitationExpiresAt;
+
+        return $this;
+    }
+
+    public function getAdminOtpCodeHash(): ?string
+    {
+        return $this->adminOtpCodeHash;
+    }
+
+    public function setAdminOtpCodeHash(?string $adminOtpCodeHash): self
+    {
+        $this->adminOtpCodeHash = $adminOtpCodeHash;
+
+        return $this;
+    }
+
+    public function getAdminOtpExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->adminOtpExpiresAt;
+    }
+
+    public function setAdminOtpExpiresAt(?\DateTimeImmutable $adminOtpExpiresAt): self
+    {
+        $this->adminOtpExpiresAt = $adminOtpExpiresAt;
+
+        return $this;
+    }
+
+    public function getAdminActivatedAt(): ?\DateTimeImmutable
+    {
+        return $this->adminActivatedAt;
+    }
+
+    public function setAdminActivatedAt(?\DateTimeImmutable $adminActivatedAt): self
+    {
+        $this->adminActivatedAt = $adminActivatedAt;
+
+        return $this;
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array('ROLE_ADMIN', $this->roles, true);
     }
 
     /**

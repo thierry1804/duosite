@@ -10,7 +10,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[AsCommand(
     name: 'app:create-admin',
@@ -19,8 +18,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class CreateAdminCommand extends Command
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $passwordHasher
+        private EntityManagerInterface $entityManager
     ) {
         parent::__construct();
     }
@@ -29,7 +27,6 @@ class CreateAdminCommand extends Command
     {
         $this
             ->addArgument('email', InputArgument::REQUIRED, 'Email de l\'administrateur')
-            ->addArgument('password', InputArgument::REQUIRED, 'Mot de passe de l\'administrateur')
             ->addArgument('firstName', InputArgument::REQUIRED, 'Prénom de l\'administrateur')
             ->addArgument('lastName', InputArgument::REQUIRED, 'Nom de l\'administrateur')
         ;
@@ -39,7 +36,6 @@ class CreateAdminCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $email = $input->getArgument('email');
-        $password = $input->getArgument('password');
         $firstName = $input->getArgument('firstName');
         $lastName = $input->getArgument('lastName');
 
@@ -50,19 +46,16 @@ class CreateAdminCommand extends Command
             return Command::FAILURE;
         }
 
-        // Créer un nouvel utilisateur administrateur
+        $io->error('Création directe désactivée pour garantir la sécurité.');
+        $io->writeln('Utilisez l\'interface admin pour créer un administrateur via invitation email + code OTP.');
+
+        // Garder les variables utilisées pour éviter de casser des scripts externes qui passent encore ces arguments.
         $user = new User();
         $user->setEmail($email);
         $user->setFirstName($firstName);
         $user->setLastName($lastName);
-        $user->setRoles(['ROLE_ADMIN']);
-        $user->setPassword($this->passwordHasher->hashPassword($user, $password));
+        unset($user);
 
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-
-        $io->success(sprintf('L\'administrateur "%s" a été créé avec succès.', $email));
-
-        return Command::SUCCESS;
+        return Command::FAILURE;
     }
 } 

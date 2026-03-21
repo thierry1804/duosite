@@ -1,0 +1,18 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouvel administrateur - Duo Import MDG{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ path('app_admin_admin_users_index') }}">Administrateurs</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Ajouter</li>
+{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Ajouter un administrateur</h1>
+    <div class="card">
+        <div class="card-body">
+            <p class="text-muted">Un email de confirmation sera envoyé à l'utilisateur après création.</p>
+            {% include 'admin/admin_users/_form.html.twig' with {form: form, submit_label: 'Créer'} %}
+        </div>
+    </div>
+{% endblock %}
