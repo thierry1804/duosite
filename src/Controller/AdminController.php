@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\QuoteSettings;
 use App\Entity\Quote;
-use App\Entity\ImportOrder;
 use App\Entity\User;
 use App\Form\QuoteSettingsType;
 use App\Repository\QuoteSettingsRepository;
@@ -33,12 +32,11 @@ class AdminController extends AbstractController
         $pendingQuotesCount = $quoteRepository->count(['status' => 'pending']);
         $completedQuotesCount = $quoteRepository->countCompleted();
         $totalUsersCount = $userRepository->count([]);
-        $importOrderRepository = $entityManager->getRepository(ImportOrder::class);
-        if (method_exists($importOrderRepository, 'countByStatus')) {
-            $importOrdersCount = $importOrderRepository->countByStatus('registered') + $importOrderRepository->countByStatus('paid');
-        } else {
-            $importOrdersCount = $importOrderRepository->count(['status' => 'registered']) + $importOrderRepository->count(['status' => 'paid']);
-        }
+        $importOrdersCount = (int) $entityManager->createQuery(
+            'SELECT COUNT(o.id) FROM App\Entity\ImportOrder o WHERE o.status IN (:statuses)'
+        )
+            ->setParameter('statuses', ['registered', 'paid'])
+            ->getSingleScalarResult();
         
         // Devis récents avec user pré-chargé (1 requête, pas de N+1)
         $recentQuotes = $quoteRepository->findRecentWithoutOfferSentWithUser(5);
