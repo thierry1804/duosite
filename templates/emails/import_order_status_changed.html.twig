@@ -17,6 +17,7 @@
 
     <div class="details">
         <p><strong>Numéro de commande :</strong> {{ order.orderNumber }}</p>
+        <p><strong>Type d'envoi :</strong> {{ order.shippingTypeLabel }}</p>
         <p><strong>Ancien statut :</strong> {{ oldStatusLabel }}</p>
         <p><strong>Nouveau statut :</strong> {{ newStatusLabel }}</p>
         {% if comment is not empty %}

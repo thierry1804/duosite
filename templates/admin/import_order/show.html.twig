@@ -44,6 +44,7 @@
                         <p><strong>Couleur :</strong> {{ order.color }}</p>
                     {% endif %}
                     <p><strong>Paiement :</strong> {{ order.paymentMethodLabel }} — Réf. {{ order.paymentReference ?? '-' }}</p>
+                    <p><strong>Type d'envoi :</strong> {{ order.shippingTypeLabel }}</p>
                     <p><strong>Date :</strong> {{ order.createdAt|date('d/m/Y H:i') }}</p>
                     <p class="mb-0"><strong>Lien de suivi :</strong> <a href="{{ trackingUrl }}" target="_blank" rel="noopener">{{ trackingUrl }}</a></p>
                 </div>

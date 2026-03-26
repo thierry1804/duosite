@@ -62,6 +62,10 @@ class ImportOrder
     #[ORM\Column(length: 30)]
     private ?string $paymentMethod = null;
 
+    #[ORM\Column(length: 32)]
+    #[Assert\NotBlank(message: 'Veuillez choisir un type d\'envoi')]
+    private string $shippingType = 'maritime';
+
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $paymentReference = null;
 
@@ -264,6 +268,38 @@ class ImportOrder
     {
         $this->paymentMethod = $paymentMethod;
         return $this;
+    }
+
+    public function getShippingType(): string
+    {
+        return $this->shippingType;
+    }
+
+    public function setShippingType(string $shippingType): static
+    {
+        $this->shippingType = $shippingType;
+        return $this;
+    }
+
+    public function getShippingTypeLabel(): string
+    {
+        return match ($this->shippingType) {
+            'maritime' => 'Envoi maritime (délai estimé : 50-70 jours)',
+            'air_express' => 'Envoi aérien express (délai estimé : 3-5 jours)',
+            'air_normal' => 'Envoi aérien normal (délai estimé : 10-30 jours)',
+            default => $this->shippingType,
+        };
+    }
+
+    /** Libellé court pour les tableaux (ex. liste admin). */
+    public function getShippingTypeShortLabel(): string
+    {
+        return match ($this->shippingType) {
+            'maritime' => 'Maritime (50-70 j.)',
+            'air_express' => 'Aérien express (3-5 j.)',
+            'air_normal' => 'Aérien normal (10-30 j.)',
+            default => $this->shippingType,
+        };
     }
 
     public function getPaymentReference(): ?string

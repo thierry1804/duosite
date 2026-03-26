@@ -26,6 +26,7 @@
         {% else %}
             <p><strong>Produit :</strong> {{ order.productName }} — {{ order.productPrice }} MGA — {{ order.color }}</p>
         {% endif %}
+        <p><strong>Type d'envoi :</strong> {{ order.shippingTypeLabel }}</p>
     </div>
     <p>Nous vous informerons dès que votre marchandise quittera la Chine. Vous pourrez suivre l'évolution de votre commande sur notre site.</p>
     <p><a href="{{ trackingUrl }}" class="tracking-link">Suivre ma commande</a></p>

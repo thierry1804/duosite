@@ -14,6 +14,7 @@
     <p>Bonjour {{ order.fullName }},</p>
     <p>Nous vous informons que votre marchandise a quitté la Chine. Vous pouvez suivre l'évolution de votre commande jusqu'à la livraison à Madagascar.</p>
     <p><strong>Commande :</strong> {{ order.orderNumber }}</p>
+    <p><strong>Type d'envoi :</strong> {{ order.shippingTypeLabel }}</p>
     <p><a href="{{ trackingUrl }}" class="tracking-link">Suivre ma commande</a></p>
     <p>Cordialement,<br>L'équipe Duo Import MDG</p>
 </body>

@@ -475,6 +475,8 @@
                             {{ form_row(form.paymentReference, {'attr': {'class': 'form-control'}}) }}
                         </div>
 
+                        {{ form_row(form.shippingType, {'attr': {'class': 'form-select', 'id': 'shippingTypeSelect'}}) }}
+
                         <div class="order-cgv-box">
                             {{ form_row(form.cgvAccepted, {
                                 label: 'J\'accepte les <a href="' ~ path('app_cgv') ~ '" target="_blank" rel="noopener">conditions générales de vente</a>',

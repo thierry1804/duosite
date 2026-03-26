@@ -58,6 +58,15 @@ class ImportOrderType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control'],
             ])
+            ->add('shippingType', ChoiceType::class, [
+                'label' => 'Type d\'envoi',
+                'choices' => [
+                    'Envoi maritime (délai estimé : 50-70 jours)' => 'maritime',
+                    'Envoi aérien express (délai estimé : 3-5 jours)' => 'air_express',
+                    'Envoi aérien normal (délai estimé : 10-30 jours)' => 'air_normal',
+                ],
+                'attr' => ['class' => 'form-control form-select'],
+            ])
             ->add('cgvAccepted', CheckboxType::class, [
                 'label' => 'J\'accepte les conditions générales de vente',
                 'mapped' => true,

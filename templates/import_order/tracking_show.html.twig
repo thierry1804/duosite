@@ -111,6 +111,7 @@
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
                 <p class="mb-2">Numéro : <strong>{{ order.orderNumber }}</strong></p>
+                <p class="mb-2">Type d'envoi : {{ order.shippingTypeLabel }}</p>
                 <p class="mb-2">Statut : <span class="badge bg-secondary">{{ order.statusLabel }}</span></p>
                 {% if order.items|length > 0 %}
                     <p class="mb-1">Produits :</p>

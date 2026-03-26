@@ -28,6 +28,7 @@
                             <th>Client</th>
                             <th>Email</th>
                             <th>Téléphone</th>
+                            <th>Envoi</th>
                             <th>Produits</th>
                             <th>Statut</th>
                             <th>Actions</th>
@@ -41,6 +42,7 @@
                             <td>{{ order.fullName }}</td>
                             <td>{{ order.email }}</td>
                             <td>{{ order.phone }}</td>
+                            <td>{{ order.shippingTypeShortLabel }}</td>
                             <td>
                                 {% if order.items|length > 0 %}
                                     {% for item in order.items %}
@@ -57,7 +59,7 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="8" class="text-muted">Aucune commande.</td>
+                            <td colspan="9" class="text-muted">Aucune commande.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
