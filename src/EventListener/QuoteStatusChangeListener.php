@@ -3,6 +3,7 @@
 namespace App\EventListener;
 
 use App\Event\QuoteStatusChangedEvent;
+use App\Service\QuoteOfferClientPdfMailService;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\Address;
@@ -14,8 +15,10 @@ class QuoteStatusChangeListener
     public function __construct(
         private MailerInterface $mailer,
         private Environment $twig,
-        private LoggerInterface $logger
-    ) {}
+        private LoggerInterface $logger,
+        private QuoteOfferClientPdfMailService $quoteOfferClientPdfMailService,
+    ) {
+    }
 
     /**
      * Écoute l'événement de changement de statut et envoie les notifications appropriées
@@ -48,7 +51,19 @@ class QuoteStatusChangeListener
     {
         try {
             $quote = $event->getQuote();
-            
+
+            if ($event->getNewStatus() === 'accepted') {
+                $this->quoteOfferClientPdfMailService->sendClientAcceptedOfferEmail($quote);
+
+                $this->logger->info('Client notification sent (acceptation avec PDF)', [
+                    'quote_id' => $quote->getId(),
+                    'email' => $quote->getEmail(),
+                    'status' => 'accepted',
+                ]);
+
+                return;
+            }
+
             $email = (new Email())
                 ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG'))
                 ->to($quote->getEmail())

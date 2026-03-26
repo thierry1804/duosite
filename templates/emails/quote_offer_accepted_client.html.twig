@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation — {{ quote.quoteNumber }}</title>
+</head>
+<body style="font-family: Georgia, 'Times New Roman', serif; line-height: 1.5; color: #1a1a1a; max-width: 600px; margin: 0; padding: 24px;">
+    <p>Bonjour {{ quote.firstName }},</p>
+    <p>Nous avons bien enregistré <strong>l'acceptation</strong> de votre offre pour le devis <strong>#{{ quote.quoteNumber }}</strong> ({{ offer.title }}).</p>
+    <p>Vous trouverez en pièce jointe le devis au format PDF correspondant à cette offre.</p>
+    <p>Notre équipe vous contactera pour la suite.</p>
+    <p>Cordialement,<br>Duo Import MDG</p>
+</body>
+</html>
