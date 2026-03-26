@@ -21,6 +21,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Address;
+use App\Service\PdfGenerator;
 use App\Service\QuoteFeeCalculator;
 use App\Service\UserIdentityTracker;
 use App\Service\QuoteTrackerService;
@@ -325,6 +326,147 @@ class QuoteController extends AbstractController
             'freeItemsLimit' => $freeItemsLimit,
             'firstQuoteQuoteIds' => $firstQuoteQuoteIds,
         ]);
+    }
+
+    #[Route('/quote/{id}/resend-offer-email', name: 'app_quote_resend_offer_email', methods: ['POST'])]
+    public function resendOfferEmail(
+        Request $request,
+        Quote $quote,
+        MailerInterface $mailer,
+        PdfGenerator $pdfGenerator,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $allowedStatuses = [
+            'waiting_customer',
+            'completed',
+            'accepted',
+            'converted',
+            'shipped',
+            'delivered',
+        ];
+        if (!in_array($quote->getStatus(), $allowedStatuses, true)) {
+            $this->addFlash('error', 'Cette action n\'est pas disponible pour le statut actuel du devis.');
+
+            return $this->redirectToRoute('app_quote_dashboard');
+        }
+
+        if (!$this->isCsrfTokenValid('resend_offer_'.$quote->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Jeton de sécurité invalide.');
+
+            return $this->redirectToRoute('app_quote_dashboard');
+        }
+
+        $projectDir = (string) $this->getParameter('kernel.project_dir');
+        $resend = $this->findOfferAndPdfForResend($quote, $projectDir);
+        if ($resend === null) {
+            $offerToGenerate = $this->findOfferToGeneratePdf($quote, $projectDir);
+            if ($offerToGenerate === null) {
+                $this->addFlash('error', 'Aucune offre n\'est associée à ce devis.');
+
+                return $this->redirectToRoute('app_quote_dashboard');
+            }
+            try {
+                $relativePdfPath = $pdfGenerator->generateQuoteOfferPdf($offerToGenerate);
+                $offerToGenerate->setPdfFilePath($relativePdfPath);
+                $entityManager->flush();
+                $pdfAbsolutePath = $projectDir.'/public'.$relativePdfPath;
+                if (!is_file($pdfAbsolutePath) || !is_readable($pdfAbsolutePath)) {
+                    throw new \RuntimeException('Le fichier PDF généré est introuvable.');
+                }
+                $resend = ['offer' => $offerToGenerate, 'pdfPath' => $pdfAbsolutePath];
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Impossible de générer le PDF : '.$e->getMessage());
+
+                return $this->redirectToRoute('app_quote_dashboard');
+            }
+        }
+
+        $offer = $resend['offer'];
+        $pdfAbsolutePath = $resend['pdfPath'];
+
+        try {
+            $email = (new Email())
+                ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG'))
+                ->to((string) $quote->getEmail())
+                ->subject('Votre devis #'.$quote->getQuoteNumber())
+                ->html($this->renderView('emails/quote_offer.html.twig', [
+                    'quote' => $quote,
+                    'offer' => $offer,
+                ]))
+                ->attachFromPath($pdfAbsolutePath, 'devis.pdf', 'application/pdf');
+
+            $mailer->send($email);
+            $this->addFlash('success', 'L\'offre a été renvoyée par email au client.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi de l\'email : '.$e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_quote_dashboard');
+    }
+
+    /**
+     * @return array{offer: QuoteOffer, pdfPath: string}|null
+     */
+    private function findOfferAndPdfForResend(Quote $quote, string $projectDir): ?array
+    {
+        $offers = $quote->getOffers()->toArray();
+        usort($offers, fn (QuoteOffer $a, QuoteOffer $b) => $b->getId() <=> $a->getId());
+
+        foreach ($offers as $offer) {
+            $relative = $offer->getPdfFilePath();
+            if ($relative === null || $relative === '') {
+                continue;
+            }
+            $pdfPath = $projectDir.'/public'.$relative;
+            if (is_file($pdfPath) && is_readable($pdfPath)) {
+                return ['offer' => $offer, 'pdfPath' => $pdfPath];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Offre pour laquelle générer un PDF : d'abord une offre dont le chemin en base ne pointe plus vers un fichier,
+     * sinon la plus récente « pertinente » (statut envoyée / acceptée / etc.) ou la toute dernière offre.
+     */
+    private function findOfferToGeneratePdf(Quote $quote, string $projectDir): ?QuoteOffer
+    {
+        $offers = $quote->getOffers()->toArray();
+        if ($offers === []) {
+            return null;
+        }
+        usort($offers, fn (QuoteOffer $a, QuoteOffer $b) => $b->getId() <=> $a->getId());
+        foreach ($offers as $offer) {
+            $relative = $offer->getPdfFilePath();
+            if ($relative !== null && $relative !== '') {
+                $full = $projectDir.'/public'.$relative;
+                if (!is_file($full) || !is_readable($full)) {
+                    return $offer;
+                }
+            }
+        }
+
+        return $this->pickOfferForResendPdf($quote);
+    }
+
+    private function pickOfferForResendPdf(Quote $quote): ?QuoteOffer
+    {
+        $offers = $quote->getOffers()->toArray();
+        if ($offers === []) {
+            return null;
+        }
+        usort($offers, fn (QuoteOffer $a, QuoteOffer $b) => $b->getId() <=> $a->getId());
+        $preferredStatuses = ['sent', 'accepted', 'declined', 'pending'];
+        foreach ($offers as $offer) {
+            if (in_array($offer->getStatus(), $preferredStatuses, true)) {
+                return $offer;
+            }
+        }
+
+        return $offers[0];
     }
 
     #[Route('/quote/{id}/status/{status}', name: 'app_quote_status')]

@@ -275,6 +275,14 @@
                                                             </a>
                                                         </li>
                                                         <li>
+                                                            <form method="post" action="{{ path('app_quote_resend_offer_email', {'id': quote.id}) }}" class="m-0">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('resend_offer_' ~ quote.id) }}">
+                                                                <button type="submit" class="dropdown-item">
+                                                                    <i data-lucide="mail" class="icon-sm me-2"></i> Renvoyer l'offre par email
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li>
                                                             <a class="dropdown-item text-success" href="{{ path('app_quote_status', {'id': quote.id, 'status': 'accepted'}) }}">
                                                                 <i data-lucide="check" class="icon-sm me-2"></i> Marquer accepté
                                                             </a>
@@ -354,6 +362,14 @@
                                                             <a class="dropdown-item" href="{{ path('app_quote_view', {'id': quote.id}) }}">
                                                                 <i data-lucide="eye" class="icon-sm me-2"></i> Voir le détail
                                                             </a>
+                                                        </li>
+                                                        <li>
+                                                            <form method="post" action="{{ path('app_quote_resend_offer_email', {'id': quote.id}) }}" class="m-0">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('resend_offer_' ~ quote.id) }}">
+                                                                <button type="submit" class="dropdown-item">
+                                                                    <i data-lucide="mail" class="icon-sm me-2"></i> Renvoyer l'offre par email
+                                                                </button>
+                                                            </form>
                                                         </li>
                                                     </ul>
                                                 </div>
