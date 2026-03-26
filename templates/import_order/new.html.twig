@@ -4,6 +4,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css" crossorigin="anonymous">
     <style>
         .import-products-section { margin-bottom: 1.5rem; }
         .order-layout {
@@ -64,6 +65,107 @@
             padding: 0.75rem 1rem;
             font-weight: 600;
             border-radius: 8px;
+        }
+        .order-page-heading {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .order-page-heading h1 { margin: 0; }
+        .order-page-tour-btn {
+            border-color: var(--primary-color, #2b4eff);
+            color: var(--primary-color, #2b4eff);
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        .order-page-tour-btn:hover {
+            background: var(--primary-color, #2b4eff);
+            border-color: var(--primary-color, #2b4eff);
+            color: #fff;
+        }
+        /* Tutoriel Driver.js — aligné sur la charte (Poppins, bleu primaire #2b4eff) */
+        .driver-popover.driver-popover-duo {
+            font-family: 'Poppins', 'Poppins Fallback', sans-serif;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+            max-width: min(380px, calc(100vw - 32px));
+        }
+        .driver-popover.driver-popover-duo .driver-popover-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            letter-spacing: -0.02em;
+        }
+        .driver-popover.driver-popover-duo .driver-popover-description {
+            font-size: 0.9375rem;
+            color: #444444;
+            line-height: 1.55;
+        }
+        /* Annule le style global `footer { background #1a1a1a; padding 80px }` (styles.css) qui s’appliquait au <footer> de Driver.js */
+        .driver-popover.driver-popover-duo footer.driver-popover-footer,
+        .driver-popover.driver-popover-duo .driver-popover-footer {
+            background: #fff !important;
+            color: #444444 !important;
+            padding: 0.75rem 0 0 !important;
+            margin-top: 0.75rem !important;
+            border-top: 1px solid #e5e7eb;
+            gap: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .driver-popover.driver-popover-duo .driver-popover-progress-text {
+            font-size: 0.8125rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .driver-popover.driver-popover-duo .driver-popover-navigation-btns {
+            gap: 0.5rem;
+        }
+        .driver-popover.driver-popover-duo .driver-popover-next-btn {
+            background: var(--primary-color, #2b4eff) !important;
+            border: 1px solid var(--primary-color, #2b4eff) !important;
+            color: #fff !important;
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+            text-shadow: none;
+        }
+        .driver-popover.driver-popover-duo .driver-popover-next-btn:hover {
+            background: var(--primary-dark, #1a3dff) !important;
+            border-color: var(--primary-dark, #1a3dff) !important;
+            color: #fff !important;
+        }
+        .driver-popover.driver-popover-duo .driver-popover-prev-btn {
+            background: #fff !important;
+            border: 1px solid #d1d5db !important;
+            color: #444444 !important;
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+            text-shadow: none;
+        }
+        .driver-popover.driver-popover-duo .driver-popover-prev-btn:hover {
+            background: #f9fafb !important;
+            border-color: #9ca3af !important;
+            color: #1a1a1a !important;
+        }
+        .driver-popover.driver-popover-duo .driver-popover-close-btn {
+            color: #6b7280 !important;
+            border-radius: 6px;
+            opacity: 1;
+        }
+        .driver-popover.driver-popover-duo .driver-popover-close-btn:hover {
+            color: #1a1a1a !important;
+            background: #f3f4f6 !important;
         }
         .import-products-header {
             display: flex; flex-wrap: wrap; align-items: flex-start;
@@ -358,7 +460,10 @@
 {% block body %}
 <section class="py-5">
     <div class="container">
-        <h1 class="mb-4">Passer commande</h1>
+        <div class="order-page-heading">
+            <h1>Passer commande</h1>
+            <button type="button" class="btn btn-outline-primary btn-sm order-page-tour-btn" id="orderPageTourBtn">Guide du formulaire</button>
+        </div>
 
         {% for message in app.flashes('error') %}
             <div class="alert alert-danger">{{ message }}</div>
@@ -370,7 +475,7 @@
         <div class="mb-4">
             {{ form_start(form, {'attr': {'id': 'importOrderForm'}}) }}
                 <div class="order-layout">
-                    <section class="order-products-panel">
+                    <section class="order-products-panel" id="tour-products-panel">
                         <div class="import-products-section mb-0">
                             <div class="import-products-header">
                                 <div>
@@ -455,6 +560,7 @@
                     </section>
 
                     <aside class="order-details-panel">
+                        <div id="tour-delivery-section">
                         <h2 class="order-panel-title">Informations de livraison</h2>
                         <div class="order-customer-grid">
                             <div>
@@ -466,18 +572,23 @@
                         </div>
                         {{ form_row(form.email, {'attr': {'class': 'form-control'}}) }}
                         {{ form_row(form.deliveryAddress, {'attr': {'class': 'form-control'}}) }}
+                        </div>
 
                         <hr class="order-details-divider">
 
+                        <div id="tour-payment-section">
                         <h2 class="order-panel-title">Paiement</h2>
                         {{ form_row(form.paymentMethod, {'attr': {'class': 'form-select', 'id': 'paymentMethodSelect'}}) }}
                         <div id="paymentReferenceWrapper" class="mb-3">
                             {{ form_row(form.paymentReference, {'attr': {'class': 'form-control'}}) }}
                         </div>
+                        </div>
 
+                        <div id="tour-shipping-section" class="mb-3">
                         {{ form_row(form.shippingType, {'attr': {'class': 'form-select', 'id': 'shippingTypeSelect'}}) }}
+                        </div>
 
-                        <div class="order-cgv-box">
+                        <div class="order-cgv-box" id="tour-cgv-box">
                             {{ form_row(form.cgvAccepted, {
                                 label: 'J\'accepte les <a href="' ~ path('app_cgv') ~ '" target="_blank" rel="noopener">conditions générales de vente</a>',
                                 label_html: true,
@@ -485,8 +596,8 @@
                             }) }}
                         </div>
 
-                        <div class="order-submit-wrap">
-                            <button type="submit" class="btn btn-primary">Valider la commande</button>
+                        <div class="order-submit-wrap" id="tour-submit-section">
+                            <button type="submit" class="btn btn-primary" id="tour-submit-btn">Valider la commande</button>
                         </div>
                     </aside>
                 </div>
@@ -498,6 +609,7 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js" crossorigin="anonymous"></script>
     <script>
     (function() {
         function run() {
@@ -1000,6 +1112,139 @@
         renumberBadges(); updateSubtotalsAndTotal();
         }
         if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', run); } else { run(); }
+    })();
+    </script>
+    <script>
+    (function() {
+        function getDriverFactory() {
+            if (typeof window.driver !== 'undefined' && window.driver && window.driver.js && window.driver.js.driver) {
+                return window.driver.js.driver;
+            }
+            return null;
+        }
+        function buildTourSteps() {
+            return [
+                {
+                    popover: {
+                        title: "Commande en ligne",
+                        description: "Ce guide présente les zones du formulaire : produits, livraison, paiement, envoi et validation.",
+                        side: "over",
+                        align: "center"
+                    }
+                },
+                {
+                    element: "#tour-products-panel",
+                    popover: {
+                        title: "Produits",
+                        description: "Indiquez le code de chaque article (ex. C001), cliquez sur « Vérifier » pour charger le détail, choisissez la couleur et la quantité. Le total estimé se met à jour automatiquement.",
+                        side: "bottom"
+                    }
+                },
+                {
+                    element: "#add-item-btn",
+                    popover: {
+                        title: "Plusieurs articles",
+                        description: "Utilisez ce bouton pour ajouter une ligne produit supplémentaire à votre commande.",
+                        side: "bottom"
+                    }
+                },
+                {
+                    element: "#tour-delivery-section",
+                    popover: {
+                        title: "Livraison",
+                        description: "Renseignez vos coordonnées et l'adresse où vous souhaitez recevoir la marchandise.",
+                        side: "left"
+                    }
+                },
+                {
+                    element: "#tour-payment-section",
+                    popover: {
+                        title: "Paiement",
+                        description: "Choisissez votre mode de paiement. Pour MVola, Orange Money ou Airtel Money, indiquez la référence de la transaction.",
+                        side: "left"
+                    }
+                },
+                {
+                    element: "#tour-shipping-section",
+                    popover: {
+                        title: "Type d'envoi",
+                        description: "Sélectionnez le mode d'expédition (maritime ou aérien) selon le délai qui vous convient.",
+                        side: "left"
+                    }
+                },
+                {
+                    element: "#tour-cgv-box",
+                    popover: {
+                        title: "Conditions de vente",
+                        description: "Vous devez accepter les conditions générales de vente pour valider la commande.",
+                        side: "left"
+                    }
+                },
+                {
+                    element: "#tour-submit-section",
+                    popover: {
+                        title: "Valider",
+                        description: "Une fois tout complété, envoyez votre commande. Vous recevrez un e-mail de confirmation avec un lien de suivi.",
+                        side: "top"
+                    }
+                }
+            ];
+        }
+        var orderTourLock = false;
+        function startOrderTour() {
+            if (orderTourLock) {
+                return;
+            }
+            var driverFn = getDriverFactory();
+            if (!driverFn) {
+                return;
+            }
+            orderTourLock = true;
+            var tour = driverFn({
+                showProgress: true,
+                smoothScroll: true,
+                allowClose: true,
+                overlayOpacity: 0.5,
+                overlayColor: "#1a1a1a",
+                stageRadius: 8,
+                stagePadding: 8,
+                popoverClass: "driver-popover-duo",
+                nextBtnText: "Suivant",
+                prevBtnText: "Précédent",
+                doneBtnText: "Terminer",
+                progressText: "{{ '{{' }}current{{ '}}' }} / {{ '{{' }}total{{ '}}' }}",
+                steps: buildTourSteps(),
+                onDestroyed: function() {
+                    orderTourLock = false;
+                    try {
+                        localStorage.setItem("duoimport_order_tour_seen", "1");
+                    } catch (err) {}
+                }
+            });
+            tour.drive(0);
+        }
+        function onReady() {
+            var btn = document.getElementById("orderPageTourBtn");
+            if (btn) {
+                btn.addEventListener("click", function() {
+                    startOrderTour();
+                });
+            }
+            try {
+                if (!localStorage.getItem("duoimport_order_tour_seen")) {
+                    setTimeout(function() {
+                        if (!localStorage.getItem("duoimport_order_tour_seen")) {
+                            startOrderTour();
+                        }
+                    }, 500);
+                }
+            } catch (err) {}
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', onReady);
+        } else {
+            onReady();
+        }
     })();
     </script>
 {% endblock %}

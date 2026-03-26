@@ -3,6 +3,8 @@
 {% block title %}Demande de devis - Duo Import MDG{% endblock %}
 
 {% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css" crossorigin="anonymous">
 <style>
     .loader-container {
         display: none;
@@ -128,12 +130,113 @@
         margin: 0;
     }
 
+    .quote-page-heading {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .quote-page-heading h1 { margin: 0; }
+    .quote-page-tour-btn {
+        border-color: var(--primary-color, #2b4eff);
+        color: var(--primary-color, #2b4eff);
+        font-weight: 600;
+        border-radius: 8px;
+    }
+    .quote-page-tour-btn:hover {
+        background: var(--primary-color, #2b4eff);
+        border-color: var(--primary-color, #2b4eff);
+        color: #fff;
+    }
+    .driver-popover.driver-popover-quote {
+        font-family: 'Poppins', 'Poppins Fallback', sans-serif;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+        max-width: min(380px, calc(100vw - 32px));
+    }
+    .driver-popover.driver-popover-quote .driver-popover-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        letter-spacing: -0.02em;
+    }
+    .driver-popover.driver-popover-quote .driver-popover-description {
+        font-size: 0.9375rem;
+        color: #444444;
+        line-height: 1.55;
+    }
+    .driver-popover.driver-popover-quote footer.driver-popover-footer,
+    .driver-popover.driver-popover-quote .driver-popover-footer {
+        background: #fff !important;
+        color: #444444 !important;
+        padding: 0.75rem 0 0 !important;
+        margin-top: 0.75rem !important;
+        border-top: 1px solid #e5e7eb;
+        gap: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+    .driver-popover.driver-popover-quote .driver-popover-progress-text {
+        font-size: 0.8125rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+    .driver-popover.driver-popover-quote .driver-popover-navigation-btns { gap: 0.5rem; }
+    .driver-popover.driver-popover-quote .driver-popover-next-btn {
+        background: var(--primary-color, #2b4eff) !important;
+        border: 1px solid var(--primary-color, #2b4eff) !important;
+        color: #fff !important;
+        font-weight: 600;
+        font-size: 0.875rem;
+        padding: 0.45rem 1rem;
+        border-radius: 8px;
+        text-shadow: none;
+    }
+    .driver-popover.driver-popover-quote .driver-popover-next-btn:hover {
+        background: var(--primary-dark, #1a3dff) !important;
+        border-color: var(--primary-dark, #1a3dff) !important;
+        color: #fff !important;
+    }
+    .driver-popover.driver-popover-quote .driver-popover-prev-btn {
+        background: #fff !important;
+        border: 1px solid #d1d5db !important;
+        color: #444444 !important;
+        font-weight: 500;
+        font-size: 0.875rem;
+        padding: 0.45rem 1rem;
+        border-radius: 8px;
+        text-shadow: none;
+    }
+    .driver-popover.driver-popover-quote .driver-popover-prev-btn:hover {
+        background: #f9fafb !important;
+        border-color: #9ca3af !important;
+        color: #1a1a1a !important;
+    }
+    .driver-popover.driver-popover-quote .driver-popover-close-btn {
+        color: #6b7280 !important;
+        border-radius: 6px;
+        opacity: 1;
+    }
+    .driver-popover.driver-popover-quote .driver-popover-close-btn:hover {
+        color: #1a1a1a !important;
+        background: #f3f4f6 !important;
+    }
+
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="container py-5">
-    <h1 class="mb-4">Demande de devis</h1>
+    <div class="quote-page-heading">
+        <h1>Demande de devis</h1>
+        <button type="button" class="btn btn-outline-primary btn-sm quote-page-tour-btn" id="quotePageTourBtn">Guide du formulaire</button>
+    </div>
     
     <p class="mb-4">
         Veuillez remplir ce formulaire avec les détails de votre projet.
@@ -169,7 +272,8 @@
     {{ form_start(form, {'attr': {'class': 'needs-validation', 'id': 'quoteForm', 'novalidate': 'novalidate'}}) }}
         {{ form_errors(form) }}
 
-        <h2 class="mt-4 mb-3">1. Vos coordonnées</h4>
+        <div id="tour-quote-coordinates">
+        <h2 class="mt-4 mb-3">1. Vos coordonnées</h2>
         
         <div class="row mb-3">
             <div class="col-md-6">
@@ -199,7 +303,9 @@
                 {{ form_errors(form.referralSource) }}
             </div>
         </div>
+        </div>
         
+        <div id="tour-quote-products-block">
         <h2 class="mt-4 mb-3">2. Détails du ou des produits</h2>
         
         <div class="quote-items-wrapper" 
@@ -252,10 +358,12 @@
             {% endfor %}
         </div>
         
-        <button type="button" class="btn btn-outline-primary add-item-btn">
+        <button type="button" class="btn btn-outline-primary add-item-btn" id="quote-add-item-btn">
             <i class="fas fa-plus-circle me-2"></i> Ajouter un produit
         </button>
+        </div>
         
+        <div id="tour-quote-shipping">
         <h2 class="mt-4">3. Choix de l'envoi</h2>
         <div class="row mb-4">
             <!-- Services masqués (pré-sélectionnés automatiquement) -->
@@ -304,14 +412,17 @@
                 </div>
             </div>
         </div>
+        </div>
         
+        <div id="tour-quote-additional">
         <h2 class="pt-5 mt-5 mb-4">4. Informations complémentaires</h2>
         <div class="mb-4">
             {{ form_widget(form.additionalInfo, {'attr': {'class': 'form-control', 'rows': 3}}) }}
             {{ form_errors(form.additionalInfo) }}
         </div>
+        </div>
 
-        <div class="mb-3" style="padding-left: 0 !important;">
+        <div class="mb-3" style="padding-left: 0 !important;" id="tour-quote-privacy">
             <label for="{{ form.privacyPolicy.vars.id }}" class="form-check-label" style="display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;">
                 {{ form_widget(form.privacyPolicy, {'attr': {'class': 'form-check-input', 'style': 'margin: 0; margin-top: 2px; margin-left: -24px;'}}) }}
                 J'accepte la <a href="{{ path('app_privacy_policy') }}" target="_blank">politique de confidentialité</a>
@@ -323,7 +434,7 @@
             Notre équipe vous contactera dans les 24 à 72 heures avec un devis personnalisé.
         </p>
 
-        <div class="">
+        <div class="" id="tour-quote-submit">
             <button type="submit" class="btn btn-primary" id="submitButton">Soumettre ma demande de devis</button>
         </div>
     {{ form_end(form) }}
@@ -332,5 +443,139 @@
 
 {% block javascripts %}
 {{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js" crossorigin="anonymous"></script>
 <script src="{{ asset('js/quote.min.js') }}" defer></script>
+<script>
+(function() {
+    function getDriverFactory() {
+        if (typeof window.driver !== "undefined" && window.driver && window.driver.js && window.driver.js.driver) {
+            return window.driver.js.driver;
+        }
+        return null;
+    }
+    function buildQuoteTourSteps() {
+        return [
+            {
+                popover: {
+                    title: "Demande de devis",
+                    description: "Ce guide présente les sections du formulaire : vos coordonnées, les produits, le mode d'envoi, les informations complémentaires et l'envoi.",
+                    side: "over",
+                    align: "center"
+                }
+            },
+            {
+                element: "#tour-quote-coordinates",
+                popover: {
+                    title: "Vos coordonnées",
+                    description: "Indiquez votre identité, vos moyens de contact et, si vous le souhaitez, comment vous nous avez connus.",
+                    side: "bottom"
+                }
+            },
+            {
+                element: "#tour-quote-products-block",
+                popover: {
+                    title: "Produits",
+                    description: "Pour chaque ligne : photo éventuelle, type, quantité, budget et description. Ajoutez des lignes si vous avez plusieurs produits.",
+                    side: "bottom"
+                }
+            },
+            {
+                element: "#quote-add-item-btn",
+                popover: {
+                    title: "Plusieurs produits",
+                    description: "Utilisez ce bouton pour ajouter un bloc produit supplémentaire à votre demande.",
+                    side: "bottom"
+                }
+            },
+            {
+                element: "#tour-quote-shipping",
+                popover: {
+                    title: "Choix de l'envoi",
+                    description: "Sélectionnez un ou plusieurs modes d'expédition (maritime ou aérien). Les délais indiqués sont donnés à titre indicatif.",
+                    side: "top"
+                }
+            },
+            {
+                element: "#tour-quote-additional",
+                popover: {
+                    title: "Informations complémentaires",
+                    description: "Champ libre pour préciser des contraintes, délais ou tout élément utile à l'étude de votre dossier.",
+                    side: "top"
+                }
+            },
+            {
+                element: "#tour-quote-privacy",
+                popover: {
+                    title: "Confidentialité",
+                    description: "Vous devez accepter la politique de confidentialité pour envoyer votre demande.",
+                    side: "top"
+                }
+            },
+            {
+                element: "#tour-quote-submit",
+                popover: {
+                    title: "Envoyer",
+                    description: "Après validation, notre équipe vous recontacte sous 24 à 72 h avec un devis personnalisé.",
+                    side: "top"
+                }
+            }
+        ];
+    }
+    var quoteTourLock = false;
+    function startQuoteTour() {
+        if (quoteTourLock) {
+            return;
+        }
+        var driverFn = getDriverFactory();
+        if (!driverFn) {
+            return;
+        }
+        quoteTourLock = true;
+        var tour = driverFn({
+            showProgress: true,
+            smoothScroll: true,
+            allowClose: true,
+            overlayOpacity: 0.5,
+            overlayColor: "#1a1a1a",
+            stageRadius: 8,
+            stagePadding: 8,
+            popoverClass: "driver-popover-quote",
+            nextBtnText: "Suivant",
+            prevBtnText: "Précédent",
+            doneBtnText: "Terminer",
+            progressText: "{{ '{{' }}current{{ '}}' }} / {{ '{{' }}total{{ '}}' }}",
+            steps: buildQuoteTourSteps(),
+            onDestroyed: function() {
+                quoteTourLock = false;
+                try {
+                    localStorage.setItem("duoimport_quote_tour_seen", "1");
+                } catch (err) {}
+            }
+        });
+        tour.drive(0);
+    }
+    function quoteTourReady() {
+        var btn = document.getElementById("quotePageTourBtn");
+        if (btn) {
+            btn.addEventListener("click", function() {
+                startQuoteTour();
+            });
+        }
+        try {
+            if (!localStorage.getItem("duoimport_quote_tour_seen")) {
+                setTimeout(function() {
+                    if (!localStorage.getItem("duoimport_quote_tour_seen")) {
+                        startQuoteTour();
+                    }
+                }, 500);
+            }
+        } catch (err) {}
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", quoteTourReady);
+    } else {
+        quoteTourReady();
+    }
+})();
+</script>
 {% endblock %} 
