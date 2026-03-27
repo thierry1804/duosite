@@ -136,16 +136,29 @@ body {
     margin-left: var(--sidebar-collapsed-width);
 }
 
-/* Header */
+/* Header : une ligne sur bureau ; sur mobile le fil d’Ariane passe sous (bouton + compte) */
 .admin-header {
     background: #fff;
-    height: var(--header-height);
+    min-height: var(--header-height);
     padding: 0 20px;
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
-    justify-content: space-between;
+    gap: 0.25rem 0.5rem;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     margin-bottom: 20px;
+    position: relative;
+    z-index: 100;
+}
+
+.admin-header__breadcrumb {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.admin-header__user {
+    flex: 0 0 auto;
+    margin-left: auto;
 }
 
 .admin-header .breadcrumb {
@@ -162,6 +175,7 @@ body {
 .admin-header .user-dropdown {
     display: flex;
     align-items: center;
+    gap: 0.35rem;
 }
 
 .admin-header .user-dropdown img {
@@ -325,25 +339,111 @@ body {
     font-size: 1.4rem;
 }
 
-/* Responsive */
+/* Fond mobile (au-dessus du contenu, sous la sidebar) */
+.admin-sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 999;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+body.admin-sidebar-open .admin-sidebar-backdrop {
+    display: block;
+}
+
+/* Responsive : tiroir pleine largeur, pas de décalage du contenu */
 @media (max-width: 768px) {
     .admin-sidebar {
-        margin-left: -250px;
+        margin-left: calc(-1 * var(--sidebar-width));
+        width: var(--sidebar-width) !important;
+        box-shadow: none;
     }
-    
+
+    /* Sur mobile, le mode « réduit » ne doit pas masquer les libellés du menu */
+    .admin-sidebar.collapsed .sidebar-header h5,
+    .admin-sidebar.collapsed .sidebar-menu li a span,
+    .admin-sidebar.collapsed .bottom-menu li a span {
+        display: inline !important;
+    }
+
+    .admin-sidebar.collapsed .sidebar-menu li a,
+    .admin-sidebar.collapsed .bottom-menu li a {
+        justify-content: flex-start;
+        padding: 15px 20px;
+    }
+
+    .admin-sidebar.collapsed .sidebar-header {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .admin-sidebar.collapsed .sidebar-header img {
+        max-width: 120px;
+    }
+
     .admin-sidebar.active {
         margin-left: 0;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.12);
     }
-    
+
     .admin-content {
-        margin-left: 0;
+        margin-left: 0 !important;
     }
-    
-    .admin-content.active {
-        margin-left: 250px;
+
+    .admin-content.expanded {
+        margin-left: 0 !important;
     }
-    
+
+    /* Ancienne règle .admin-content.active décalait tout le contenu : supprimée au profit du backdrop */
+
+    body.admin-sidebar-open {
+        overflow: hidden;
+    }
+
+    .admin-header {
+        flex-wrap: wrap;
+        align-items: center;
+        row-gap: 0.5rem;
+        column-gap: 0.5rem;
+        padding: 10px 12px;
+    }
+
+    /* Ligne 1 : menu + compte — pas de fil d’Ariane à côté du bouton */
+    .admin-header__toggle {
+        order: 1;
+        flex: 0 0 auto;
+    }
+
+    .admin-header__user {
+        order: 2;
+        margin-left: auto;
+    }
+
+    .admin-header__breadcrumb {
+        order: 3;
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: 100%;
+        padding-top: 0.35rem;
+        margin-top: 0.15rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .admin-header .breadcrumb {
+        font-size: 0.75rem;
+        line-height: 1.4;
+        flex-wrap: wrap;
+        white-space: normal;
+        word-break: break-word;
+    }
+
     #sidebarCollapse {
-        display: block;
+        display: flex;
+        flex-shrink: 0;
     }
-} 
+}

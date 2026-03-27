@@ -22,7 +22,9 @@
         {% block stylesheets %}{% endblock %}
     </head>
     <body>
-        <div class="admin-sidebar collapsed">
+        {# Fond assombri mobile : clic pour fermer le menu latéral #}
+        <div id="adminSidebarBackdrop" class="admin-sidebar-backdrop" aria-hidden="true"></div>
+        <div id="admin-sidebar" class="admin-sidebar collapsed">
             <div class="sidebar-header">
                 <img src="{{ asset('images/logo.webp') }}" alt="Duo Import MDG">
                 <h5 class="mt-2 mb-0">Administration</h5>
@@ -81,24 +83,21 @@
         </div>
         
         <div class="admin-content expanded">
-            <div class="admin-header">
-                <div class="d-flex align-items-center">
-                    <button type="button" id="sidebarCollapse" class="btn-icon">
-                        <i data-lucide="panel-left"></i>
-                    </button>
-                    <div class="separator mx-2">|</div>
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0">
-                            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Administration</a></li>
-                            {% block breadcrumb %}{% endblock %}
-                        </ol>
-                    </nav>
-                </div>
-                
-                <div class="user-dropdown">
-                    <span class="me-2">{{ app.user.firstName }} {{ app.user.lastName }}</span>
+            <header class="admin-header">
+                <button type="button" id="sidebarCollapse" class="btn-icon admin-header__toggle" aria-label="Ouvrir ou fermer le menu">
+                    <i data-lucide="panel-left"></i>
+                </button>
+                <span class="separator mx-2 admin-header__sep d-none d-md-inline" aria-hidden="true">|</span>
+                <nav class="admin-header__breadcrumb min-w-0" aria-label="Fil d'Ariane">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Administration</a></li>
+                        {% block breadcrumb %}{% endblock %}
+                    </ol>
+                </nav>
+                <div class="user-dropdown admin-header__user">
+                    <span class="me-2 d-none d-sm-inline admin-header__user-name">{{ app.user.firstName }} {{ app.user.lastName }}</span>
                     <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Compte utilisateur">
                             <i data-lucide="user-circle"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
@@ -107,7 +106,7 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+            </header>
             
             <div class="container-fluid">
                 {% for label, messages in app.flashes %}
