@@ -46,7 +46,13 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
                     throw new CustomUserMessageAuthenticationException('Votre compte n\'est pas encore activé. Vérifiez vos emails.');
                 }
 
-                if ($user->isAdmin() && null === $user->getAdminActivatedAt()) {
+                // Ne bloquer que si l’invitation par email est encore en cours (jeton présent).
+                // Les admins actifs sans adminActivatedAt (ex. comptes antérieurs au flux OTP) restent autorisés.
+                if (
+                    $user->isAdmin()
+                    && null === $user->getAdminActivatedAt()
+                    && null !== $user->getAdminInvitationToken()
+                ) {
                     throw new CustomUserMessageAuthenticationException('Activation administrateur incomplète. Vérifiez vos emails.');
                 }
 
