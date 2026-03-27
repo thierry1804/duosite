@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: QuoteOfferRepository::class)]
 #[ORM\Table(name: 'quote_offers')]
@@ -37,7 +38,10 @@ class QuoteOffer
     #[ORM\OneToMany(mappedBy: 'offer', targetEntity: ProductProposal::class, orphanRemoval: true, cascade: ['persist'])]
     private Collection $productProposals;
 
+    /** @var Collection<int, ShippingOption> */
     #[ORM\OneToMany(mappedBy: 'offer', targetEntity: ShippingOption::class, orphanRemoval: true, cascade: ['persist'])]
+    #[Assert\Valid]
+    #[Assert\Count(max: 3, maxMessage: 'Vous ne pouvez pas dépasser 3 options d\'expédition (un mode par ligne au maximum).')]
     private Collection $shippingOptions;
 
     #[ORM\Column(length: 20)]
@@ -63,6 +67,26 @@ class QuoteOffer
     public function preUpdate(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    #[Assert\Callback]
+    public function validateShippingOptionNamesUnique(ExecutionContextInterface $context): void
+    {
+        $seen = [];
+        foreach ($this->getShippingOptions() as $i => $option) {
+            $name = $option->getName();
+            if ($name === null || $name === '') {
+                continue;
+            }
+            if (isset($seen[$name])) {
+                $context->buildViolation('Chaque mode d\'expédition ne peut être présent qu\'une seule fois.')
+                    ->atPath('shippingOptions['.$i.'].name')
+                    ->addViolation();
+
+                return;
+            }
+            $seen[$name] = true;
+        }
     }
 
     public function getId(): ?int

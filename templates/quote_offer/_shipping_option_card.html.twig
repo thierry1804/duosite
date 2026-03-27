@@ -1,21 +1,28 @@
 {# Carte une option d'expédition — création / édition d'offre #}
 {% set nameVal = shippingOptionForm.name.vars.value ?? '' %}
 {% set nameLower = nameVal|lower %}
+{% set shippingTariffUsd = 'maritime' in nameLower %}
 {% if 'express' in nameLower %}
     {% set badgeClass = 'shipping-option-badge shipping-option-badge--express' %}
     {% set badgeText = 'Express' %}
 {% elseif 'standard' in nameLower or 'normal' in nameLower %}
     {% set badgeClass = 'shipping-option-badge shipping-option-badge--standard' %}
     {% set badgeText = 'Standard' %}
+{% elseif 'maritime' in nameLower %}
+    {% set badgeClass = 'shipping-option-badge shipping-option-badge--neutral' %}
+    {% set badgeText = 'Maritime' %}
 {% else %}
     {% set badgeClass = 'shipping-option-badge shipping-option-badge--neutral' %}
-    {% set badgeText = 'Option' %}
+    {% set badgeText = '—' %}
 {% endif %}
 <div class="shipping-option-card border rounded bg-white mb-3">
     <div class="shipping-option-card__head d-flex align-items-start justify-content-between gap-2">
         <div class="d-flex align-items-center gap-2 flex-wrap flex-grow-1 min-w-0">
-            <span class="{{ badgeClass }}">{{ badgeText }}</span>
-            {{ form_widget(shippingOptionForm.name) }}
+            <span class="{{ badgeClass }}" data-shipping-badge>{{ badgeText }}</span>
+            <div class="flex-grow-1 min-w-0">
+                {{ form_label(shippingOptionForm.name, null, { label_attr: { class: 'form-label small text-muted mb-1' } }) }}
+                {{ form_widget(shippingOptionForm.name) }}
+            </div>
         </div>
         <button type="button" class="btn btn-outline-secondary border shipping-option-remove remove-shipping-option p-0 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;" aria-label="Supprimer cette option">
             <i data-lucide="trash-2" class="text-danger" style="width: 18px; height: 18px;"></i>
@@ -37,7 +44,7 @@
         <div class="col-12 col-md-6">
             {{ form_label(shippingOptionForm.price) }}
             <div class="input-group">
-                <span class="input-group-text">USD</span>
+                <span class="input-group-text shipping-option-price-prefix">{{ shippingTariffUsd ? 'USD' : 'MGA' }}</span>
                 {{ form_widget(shippingOptionForm.price) }}
             </div>
             {{ form_errors(shippingOptionForm.price) }}

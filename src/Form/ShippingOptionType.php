@@ -3,10 +3,11 @@
 namespace App\Form;
 
 use App\Entity\ShippingOption;
+use App\Shipping\ShippingOptionChoices;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -16,11 +17,13 @@ class ShippingOptionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name', TextType::class, [
-                'label' => false,
+            ->add('name', ChoiceType::class, [
+                'label' => 'Mode d\'expédition',
+                'choices' => ShippingOptionChoices::formChoices(),
+                'placeholder' => 'Choisir un mode…',
+                'required' => true,
                 'attr' => [
-                    'class' => 'form-control shipping-option-name-input',
-                    'placeholder' => 'Ex. Aérien Express',
+                    'class' => 'form-select shipping-option-name-input',
                 ],
             ])
             ->add('description', TextareaType::class, [

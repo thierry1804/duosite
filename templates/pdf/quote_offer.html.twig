@@ -173,9 +173,9 @@
                 <thead>
                     <tr>
                         <th style="width: 50%;">Produit demandé</th>
-                        <th style="text-align: center;">PU</th>
+                        <th style="text-align: center;">PU (RMB)</th>
                         <th style="text-align: center;">Quantité</th>
-                        <th style="text-align: center;">Montant</th>
+                        <th style="text-align: center;">Montant (RMB)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -193,7 +193,7 @@
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
                             {% if proposal.maxPrice %}
-                                {{ proposal.maxPrice|number_format(2, ',', ' ') }}
+                                {{ proposal.maxPrice|number_format(2, ',', ' ') }} RMB
                             {% else %}
                                 Non défini
                             {% endif %}
@@ -209,17 +209,21 @@
                             {% if proposal.maxPrice %}
                                 {% set avgPrice = proposal.maxPrice %}
                                 {% set quantity = proposal.quoteItem ? (proposal.quoteItem.quantity ?: 1) : 1 %}
-                                {{ (avgPrice * quantity)|number_format(2, ',', ' ') }}
+                                {{ (avgPrice * quantity)|number_format(2, ',', ' ') }} RMB
                                 {% set totalMaxPrice = totalMaxPrice + (avgPrice * quantity) %}
                             {% else %}
                                 Non défini
                             {% endif %}
                         </td>
                     </tr>
-                    {% if proposal.comments %}
+                    {% if proposal.weight or proposal.dimensions or proposal.comments %}
                     <tr>
-                        <td colspan="4" style="background-color: #f8f9fa; font-style: italic;">
-                            Poids: <strong>{{ proposal.weight }} g</strong> / Commentaires: {{ proposal.comments }}
+                        <td colspan="4" style="background-color: #f8f9fa; font-style: italic; font-size: 10px;">
+                            {% if proposal.dimensions %}<strong>Dimensions :</strong> {{ proposal.dimensions }}{% endif %}
+                            {% if proposal.dimensions and (proposal.weight or proposal.comments) %} · {% endif %}
+                            {% if proposal.weight %}<strong>Poids :</strong> {{ proposal.weight }} g{% endif %}
+                            {% if proposal.weight and proposal.comments %} · {% endif %}
+                            {% if proposal.comments %}<strong>Commentaires :</strong> {{ proposal.comments|nl2br }}{% endif %}
                         </td>
                     </tr>
                     {% endif %}
@@ -234,7 +238,7 @@
                             Total RMB:
                         </th>
                         <th style="text-align: right; white-space: nowrap;">
-                            {{ totalMaxPrice|number_format(2, ',', ' ') }}
+                            {{ totalMaxPrice|number_format(2, ',', ' ') }} RMB
                         </th>
                     </tr>
                     <tr>
@@ -242,7 +246,7 @@
                             Total MGA:
                         </th>
                         <th style="text-align: right; white-space: nowrap;">
-                            {{ (totalMaxPrice * offer.rmbMgaExchangeRate)|number_format(2, ',', ' ') }}
+                            {{ (totalMaxPrice * offer.rmbMgaExchangeRate)|number_format(2, ',', ' ') }} MGA
                         </th>
                     </tr>
                     <tr>
@@ -275,20 +279,24 @@
                         <th>Mode d'expédition</th>
                         <th>Description</th>
                         <th>Délai estimé</th>
-                        <th>Tarif</th>
+                        <th>Tarif (voir note *)</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for option in offer.shippingOptions %}
+                    {% set optNameLower = (option.name ?? '')|lower %}
                     <tr>
                         <td>{{ option.name }}</td>
                         <td>{{ (option.description ?: 'Aucune description')|nl2br }}</td>
                         <td>{{ option.estimatedDeliveryDays ? option.estimatedDeliveryDays ~ ' jours' : 'Non défini' }}</td>
-                        <td>{{ option.price|number_format(2, ',', ' ') }} USD</td>
+                        <td style="white-space: nowrap;">{{ option.price|number_format(2, ',', ' ') }} {% if 'maritime' in optNameLower %}USD{% else %}Ar{% endif %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            <p style="font-size: 10px; color: #444; margin: 8px 0 0 0; line-height: 1.35;">
+                * Si le nom de l’option contient « maritime », le tarif est exprimé en dollars (USD) ; sinon en ariary (Ar), comme sur le formulaire de l’offre.
+            </p>
             {% else %}
             <p>Aucune option d'expédition pour cette offre.</p>
             {% endif %}
@@ -299,9 +307,16 @@
             {% if offer.productProposals|length > 0 %}
                 {% for proposal in offer.productProposals %}
                     <div style="margin-bottom: 30px;{% if loop.index > 1 %} page-break-before: always;{% endif %}">
-                        <h4 style="margin-bottom: 15px; font-size: 14px; color: #0d6efd;">
-                            #{{ loop.index }} - {{ proposal.quoteItem.productType }}
+                        <h4 style="margin-bottom: 8px; font-size: 14px; color: #0d6efd;">
+                            #{{ loop.index }} - {{ proposal.quoteItem ? proposal.quoteItem.productType : 'Produit' }}
                         </h4>
+                        {% if proposal.dimensions or proposal.weight %}
+                        <p style="font-size: 11px; color: #555; margin: 0 0 12px 0;">
+                            {% if proposal.dimensions %}Dimensions : {{ proposal.dimensions }}{% endif %}
+                            {% if proposal.dimensions and proposal.weight %} · {% endif %}
+                            {% if proposal.weight %}Poids : {{ proposal.weight }} g{% endif %}
+                        </p>
+                        {% endif %}
                         {% if proposal.images|length > 0 %}
                             <table style="width: 100%; border-collapse: collapse;">
                                 {% for images in proposal.images|batch(2) %}

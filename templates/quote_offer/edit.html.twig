@@ -216,8 +216,11 @@
                     </div>
 
                     <div class="mt-4">
-                        <div class="shipping-options-toolbar d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0">Options d'expédition</h5>
+                        <div class="shipping-options-toolbar d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <h5 class="mb-0">Options d'expédition</h5>
+                                <p class="small text-muted mb-0 mt-1">Chaque ligne correspond à un mode parmi les trois proposés (un par type, maximum trois).</p>
+                            </div>
                             <button type="button" class="btn btn-outline-primary rounded-circle btn-add-shipping p-0" id="add-shipping-option" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;" aria-label="Ajouter une option d'expédition">
                                 <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
                             </button>
@@ -300,6 +303,7 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="{{ asset('js/exchange-rate.js') }}"></script>
 <script src="{{ asset('js/product-proposal-form.js') }}"></script>
+<script src="{{ asset('js/shipping-option-currency.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialisation des tooltips
@@ -561,12 +565,22 @@
         let shippingOptionIndex = parseInt($shippingOptionsContainer.data('index'), 10) || 0;
 
         $('#add-shipping-option').click(function() {
+            if ($('.shipping-option-item', $shippingOptionsContainer).length >= 3) {
+                return;
+            }
             let prototype = $shippingOptionsContainer.data('prototype');
             let newForm = prototype.replace(/__name__/g, shippingOptionIndex);
             $('.alert', $shippingOptionsContainer).remove();
             $shippingOptionsContainer.append(newForm);
             shippingOptionIndex++;
             $shippingOptionsContainer.data('index', shippingOptionIndex);
+            var $lastSel = $shippingOptionsContainer.find('.shipping-option-item:last .shipping-option-name-input');
+            if ($lastSel.length) {
+                $lastSel[0].dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            if (typeof window.refreshShippingAddButton === 'function') {
+                window.refreshShippingAddButton();
+            }
             lucide.createIcons();
         });
 
@@ -575,6 +589,9 @@
 
             if ($('.shipping-option-item', $shippingOptionsContainer).length === 0) {
                 $shippingOptionsContainer.append('<div class="alert alert-info">Aucune option d\'expédition ajoutée. Cliquez sur le bouton + pour commencer.</div>');
+            }
+            if (typeof window.refreshShippingAddButton === 'function') {
+                window.refreshShippingAddButton();
             }
         });
 

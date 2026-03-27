@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Shipping\ShippingOptionChoices;
 use App\Service\ExchangeRateService;
 use App\Service\PdfGenerator;
 use Symfony\Component\Mailer\MailerInterface;
@@ -59,9 +60,9 @@ class QuoteOfferController extends AbstractController
         if (!empty($quote->getShippingMethod())) {
             $shippingMethods = $quote->getShippingMethod();
             $shippingNames = [
-                'maritime' => 'Maritime',
-                'aerien_express' => 'Aérien Express',
-                'aerien_normal' => 'Aérien Standard'
+                'maritime' => ShippingOptionChoices::MARITIME,
+                'aerien_express' => ShippingOptionChoices::AIR_EXPRESS,
+                'aerien_normal' => ShippingOptionChoices::AIR_STANDARD,
             ];
             $deliveryDays = [
                 'maritime' => 45,

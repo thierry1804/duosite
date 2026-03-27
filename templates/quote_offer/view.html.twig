@@ -237,6 +237,7 @@
                                 </thead>
                                 <tbody>
                                     {% for option in offer.shippingOptions %}
+                                        {% set optNameLower = (option.name ?? '')|lower %}
                                         <tr>
                                             <td>
                                                 <strong>{{ option.name }}</strong>
@@ -244,7 +245,7 @@
                                                     <p class="small text-muted mb-0">{{ option.description|nl2br }}</p>
                                                 {% endif %}
                                             </td>
-                                            <td>{{ option.price|number_format(2, ',', ' ') }} USD</td>
+                                            <td>{{ option.price|number_format(2, ',', ' ') }} {% if 'maritime' in optNameLower %}USD{% else %}Ar{% endif %}</td>
                                             <td>
                                                 {% if option.estimatedDeliveryDays %}
                                                     {{ option.estimatedDeliveryDays }} jour{% if option.estimatedDeliveryDays > 1 %}s{% endif %}
