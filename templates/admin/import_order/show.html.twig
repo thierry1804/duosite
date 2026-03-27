@@ -3,9 +3,9 @@
 {% block title %}Commande {{ order.orderNumber }} - Administration{% endblock %}
 
 {% block breadcrumb %}
-    <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
-    <li class="breadcrumb-item"><a href="{{ path('app_admin_import_orders') }}">Commandes d'import</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ order.orderNumber }}</li>
+    <li><a class="dropdown-item" href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
+    <li><a class="dropdown-item" href="{{ path('app_admin_import_orders') }}">Commandes d'import</a></li>
+    <li><span class="dropdown-item disabled" aria-current="page">{{ order.orderNumber }}</span></li>
 {% endblock %}
 
 {% block body %}

@@ -148,4 +148,23 @@ document.addEventListener('DOMContentLoaded', function() {
     if (sidebarCollapse && sidebar && sidebar.classList.contains('collapsed') && !isMobileNav()) {
         updateTooltips();
     }
+
+    function initAdminBreadcrumbDropdown() {
+        const label = document.querySelector('.admin-breadcrumb-current');
+        const menu = document.querySelector('.admin-breadcrumb-menu');
+        if (!label || !menu) {
+            return;
+        }
+        const current = menu.querySelector('[aria-current="page"]');
+        if (current) {
+            label.textContent = current.textContent.trim();
+            return;
+        }
+        const links = menu.querySelectorAll('a.dropdown-item');
+        if (links.length) {
+            label.textContent = links[links.length - 1].textContent.trim();
+        }
+    }
+
+    initAdminBreadcrumbDropdown();
 });

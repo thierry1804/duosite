@@ -3,8 +3,8 @@
 {% block title %}Modifier administrateur - Duo Import MDG{% endblock %}
 
 {% block breadcrumb %}
-    <li class="breadcrumb-item"><a href="{{ path('app_admin_admin_users_index') }}">Administrateurs</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Modifier</li>
+    <li><a class="dropdown-item" href="{{ path('app_admin_admin_users_index') }}">Administrateurs</a></li>
+    <li><span class="dropdown-item disabled" aria-current="page">Modifier</span></li>
 {% endblock %}
 
 {% block body %}

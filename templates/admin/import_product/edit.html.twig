@@ -3,9 +3,9 @@
 {% block title %}Modifier {{ product.code }} - Administration{% endblock %}
 
 {% block breadcrumb %}
-    <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
-    <li class="breadcrumb-item"><a href="{{ path('app_admin_import_products') }}">Produits d'import</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Modifier {{ product.code }}</li>
+    <li><a class="dropdown-item" href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
+    <li><a class="dropdown-item" href="{{ path('app_admin_import_products') }}">Produits d'import</a></li>
+    <li><span class="dropdown-item disabled" aria-current="page">Modifier {{ product.code }}</span></li>
 {% endblock %}
 
 {% block body %}

@@ -3,8 +3,8 @@
 {% block title %}Commandes d'import - Administration{% endblock %}
 
 {% block breadcrumb %}
-    <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Commandes d'import</li>
+    <li><a class="dropdown-item" href="{{ path('app_admin_dashboard') }}">Tableau de bord</a></li>
+    <li><span class="dropdown-item disabled" aria-current="page">Commandes d'import</span></li>
 {% endblock %}
 
 {% block body %}

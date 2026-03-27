@@ -3,9 +3,9 @@
 {% block title %}Modifier l'offre | {{ parent() }}{% endblock %}
 
 {% block breadcrumb %}
-    <li class="breadcrumb-item"><a href="{{ path('app_quote_dashboard') }}">Gestion des devis</a></li>
-    <li class="breadcrumb-item"><a href="{{ path('app_quote_view', {'id': offer.quote.id}) }}">Détails du devis #{{ offer.quote.id }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Modifier l'offre #{{ offer.id }}</li>
+    <li><a class="dropdown-item" href="{{ path('app_quote_dashboard') }}">Gestion des devis</a></li>
+    <li><a class="dropdown-item" href="{{ path('app_quote_view', {'id': offer.quote.id}) }}">Détails du devis #{{ offer.quote.id }}</a></li>
+    <li><span class="dropdown-item disabled" aria-current="page">Modifier l'offre #{{ offer.id }}</span></li>
 {% endblock %}
 
 {# Filtre personnalisé pour rendre les liens cliquables #}
@@ -15,12 +15,14 @@
 
 {% block body %}
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Modifier l'offre #{{ offer.id }}</h1>
-        <div>
-            <a href="{{ path('app_quote_view', {'id': offer.quote.id}) }}" class="btn btn-secondary">
-                <i data-lucide="arrow-left" class="me-2"></i> Retour au devis
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
+        <div class="d-flex align-items-center gap-2 min-w-0">
+            <a href="{{ path('app_quote_view', {'id': offer.quote.id}) }}" class="btn btn-outline-secondary btn-sm p-2 d-inline-flex align-items-center justify-content-center flex-shrink-0" aria-label="Retour au devis" title="Retour au devis">
+                <i data-lucide="arrow-left" width="20" height="20" aria-hidden="true"></i>
             </a>
+            <h1 class="mb-0">Modifier l'offre #{{ offer.id }}</h1>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
             {% if offer.status == 'draft' %}
                 <form method="post" action="{{ path('app_quote_offer_send', {'id': offer.id}) }}" style="display: inline-block" class="me-2">
                     <input type="hidden" name="_token" value="{{ csrf_token('send' ~ offer.id) }}">

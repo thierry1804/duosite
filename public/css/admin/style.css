@@ -149,27 +149,72 @@ body {
     margin-bottom: 20px;
     position: relative;
     z-index: 100;
+    overflow: visible;
 }
 
 .admin-header__breadcrumb {
     flex: 1 1 auto;
     min-width: 0;
+    max-width: 100%;
+}
+
+/* Fil d’Ariane : bouton + liste déroulante (pas de scroll horizontal) */
+.admin-breadcrumb-dropdown {
+    max-width: min(100%, 22rem);
+    min-width: 0;
+}
+
+.admin-breadcrumb-toggle {
+    max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem;
+    text-align: left;
+    color: #374151;
+    background: #f3f4f6;
+    border-color: #e5e7eb !important;
+}
+
+.admin-breadcrumb-toggle:hover,
+.admin-breadcrumb-toggle:focus-visible {
+    color: #111827;
+    background: #e9ecef;
+    border-color: #dee2e6 !important;
+}
+
+.admin-breadcrumb-toggle::after {
+    flex-shrink: 0;
+}
+
+.admin-breadcrumb-current {
+    display: inline-block;
+    max-width: min(65vw, 16rem);
+    vertical-align: middle;
+}
+
+.admin-breadcrumb-menu {
+    min-width: min(100vw - 2rem, 18rem);
+    max-height: min(70vh, 20rem);
+    overflow-y: auto;
+}
+
+.admin-breadcrumb-menu .dropdown-item {
+    font-size: 0.875rem;
+    line-height: 1.35;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+}
+
+.admin-breadcrumb-menu .dropdown-item[aria-current="page"] {
+    font-weight: 600;
+    color: #111827;
+    cursor: default;
 }
 
 .admin-header__user {
     flex: 0 0 auto;
     margin-left: auto;
-}
-
-.admin-header .breadcrumb {
-    margin: 0;
-    background: transparent;
-}
-
-.admin-header .breadcrumb-item + .breadcrumb-item::before {
-    content: "|";
-    color: #ccc;
-    font-weight: 200;
 }
 
 .admin-header .user-dropdown {
@@ -434,16 +479,31 @@ body.admin-sidebar-open .admin-sidebar-backdrop {
         border-top: 1px solid #e9ecef;
     }
 
-    .admin-header .breadcrumb {
-        font-size: 0.75rem;
-        line-height: 1.4;
-        flex-wrap: wrap;
-        white-space: normal;
-        word-break: break-word;
+    .admin-breadcrumb-dropdown {
+        max-width: 100%;
+    }
+
+    .admin-breadcrumb-current {
+        max-width: min(78vw, 14rem);
+    }
+
+    .admin-breadcrumb-toggle {
+        font-size: 0.8125rem;
     }
 
     #sidebarCollapse {
         display: flex;
         flex-shrink: 0;
+    }
+}
+
+@media (max-width: 400px) {
+    .admin-breadcrumb-toggle {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .admin-breadcrumb-current {
+        max-width: min(82vw, 12rem);
     }
 }

@@ -89,10 +89,15 @@
                 </button>
                 <span class="separator mx-2 admin-header__sep d-none d-md-inline" aria-hidden="true">|</span>
                 <nav class="admin-header__breadcrumb min-w-0" aria-label="Fil d'Ariane">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Administration</a></li>
-                        {% block breadcrumb %}{% endblock %}
-                    </ol>
+                    <div class="dropdown admin-breadcrumb-dropdown">
+                        <button type="button" class="btn btn-sm btn-light border dropdown-toggle admin-breadcrumb-toggle" id="adminBreadcrumbToggle" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" aria-haspopup="true" aria-controls="adminBreadcrumbMenu">
+                            <span class="admin-breadcrumb-current text-truncate">Navigation</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end admin-breadcrumb-menu py-1 shadow-sm" id="adminBreadcrumbMenu" aria-labelledby="adminBreadcrumbToggle">
+                            <li><a class="dropdown-item" href="{{ path('app_admin_dashboard') }}">Administration</a></li>
+                            {% block breadcrumb %}{% endblock %}
+                        </ul>
+                    </div>
                 </nav>
                 <div class="user-dropdown admin-header__user">
                     <span class="me-2 d-none d-sm-inline admin-header__user-name">{{ app.user.firstName }} {{ app.user.lastName }}</span>

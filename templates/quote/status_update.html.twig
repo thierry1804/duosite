@@ -133,18 +133,19 @@
 <div class="status-update-header">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="mb-2">
-                    <i class="fas fa-edit me-3"></i>
-                    Mise à jour du statut
-                </h1>
-                <p class="mb-0 fs-5">Devis : <strong>{{ quote.quoteNumber }}</strong></p>
-            </div>
-            <div class="col-md-4 text-md-end">
-                <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-light">
-                    <i class="fas fa-arrow-left me-2"></i>
-                    Retour au devis
-                </a>
+            <div class="col-12">
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <a href="{{ path('app_quote_view', {'id': quote.id}) }}" class="btn btn-light btn-sm p-2 d-inline-flex align-items-center justify-content-center flex-shrink-0 mt-1" aria-label="Retour au devis" title="Retour au devis">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    </a>
+                    <div class="min-w-0">
+                        <h1 class="mb-2">
+                            <i class="fas fa-edit me-3"></i>
+                            Mise à jour du statut
+                        </h1>
+                        <p class="mb-0 fs-5">Devis : <strong>{{ quote.quoteNumber }}</strong></p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

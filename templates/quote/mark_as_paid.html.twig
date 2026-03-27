@@ -3,9 +3,9 @@
 {% block title %}Confirmer le paiement du devis #{{ quote.id }}{% endblock %}
 
 {% block breadcrumb %}
-    <li class="breadcrumb-item"><a href="{{ path('app_quote_dashboard') }}">Gestion des devis</a></li>
-    <li class="breadcrumb-item"><a href="{{ path('app_quote_view', {'id': quote.id}) }}">Détails du devis #{{ quote.id }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Confirmer le paiement</li>
+    <li><a class="dropdown-item" href="{{ path('app_quote_dashboard') }}">Gestion des devis</a></li>
+    <li><a class="dropdown-item" href="{{ path('app_quote_view', {'id': quote.id}) }}">Détails du devis #{{ quote.id }}</a></li>
+    <li><span class="dropdown-item disabled" aria-current="page">Confirmer le paiement</span></li>
 {% endblock %}
 
 {% block body %}
