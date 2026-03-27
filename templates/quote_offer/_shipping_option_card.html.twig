@@ -1,0 +1,47 @@
+{# Carte une option d'expédition — création / édition d'offre #}
+{% set nameVal = shippingOptionForm.name.vars.value ?? '' %}
+{% set nameLower = nameVal|lower %}
+{% if 'express' in nameLower %}
+    {% set badgeClass = 'shipping-option-badge shipping-option-badge--express' %}
+    {% set badgeText = 'Express' %}
+{% elseif 'standard' in nameLower or 'normal' in nameLower %}
+    {% set badgeClass = 'shipping-option-badge shipping-option-badge--standard' %}
+    {% set badgeText = 'Standard' %}
+{% else %}
+    {% set badgeClass = 'shipping-option-badge shipping-option-badge--neutral' %}
+    {% set badgeText = 'Option' %}
+{% endif %}
+<div class="shipping-option-card border rounded bg-white mb-3">
+    <div class="shipping-option-card__head d-flex align-items-start justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap flex-grow-1 min-w-0">
+            <span class="{{ badgeClass }}">{{ badgeText }}</span>
+            {{ form_widget(shippingOptionForm.name) }}
+        </div>
+        <button type="button" class="btn btn-outline-secondary border shipping-option-remove remove-shipping-option p-0 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;" aria-label="Supprimer cette option">
+            <i data-lucide="trash-2" class="text-danger" style="width: 18px; height: 18px;"></i>
+        </button>
+    </div>
+    <div class="shipping-option-card__desc mt-2">
+        {{ form_widget(shippingOptionForm.description) }}
+        {{ form_errors(shippingOptionForm.description) }}
+    </div>
+    <div class="row g-3 mt-1 shipping-option-card__fields">
+        <div class="col-12 col-md-6">
+            {{ form_label(shippingOptionForm.estimatedDeliveryDays) }}
+            <div class="input-group">
+                {{ form_widget(shippingOptionForm.estimatedDeliveryDays) }}
+                <span class="input-group-text">jours</span>
+            </div>
+            {{ form_errors(shippingOptionForm.estimatedDeliveryDays) }}
+        </div>
+        <div class="col-12 col-md-6">
+            {{ form_label(shippingOptionForm.price) }}
+            <div class="input-group">
+                <span class="input-group-text">USD</span>
+                {{ form_widget(shippingOptionForm.price) }}
+            </div>
+            {{ form_errors(shippingOptionForm.price) }}
+        </div>
+    </div>
+    {{ form_errors(shippingOptionForm.name) }}
+</div>

@@ -178,129 +178,63 @@
                     
                     {{ form_row(form.description) }}
 
-                    <div class="admin-card mt-4 mb-4">
-                        <div class="admin-card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Propositions de produits</h5>
-                            <div>
-                                <button type="button" class="btn btn-success rounded-circle p-0" id="add-product-proposal" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                                    <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                                </button>
-                            </div>
-                        </div>
+                    <div class="mt-4 mb-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Propositions de produits</h5>
+                        <button type="button" class="btn btn-success rounded-circle p-0" id="add-product-proposal" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;" aria-label="Ajouter une proposition">
+                            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                        </button>
                     </div>
-                    <div class="admin-card-body">
-                        <!-- Conteneur pour les propositions de produits -->
-                        <div class="product-proposals-container" data-prototype="{{ form_widget(form.productProposals.vars.prototype)|e('html_attr') }}" data-index="{{ form.productProposals|length }}">
-                            {% if form.productProposals|length > 0 %}
-                                {% for productProposalForm in form.productProposals %}
-                                    <div class="product-proposal-item admin-card mb-3">
-                                        <div class="admin-card-header bg-light d-flex justify-content-between">
-                                            <h6 class="mb-0">Proposition #{{ loop.index }}</h6>
-                                            <button type="button" class="btn btn-sm btn-danger remove-product-proposal">
-                                                <i data-lucide="trash-2"></i> Supprimer
-                                            </button>
-                                        </div>
-                                        <div class="admin-card-body">
-                                            <div class="mb-3">
-                                                {{ form_row(productProposalForm.quoteItem) }}
-                                            </div>
-                                            <div style="display: none;">
-                                                {{ form_row(productProposalForm.minPrice) }}
-                                            </div>
-                                            <div class="row mb-3">
-                                                <div class="col-md-4">
-                                                    {{ form_row(productProposalForm.maxPrice) }}
-                                                </div>
-                                                <div class="col-md-4">
-                                                    {{ form_row(productProposalForm.dimensions) }}
-                                                </div>
-                                                <div class="col-md-4">
-                                                    {{ form_row(productProposalForm.weight) }}
-                                                </div>
-                                            </div>
-                                            <div class="mb-3">
-                                                {{ form_row(productProposalForm.comments) }}
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Images</label>
-                                                <div class="image-upload-container">
-                                                    {% if productProposalForm.vars.data and productProposalForm.vars.data.images|length > 0 %}
-                                                        {% for image in productProposalForm.vars.data.images %}
-                                                            <div class="image-preview">
-                                                                <img src="{{ asset('uploads/product_proposals/' ~ image) }}" alt="Image de proposition">
-                                                                <button type="button" class="remove-image" data-image="{{ image }}">
-                                                                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-                                                                </button>
-                                                            </div>
-                                                        {% endfor %}
-                                                    {% endif %}
-                                                    <label class="add-image-button" for="{{ productProposalForm.imageFiles.vars.id }}">
-                                                        <i data-lucide="plus" style="width: 24px; height: 24px; margin-bottom: 5px;"></i>
-                                                        <span>Ajouter</span>
-                                                    </label>
-                                                    {{ form_widget(productProposalForm.imageFiles) }}
-                                                </div>
+                    <div class="product-proposals-container" data-prototype="{{ form_widget(form.productProposals.vars.prototype)|e('html_attr') }}" data-index="{{ form.productProposals|length }}">
+                        {% if form.productProposals|length > 0 %}
+                            {% for productProposalForm in form.productProposals %}
+                                {% set pdata = productProposalForm.vars.data %}
+                                {% set qi = pdata ? pdata.quoteItem : null %}
+                                <div class="product-proposal-item mb-4">
+                                    <div class="product-proposal-heading d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-start gap-2">
+                                            <span class="product-proposal-dot" aria-hidden="true"></span>
+                                            <div>
+                                                <div class="product-proposal-title fw-semibold">Proposition #{{ loop.index }}</div>
+                                                <div class="product-proposal-subtitle text-muted small">{{ qi ? qi.productType : '' }}</div>
                                             </div>
                                         </div>
+                                        <button type="button" class="btn btn-outline-danger btn-sm product-proposal-remove remove-product-proposal">
+                                            <i data-lucide="trash-2"></i>
+                                            <span class="product-proposal-remove--label ms-1">Supprimer</span>
+                                        </button>
+                                    </div>
+                                    <div class="product-proposal-card border rounded bg-white">
+                                        {% include 'quote_offer/_product_proposal_fields.html.twig' %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="shipping-options-toolbar d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Options d'expédition</h5>
+                            <button type="button" class="btn btn-outline-primary rounded-circle btn-add-shipping p-0" id="add-shipping-option" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;" aria-label="Ajouter une option d'expédition">
+                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                            </button>
+                        </div>
+                        {% include 'quote_offer/_shipping_client_banner.html.twig' %}
+                        <div class="shipping-options-container" data-prototype="{{ include('quote_offer/_shipping_option_prototype.html.twig', { shippingOptionForm: form.shippingOptions.vars.prototype })|e('html_attr') }}" data-index="{{ form.shippingOptions|length }}">
+                            {% if form.shippingOptions|length > 0 %}
+                                {% for shippingOptionForm in form.shippingOptions %}
+                                    <div class="shipping-option-item">
+                                        {% include 'quote_offer/_shipping_option_card.html.twig' %}
                                     </div>
                                 {% endfor %}
                             {% else %}
                                 <div class="alert alert-info">
-                                    Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
+                                    Aucune option d'expédition ajoutée. Cliquez sur le bouton + pour commencer.
                                 </div>
                             {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="admin-card mb-4">
-                        <div class="admin-card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Options d'expédition</h5>
-                            <button type="button" class="btn btn-success rounded-circle p-0" id="add-shipping-option" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                            </button>
-                        </div>
-                        <div class="admin-card-body">
-                            {% if quote.shippingMethod|length > 0 %}
-                                <div class="alert alert-info mb-3">
-                                    <i data-lucide="info" class="me-1" style="width: 16px; height: 16px;"></i>
-                                    Le client a sélectionné les méthodes d'envoi suivantes : 
-                                    <strong>
-                                        {% set methodLabels = {
-                                            'maritime': 'Maritime',
-                                            'aerien_express': 'Aérien Express',
-                                            'aerien_normal': 'Aérien Standard'
-                                        } %}
-                                        {% for method in quote.shippingMethod %}
-                                            {{ methodLabels[method]|default(method) }}{% if not loop.last %}, {% endif %}
-                                        {% endfor %}
-                                    </strong>
-                                    <br>
-                                    <small>Les options d'expédition ont été pré-remplies selon ces choix. Vous pouvez ajuster les prix et détails si nécessaire.</small>
-                                </div>
-                            {% endif %}
-                            
-                            <!-- Conteneur pour les options d'expédition -->
-                            <div class="shipping-options-container" data-prototype="{{ form_widget(form.shippingOptions.vars.prototype)|e('html_attr') }}" data-index="{{ form.shippingOptions|length }}">
-                                {% if form.shippingOptions|length > 0 %}
-                                    {% for shippingOptionForm in form.shippingOptions %}
-                                        <div class="shipping-option-item admin-card mb-3">
-                                            <div class="admin-card-header bg-light d-flex justify-content-between">
-                                                <h6 class="mb-0">Option d'expédition #{{ loop.index }}</h6>
-                                                <button type="button" class="btn btn-sm btn-danger remove-shipping-option">
-                                                    <i data-lucide="trash-2"></i> Supprimer
-                                                </button>
-                                            </div>
-                                            <div class="admin-card-body">
-                                                {{ form_widget(shippingOptionForm) }}
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="alert alert-info">
-                                        Aucune option d'expédition ajoutée. Cliquez sur le bouton + pour commencer.
-                                    </div>
-                                {% endif %}
-                            </div>
                         </div>
                     </div>
 
@@ -308,9 +242,6 @@
                         <button type="submit" class="btn btn-primary">
                             <i data-lucide="save" class="me-2"></i> Enregistrer les modifications
                         </button>
-                    </div>
-                    <div class="d-none">
-                        {{ form_rest(form) }}
                     </div>
                     {{ form_end(form) }}
                 </div>
@@ -360,70 +291,15 @@
 
 {% block stylesheets %}
 {{ parent() }}
-<style>
-    .image-upload-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px;
-    }
-    
-    .image-preview {
-        position: relative;
-        width: 120px;
-        height: 120px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        overflow: hidden;
-    }
-    
-    .image-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .image-preview .remove-image {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-    }
-    
-    .add-image-button {
-        width: 120px;
-        height: 120px;
-        border: 2px dashed #ccc;
-        border-radius: 4px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: #666;
-        background: white;
-    }
-    
-    .add-image-button:hover {
-        border-color: #999;
-        color: #333;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/admin/product-proposal.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/shipping-option.css') }}">
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="{{ asset('js/exchange-rate.js') }}"></script>
+<script src="{{ asset('js/product-proposal-form.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialisation des tooltips
@@ -534,7 +410,7 @@
         
         // Code pour les propositions de produits
         let $productProposalsContainer = $('.product-proposals-container');
-        let productProposalIndex = $productProposalsContainer.data('index');
+        let productProposalIndex = parseInt($productProposalsContainer.data('index'), 10) || 0;
         
         // Événements pour afficher/masquer les descriptions
         $('.toggle-description').on('click', function(e) {
@@ -568,84 +444,102 @@
             }
         }
         
-        // Fonction pour ajouter une proposition de produit
         function addProductProposal(productId = null, productName = null) {
-            let prototype = $productProposalsContainer.data('prototype');
-            let newForm = prototype.replace(/__name__/g, productProposalIndex);
-            
-            // Titre personnalisé en fonction du produit sélectionné
-            const titleText = productName ? 'Proposition #' + (productProposalIndex + 1) + ': ' + productName : 'Proposition #' + (productProposalIndex + 1);
-            
-            let $newFormWrapper = $('<div class="product-proposal-item admin-card mb-3"></div>');
-            let $header = $('<div class="admin-card-header bg-light d-flex justify-content-between"></div>');
-            let $body = $('<div class="admin-card-body"></div>');
-            
-            $header.append('<h6 class="mb-0">' + titleText + '</h6>');
-            $header.append('<button type="button" class="btn btn-sm btn-danger remove-product-proposal"><i data-lucide="trash-2"></i> Supprimer</button>');
-            
-            // Créer une structure personnalisée pour le formulaire
-            let $formContent = $('<div></div>');
-            
-            // Ajouter le select pour le produit
-            let $quoteItemDiv = $('<div class="mb-3"></div>');
-            $quoteItemDiv.append($(newForm).find('[id$="_quoteItem"]').closest('.form-group'));
-            $formContent.append($quoteItemDiv);
-            
-            // Masquer le prix minimum
-            let $minPriceInput = $(newForm).find('[id$="_minPrice"]').closest('.col-md-6');
-            $minPriceInput.hide();
-            $formContent.append($minPriceInput);
-            
-            // Créer une ligne pour le prix max, dimensions et poids
-            let $detailsRow = $('<div class="row mb-3"></div>');
-            $detailsRow.append($(newForm).find('[id$="_maxPrice"]').closest('.col-md-6').removeClass('col-md-6').addClass('col-md-4'));
-            $detailsRow.append($(newForm).find('[id$="_dimensions"]').closest('.col-md-6').removeClass('col-md-6').addClass('col-md-4'));
-            $detailsRow.append($(newForm).find('[id$="_weight"]').closest('.col-md-6').removeClass('col-md-6').addClass('col-md-4'));
-            $formContent.append($detailsRow);
-            
-            // Ajouter les commentaires
-            let $commentsDiv = $('<div class="mb-3"></div>');
-            $commentsDiv.append($(newForm).find('[id$="_comments"]').closest('.form-group'));
-            $formContent.append($commentsDiv);
-            
-            // Ajouter les images
-            let $imagesDiv = $('<div class="mb-3"></div>');
-            let $imageInput = $(newForm).find('[id$="_imageFiles"]');
-            let $imageContainer = $('<div class="image-upload-container"></div>');
-            let $addButton = $('<label class="add-image-button"></label>').attr('for', $imageInput.attr('id'));
-            $addButton.html('<i data-lucide="plus" style="width: 24px; height: 24px; margin-bottom: 5px;"></i><span>Ajouter</span>');
-            
-            $imageContainer.append($addButton);
-            $imageContainer.append($imageInput);
-            $imagesDiv.append('<label class="form-label">Images</label>');
-            $imagesDiv.append($imageContainer);
-            $formContent.append($imagesDiv);
-            
-            $body.append($formContent);
-            $newFormWrapper.append($header);
-            $newFormWrapper.append($body);
-            
+            var prototype = $productProposalsContainer.data('prototype');
+            var newForm = prototype.replace(/__name__/g, productProposalIndex);
+            var wrap = document.createElement('div');
+            wrap.innerHTML = newForm.trim();
+            var $parsed = $(wrap);
+
+            var $fileInput = $parsed.find('[id$="_imageFiles"]');
+            var $imgGroup = $fileInput.closest('.product-proposal-field-images');
+            if (!$imgGroup.length) {
+                $imgGroup = $fileInput.closest('.mb-3');
+            }
+            var labelText = ($imgGroup.find('label').first().text() || '').trim() || 'Images du produit';
+            $imgGroup.empty();
+            $imgGroup.addClass('product-proposal-section');
+            $imgGroup.append($('<span class="form-label d-block"></span>').text(labelText));
+            var $dz = $('<div class="product-proposal-dropzone"></div>');
+            var $dzArea = $('<label class="product-proposal-dropzone-area mb-0"></label>').attr('for', $fileInput.attr('id'));
+            $dzArea.append('<i data-lucide="image" class="product-proposal-dropzone-icon"></i>');
+            $dzArea.append('<span class="product-proposal-dropzone-text">Glissez vos images ici ou <span class="text-primary">parcourir</span></span>');
+            $dzArea.append('<span class="product-proposal-dropzone-hint">PNG, JPG, WEBP — max 5 Mo par image</span>');
+            $dzArea.append($fileInput);
+            $dz.append($dzArea);
+            $dz.append('<div class="image-upload-container"></div>');
+            $imgGroup.append($dz);
+
+            var $quoteItem = $parsed.find('[id$="_quoteItem"]').closest('.product-proposal-field-quote-item, .mb-3');
+            $quoteItem.addClass('product-proposal-section');
+
+            var $minPrice = $parsed.find('[id$="_minPrice"]').closest('.d-none, .mb-3');
+            $minPrice.addClass('d-none');
+
+            var $maxPrice = $parsed.find('[id$="_maxPrice"]').closest('.product-proposal-field-price, .mb-3');
+            var $dimensions = $parsed.find('[id$="_dimensions"]').closest('.product-proposal-field-dimensions, .mb-3');
+            var $weight = $parsed.find('[id$="_weight"]').closest('.product-proposal-field-weight, .mb-3');
+            var $detailsRow = $('<div class="product-proposal-section py-3"><div class="row g-3 product-proposal-details-row"></div></div>');
+            $detailsRow.find('.row').append($maxPrice, $dimensions, $weight);
+
+            var $comments = $parsed.find('[id$="_comments"]').closest('.product-proposal-field-comments, .mb-3');
+            $comments.addClass('product-proposal-section');
+
+            var $removedBlock = $parsed.find('[id*="removedImages"]').first().closest('.d-none, .mb-3');
+            if (!$removedBlock.length) {
+                $removedBlock = $parsed.find('input[name*="removedImages"]').first().closest('.mb-3');
+            }
+            var $removedWrapper = $('<div class="d-none"></div>');
+            if ($removedBlock.length) {
+                $removedWrapper.append($removedBlock);
+            }
+
+            var $card = $('<div class="product-proposal-card border rounded bg-white"></div>');
+            $card.append($imgGroup);
+            $card.append('<hr class="product-proposal-divider my-0" />');
+            $card.append($quoteItem);
+            $card.append('<hr class="product-proposal-divider my-0" />');
+            $card.append($minPrice);
+            $card.append('<hr class="product-proposal-divider my-0" />');
+            $card.append($detailsRow);
+            $card.append('<hr class="product-proposal-divider my-0" />');
+            $card.append($comments);
+            $card.append($removedWrapper);
+
+            var titleNum = productProposalIndex + 1;
+            var $item = $('<div class="product-proposal-item mb-4"></div>');
+            var $heading = $('<div class="product-proposal-heading d-flex justify-content-between align-items-start mb-2"></div>');
+            var $left = $('<div class="d-flex align-items-start gap-2"></div>');
+            $left.append('<span class="product-proposal-dot" aria-hidden="true"></span>');
+            var $titles = $('<div></div>');
+            $titles.append('<div class="product-proposal-title fw-semibold">Proposition #' + titleNum + '</div>');
+            $titles.append('<div class="product-proposal-subtitle text-muted small"></div>');
+            $left.append($titles);
+            $heading.append($left);
+            $heading.append(
+                $('<button type="button" class="btn btn-outline-danger btn-sm product-proposal-remove remove-product-proposal"></button>')
+                    .append('<i data-lucide="trash-2"></i>')
+                    .append('<span class="product-proposal-remove--label ms-1">Supprimer</span>')
+            );
+            $item.append($heading);
+            $item.append($card);
+
             $('.alert', $productProposalsContainer).remove();
-            $productProposalsContainer.append($newFormWrapper);
-            
-            // Si un produit a été spécifié, sélectionner automatiquement le produit dans le select
+            $productProposalsContainer.append($item);
+
             if (productId !== null) {
-                const $select = $newFormWrapper.find('select[id$="_quoteItem"]');
-                const options = $select.find('option');
-                for (let i = 0; i < options.length; i++) {
-                    if (options[i].textContent.includes('#' + (productId + 1) + ' - ' + productName) && options[i].value) {
-                        $select.val(options[i].value);
-                        break;
+                var $select = $item.find('select[id$="_quoteItem"]');
+                $select.find('option').each(function () {
+                    if (this.textContent.indexOf('#' + (productId + 1) + ' - ' + productName) !== -1 && this.value) {
+                        $select.val(this.value);
+                        return false;
                     }
-                }
+                });
             }
-            
-            // Réinitialiser les icônes Lucide
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-            
+
             productProposalIndex++;
+            $productProposalsContainer.data('index', productProposalIndex);
+            initProductProposalBlocks($item[0]);
         }
         
         $('#add-product-proposal').click(function() {
@@ -654,60 +548,52 @@
         
         $(document).on('click', '.remove-product-proposal', function() {
             $(this).closest('.product-proposal-item').remove();
-            
+
             if ($('.product-proposal-item', $productProposalsContainer).length === 0) {
                 $productProposalsContainer.append('<div class="alert alert-info">Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.</div>');
             }
         });
+
+        initProductProposalBlocks(document);
         
-        // Code pour les options d'expédition
+        // Options d'expédition
         let $shippingOptionsContainer = $('.shipping-options-container');
-        let shippingOptionIndex = $shippingOptionsContainer.data('index');
-        
+        let shippingOptionIndex = parseInt($shippingOptionsContainer.data('index'), 10) || 0;
+
         $('#add-shipping-option').click(function() {
             let prototype = $shippingOptionsContainer.data('prototype');
             let newForm = prototype.replace(/__name__/g, shippingOptionIndex);
-            
-            let $newFormWrapper = $('<div class="shipping-option-item admin-card mb-3"></div>');
-            let $header = $('<div class="admin-card-header bg-light d-flex justify-content-between"></div>');
-            let $body = $('<div class="admin-card-body"></div>');
-            
-            $header.append('<h6 class="mb-0">Option d\'expédition #' + (shippingOptionIndex + 1) + '</h6>');
-            $header.append('<button type="button" class="btn btn-sm btn-danger remove-shipping-option"><i data-lucide="trash-2"></i> Supprimer</button>');
-            
-            $body.append(newForm);
-            $newFormWrapper.append($header);
-            $newFormWrapper.append($body);
-            
             $('.alert', $shippingOptionsContainer).remove();
-            $shippingOptionsContainer.append($newFormWrapper);
-            
+            $shippingOptionsContainer.append(newForm);
             shippingOptionIndex++;
             $shippingOptionsContainer.data('index', shippingOptionIndex);
-            
-            // Réinitialiser Lucide icons pour les nouveaux éléments
             lucide.createIcons();
-            
-            // Ajouter événement de suppression
-            $('.remove-shipping-option', $newFormWrapper).click(function() {
-                $(this).closest('.shipping-option-item').remove();
-                
-                if ($('.shipping-option-item', $shippingOptionsContainer).length === 0) {
-                    $shippingOptionsContainer.append('<div class="alert alert-info">Aucune option d\'expédition ajoutée. Cliquez sur le bouton + pour commencer.</div>');
-                }
-            });
         });
-        
+
         $(document).on('click', '.remove-shipping-option', function() {
             $(this).closest('.shipping-option-item').remove();
-            
+
             if ($('.shipping-option-item', $shippingOptionsContainer).length === 0) {
                 $shippingOptionsContainer.append('<div class="alert alert-info">Aucune option d\'expédition ajoutée. Cliquez sur le bouton + pour commencer.</div>');
             }
         });
 
+        function resolveImagePreviewContainer(input) {
+            var dz = input.closest('.product-proposal-dropzone');
+            if (dz) {
+                var el = dz.querySelector('.image-upload-container');
+                if (el) {
+                    return el;
+                }
+            }
+            return input.closest('.image-upload-container');
+        }
+
         // Gestion des images
         function handleImageUpload(input, container) {
+            if (!container) {
+                return;
+            }
             if (input.files && input.files.length > 0) {
                 Array.from(input.files).forEach(file => {
                     if (file.type.startsWith('image/')) {
@@ -722,9 +608,7 @@
                                 </button>
                             `;
                             
-                            // Insérer avant le bouton d'ajout
-                            const addButton = container.querySelector('.add-image-button');
-                            container.insertBefore(preview, addButton);
+                            container.appendChild(preview);
                             
                             // Réinitialiser les icônes Lucide
                             if (typeof lucide !== 'undefined') {
@@ -755,8 +639,7 @@
         
         // Gérer l'upload d'images pour les formulaires existants et nouveaux
         $(document).on('change', '.image-upload-input', function() {
-            const container = this.closest('.image-upload-container');
-            handleImageUpload(this, container);
+            handleImageUpload(this, resolveImagePreviewContainer(this));
         });
         
         // Gérer la suppression d'images existantes

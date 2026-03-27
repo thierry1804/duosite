@@ -1,0 +1,49 @@
+{# Champs d'une proposition (carte blanche) — utilisé en création et édition #}
+{% set pdata = productProposalForm.vars.data %}
+{% set qi = pdata ? pdata.quoteItem : null %}
+<div class="product-proposal-section">
+    <span class="form-label d-block">{{ productProposalForm.imageFiles.vars.label }}</span>
+    <div class="product-proposal-dropzone">
+        <label for="{{ productProposalForm.imageFiles.vars.id }}" class="product-proposal-dropzone-area mb-0">
+            <i data-lucide="image" class="product-proposal-dropzone-icon"></i>
+            <span class="product-proposal-dropzone-text">Glissez vos images ici ou <span class="text-primary">parcourir</span></span>
+            <span class="product-proposal-dropzone-hint">PNG, JPG, WEBP — max 5 Mo par image</span>
+            {{ form_widget(productProposalForm.imageFiles) }}
+        </label>
+        <div class="image-upload-container">
+            {% if pdata and pdata.images|length > 0 %}
+                {% for image in pdata.images %}
+                    <div class="image-preview">
+                        <img src="{{ asset('uploads/product_proposals/' ~ image) }}" alt="">
+                        <button type="button" class="remove-image" data-image="{{ image }}">
+                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    {{ form_errors(productProposalForm.imageFiles) }}
+</div>
+<hr class="product-proposal-divider my-0">
+<div class="product-proposal-section">
+    {{ form_row(productProposalForm.quoteItem) }}
+</div>
+<div class="d-none">
+    {{ form_widget(productProposalForm.minPrice) }}
+</div>
+<hr class="product-proposal-divider my-0">
+<div class="product-proposal-section py-3">
+    <div class="row g-3 product-proposal-details-row">
+        {{ form_row(productProposalForm.maxPrice) }}
+        {{ form_row(productProposalForm.dimensions) }}
+        {{ form_row(productProposalForm.weight) }}
+    </div>
+</div>
+<hr class="product-proposal-divider my-0">
+<div class="product-proposal-section">
+    {{ form_row(productProposalForm.comments) }}
+</div>
+<div class="d-none">
+    {{ form_widget(productProposalForm.removedImages) }}
+</div>

@@ -4,31 +4,8 @@
 
 {% block stylesheets %}
 {{ parent() }}
-<style>
-    /* Styles pour l'alignement des champs de formulaire */
-    .admin-card-body .row {
-        display: flex;
-        flex-wrap: wrap;
-        margin-right: -5px;
-        margin-left: -5px;
-    }
-    
-    .admin-card-body .row:before,
-    .admin-card-body .row:after {
-        display: none;
-    }
-    
-    /* Améliorer l'espacement entre les champs */
-    .form-group {
-        margin-bottom: 1rem;
-    }
-    
-    /* S'assurer que les labels s'alignent correctement */
-    .col-md-6 label {
-        display: block;
-        width: 100%;
-    }
-</style>
+<link rel="stylesheet" href="{{ asset('css/admin/product-proposal.css') }}">
+<link rel="stylesheet" href="{{ asset('css/admin/shipping-option.css') }}">
 {% endblock %}
 
 {% block breadcrumb %}
@@ -152,91 +129,63 @@
                     
                     {{ form_row(form.description) }}
 
-                    <div class="admin-card mt-4 mb-4">
-                        <div class="admin-card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Propositions de produits</h5>
-                            <div>
-                                <button type="button" class="btn btn-success rounded-circle p-0" id="add-product-proposal" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                                    <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                                </button>
-                            </div>
-                        </div>
+                    <div class="mt-4 mb-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Propositions de produits</h5>
+                        <button type="button" class="btn btn-success rounded-circle p-0" id="add-product-proposal" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;" aria-label="Ajouter une proposition">
+                            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                        </button>
                     </div>
-                    <div class="admin-card-body">
-                        <!-- Conteneur pour les propositions de produits -->
-                        <div class="product-proposals-container" data-prototype="{{ form_widget(form.productProposals.vars.prototype)|e('html_attr') }}" data-index="{{ form.productProposals|length }}">
-                            {% if form.productProposals|length > 0 %}
-                                {% for productProposalForm in form.productProposals %}
-                                    <div class="product-proposal-item admin-card mb-3">
-                                        <div class="admin-card-header bg-light d-flex justify-content-between">
-                                            <h6 class="mb-0">Proposition #{{ loop.index }}</h6>
-                                            <button type="button" class="btn btn-sm btn-danger remove-product-proposal">
-                                                <i data-lucide="trash-2"></i> Supprimer
-                                            </button>
-                                        </div>
-                                        <div class="admin-card-body">
-                                            <div class="row form-row">
-                                                {{ form_widget(productProposalForm) }}
+                    <div class="product-proposals-container" data-prototype="{{ form_widget(form.productProposals.vars.prototype)|e('html_attr') }}" data-index="{{ form.productProposals|length }}">
+                        {% if form.productProposals|length > 0 %}
+                            {% for productProposalForm in form.productProposals %}
+                                {% set pdata = productProposalForm.vars.data %}
+                                {% set qi = pdata ? pdata.quoteItem : null %}
+                                <div class="product-proposal-item mb-4">
+                                    <div class="product-proposal-heading d-flex justify-content-between align-items-start mb-2">
+                                        <div class="d-flex align-items-start gap-2">
+                                            <span class="product-proposal-dot" aria-hidden="true"></span>
+                                            <div>
+                                                <div class="product-proposal-title fw-semibold">Proposition #{{ loop.index }}</div>
+                                                <div class="product-proposal-subtitle text-muted small">{{ qi ? qi.productType : '' }}</div>
                                             </div>
                                         </div>
+                                        <button type="button" class="btn btn-outline-danger btn-sm product-proposal-remove remove-product-proposal">
+                                            <i data-lucide="trash-2"></i>
+                                            <span class="product-proposal-remove--label ms-1">Supprimer</span>
+                                        </button>
+                                    </div>
+                                    <div class="product-proposal-card border rounded bg-white">
+                                        {% include 'quote_offer/_product_proposal_fields.html.twig' %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-info">
+                                Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="shipping-options-toolbar d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Options d'expédition</h5>
+                            <button type="button" class="btn btn-outline-primary rounded-circle btn-add-shipping p-0" id="add-shipping-option" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;" aria-label="Ajouter une option d'expédition">
+                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                            </button>
+                        </div>
+                        {% include 'quote_offer/_shipping_client_banner.html.twig' %}
+                        <div class="shipping-options-container" data-prototype="{{ include('quote_offer/_shipping_option_prototype.html.twig', { shippingOptionForm: form.shippingOptions.vars.prototype })|e('html_attr') }}" data-index="{{ form.shippingOptions|length }}">
+                            {% if form.shippingOptions|length > 0 %}
+                                {% for shippingOptionForm in form.shippingOptions %}
+                                    <div class="shipping-option-item">
+                                        {% include 'quote_offer/_shipping_option_card.html.twig' %}
                                     </div>
                                 {% endfor %}
                             {% else %}
                                 <div class="alert alert-info">
-                                    Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
+                                    Aucune option d'expédition ajoutée. Cliquez sur le bouton + pour commencer.
                                 </div>
                             {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="admin-card mb-4">
-                        <div class="admin-card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Options d'expédition</h5>
-                            <button type="button" class="btn btn-success rounded-circle p-0" id="add-shipping-option" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
-                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                            </button>
-                        </div>
-                        <div class="admin-card-body">
-                            {% if quote.shippingMethod|length > 0 %}
-                                <div class="alert alert-info mb-3">
-                                    <i data-lucide="info" class="me-1" style="width: 16px; height: 16px;"></i>
-                                    Le client a sélectionné les méthodes d'envoi suivantes : 
-                                    <strong>
-                                        {% set methodLabels = {
-                                            'maritime': 'Maritime',
-                                            'aerien_express': 'Aérien Express',
-                                            'aerien_normal': 'Aérien Standard'
-                                        } %}
-                                        {% for method in quote.shippingMethod %}
-                                            {{ methodLabels[method]|default(method) }}{% if not loop.last %}, {% endif %}
-                                        {% endfor %}
-                                    </strong>
-                                    <br>
-                                    <small>Les options d'expédition ont été pré-remplies selon ces choix. Vous pouvez ajuster les prix et détails si nécessaire.</small>
-                                </div>
-                            {% endif %}
-                            <!-- Conteneur pour les options d'expédition -->
-                            <div class="shipping-options-container" data-prototype="{{ form_widget(form.shippingOptions.vars.prototype)|e('html_attr') }}" data-index="{{ form.shippingOptions|length }}">
-                                {% if form.shippingOptions|length > 0 %}
-                                    {% for shippingOptionForm in form.shippingOptions %}
-                                        <div class="shipping-option-item admin-card mb-3">
-                                            <div class="admin-card-header bg-light d-flex justify-content-between">
-                                                <h6 class="mb-0">Option d'expédition #{{ loop.index }}</h6>
-                                                <button type="button" class="btn btn-sm btn-danger remove-shipping-option">
-                                                    <i data-lucide="trash-2"></i> Supprimer
-                                                </button>
-                                            </div>
-                                            <div class="admin-card-body">
-                                                {{ form_widget(shippingOptionForm) }}
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="alert alert-info">
-                                        Aucune option d'expédition ajoutée. Cliquez sur le bouton + pour commencer.
-                                    </div>
-                                {% endif %}
-                            </div>
                         </div>
                     </div>
 
@@ -273,13 +222,11 @@
 
 {% block javascripts %}
 {{ parent() }}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="{{ asset('js/exchange-rate.js') }}"></script>
+<script src="{{ asset('js/product-proposal-form.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Correction de l'alignement des champs
-    document.querySelectorAll('.col-md-6').forEach(col => {
-        col.style.float = 'left';
-    });
     
     // Initialisation des tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -374,10 +321,6 @@ document.addEventListener('DOMContentLoaded', function() {
         paragraph.innerHTML = linkedContent;
     });
     
-    // Gestion des propositions de produits
-    const proposalsContainer = document.querySelector('.product-proposals-container');
-    let proposalIndex = parseInt(proposalsContainer.dataset.index);
-    
     // Événements pour afficher/masquer les descriptions
     document.querySelectorAll('.toggle-description').forEach(button => {
         button.addEventListener('click', function(e) {
@@ -391,192 +334,229 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
-    // Génération automatique des propositions au chargement de la page
-    // Vérifier s'il n'y a pas déjà des propositions
-    if (proposalsContainer.children.length === 0 || 
-        (proposalsContainer.children.length === 1 && proposalsContainer.querySelector('.alert'))) {
-        // Récupérer tous les produits demandés
-        const quoteItems = document.querySelectorAll('.list-group-item');
-        
-        // Générer une proposition pour chaque produit
-        if (quoteItems.length > 0) {
-            // Vider les alertes si présentes
-            if (proposalsContainer.querySelector('.alert')) {
-                proposalsContainer.innerHTML = '';
-            }
-            
-            quoteItems.forEach(function(item, index) {
-                const productName = item.querySelector('strong').textContent;
-                const productId = index; // Utiliser l'index comme ID temporaire
-                
-                // Créer une nouvelle proposition
-                addProductProposal(productId, productName);
+
+    // Gestion des propositions de produits
+    const $productProposalsContainer = $('.product-proposals-container');
+    let proposalIndex = parseInt($productProposalsContainer.data('index'), 10) || 0;
+
+    function addProductProposal(productId = null, productName = null) {
+        var prototype = $productProposalsContainer.data('prototype');
+        var newForm = prototype.replace(/__name__/g, proposalIndex);
+        var wrap = document.createElement('div');
+        wrap.innerHTML = newForm.trim();
+        var $parsed = $(wrap);
+
+        var $fileInput = $parsed.find('[id$="_imageFiles"]');
+        var $imgGroup = $fileInput.closest('.product-proposal-field-images');
+        if (!$imgGroup.length) {
+            $imgGroup = $fileInput.closest('.mb-3');
+        }
+        var labelText = ($imgGroup.find('label').first().text() || '').trim() || 'Images du produit';
+        $imgGroup.empty();
+        $imgGroup.addClass('product-proposal-section');
+        $imgGroup.append($('<span class="form-label d-block"></span>').text(labelText));
+        var $dz = $('<div class="product-proposal-dropzone"></div>');
+        var $dzArea = $('<label class="product-proposal-dropzone-area mb-0"></label>').attr('for', $fileInput.attr('id'));
+        $dzArea.append('<i data-lucide="image" class="product-proposal-dropzone-icon"></i>');
+        $dzArea.append('<span class="product-proposal-dropzone-text">Glissez vos images ici ou <span class="text-primary">parcourir</span></span>');
+        $dzArea.append('<span class="product-proposal-dropzone-hint">PNG, JPG, WEBP — max 5 Mo par image</span>');
+        $dzArea.append($fileInput);
+        $dz.append($dzArea);
+        $dz.append('<div class="image-upload-container"></div>');
+        $imgGroup.append($dz);
+
+        var $quoteItem = $parsed.find('[id$="_quoteItem"]').closest('.product-proposal-field-quote-item, .mb-3');
+        $quoteItem.addClass('product-proposal-section');
+
+        var $minPrice = $parsed.find('[id$="_minPrice"]').closest('.d-none, .mb-3');
+        $minPrice.addClass('d-none');
+
+        var $maxPrice = $parsed.find('[id$="_maxPrice"]').closest('.product-proposal-field-price, .mb-3');
+        var $dimensions = $parsed.find('[id$="_dimensions"]').closest('.product-proposal-field-dimensions, .mb-3');
+        var $weight = $parsed.find('[id$="_weight"]').closest('.product-proposal-field-weight, .mb-3');
+        var $detailsRow = $('<div class="product-proposal-section py-3"><div class="row g-3 product-proposal-details-row"></div></div>');
+        $detailsRow.find('.row').append($maxPrice, $dimensions, $weight);
+
+        var $comments = $parsed.find('[id$="_comments"]').closest('.product-proposal-field-comments, .mb-3');
+        $comments.addClass('product-proposal-section');
+
+        var $removedBlock = $parsed.find('[id*="removedImages"]').first().closest('.d-none, .mb-3');
+        if (!$removedBlock.length) {
+            $removedBlock = $parsed.find('input[name*="removedImages"]').first().closest('.mb-3');
+        }
+        var $removedWrapper = $('<div class="d-none"></div>');
+        if ($removedBlock.length) {
+            $removedWrapper.append($removedBlock);
+        }
+
+        var $card = $('<div class="product-proposal-card border rounded bg-white"></div>');
+        $card.append($imgGroup);
+        $card.append('<hr class="product-proposal-divider my-0" />');
+        $card.append($quoteItem);
+        $card.append('<hr class="product-proposal-divider my-0" />');
+        $card.append($minPrice);
+        $card.append('<hr class="product-proposal-divider my-0" />');
+        $card.append($detailsRow);
+        $card.append('<hr class="product-proposal-divider my-0" />');
+        $card.append($comments);
+        $card.append($removedWrapper);
+
+        var titleNum = proposalIndex + 1;
+        var $item = $('<div class="product-proposal-item mb-4"></div>');
+        var $heading = $('<div class="product-proposal-heading d-flex justify-content-between align-items-start mb-2"></div>');
+        var $left = $('<div class="d-flex align-items-start gap-2"></div>');
+        $left.append('<span class="product-proposal-dot" aria-hidden="true"></span>');
+        var $titles = $('<div></div>');
+        $titles.append('<div class="product-proposal-title fw-semibold">Proposition #' + titleNum + '</div>');
+        $titles.append('<div class="product-proposal-subtitle text-muted small"></div>');
+        $left.append($titles);
+        $heading.append($left);
+        $heading.append(
+            $('<button type="button" class="btn btn-outline-danger btn-sm product-proposal-remove remove-product-proposal"></button>')
+                .append('<i data-lucide="trash-2"></i>')
+                .append('<span class="product-proposal-remove--label ms-1">Supprimer</span>')
+        );
+        $item.append($heading);
+        $item.append($card);
+
+        $('.alert', $productProposalsContainer).remove();
+        $productProposalsContainer.append($item);
+
+        if (productId !== null) {
+            var $select = $item.find('select[id$="_quoteItem"]');
+            $select.find('option').each(function () {
+                if (this.textContent.indexOf('#' + (productId + 1) + ' - ' + productName) !== -1 && this.value) {
+                    $select.val(this.value);
+                    return false;
+                }
             });
         }
+
+        proposalIndex++;
+        $productProposalsContainer.data('index', proposalIndex);
+        initProductProposalBlocks($item[0]);
     }
-    
-    document.getElementById('add-product-proposal').addEventListener('click', function(e) {
+
+    document.getElementById('add-product-proposal').addEventListener('click', function (e) {
         e.preventDefault();
         addProductProposal();
     });
-    
-    function addProductProposal(productId = null, productName = null) {
-        // Obtenir et préparer le prototype
-        let prototype = proposalsContainer.dataset.prototype;
-        prototype = prototype.replace(/__name__/g, proposalIndex);
-        
-        // Créer l'élément de proposition
-        const proposalItem = document.createElement('div');
-        proposalItem.className = 'product-proposal-item admin-card mb-3';
-        
-        // Titre personnalisé en fonction du produit sélectionné
-        const titleText = productName ? `Proposition #${proposalIndex + 1}: ${productName}` : `Proposition #${proposalIndex + 1}`;
-        
-        proposalItem.innerHTML = `
-            <div class="admin-card-header bg-light d-flex justify-content-between">
-                <h6 class="mb-0">${titleText}</h6>
-                <button type="button" class="btn btn-sm btn-danger remove-product-proposal">
-                    <i data-lucide="trash-2"></i> Supprimer
-                </button>
-            </div>
-            <div class="admin-card-body">
-                <div class="row form-row">
-                    ${prototype}
-                </div>
-            </div>
-        `;
-        
-        // Ajouter l'élément à la liste
-        if (proposalsContainer.querySelector('.alert')) {
-            proposalsContainer.innerHTML = '';
+
+    $(document).on('click', '.remove-product-proposal', function () {
+        $(this).closest('.product-proposal-item').remove();
+        if ($('.product-proposal-item', $productProposalsContainer).length === 0) {
+            $productProposalsContainer.append(
+                '<div class="alert alert-info">Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.</div>'
+            );
         }
-        proposalsContainer.appendChild(proposalItem);
-        
-        // Après ajout, trouver les champs par paires et ajuster leurs propriétés
-        setTimeout(() => {
-            const formGroups = proposalItem.querySelectorAll('.form-group');
-            
-            // S'assurer que les paires de champs soient correctement alignées
-            proposalItem.querySelectorAll('.col-md-6').forEach(col => {
-                col.style.float = 'left';
-            });
-            
-            // Si un produit a été spécifié, sélectionner automatiquement le produit dans le select
-            if (productId !== null) {
-                // Trouver le select de quoteItem et définir sa valeur
-                const selects = proposalItem.querySelectorAll('select');
-                const quoteItemSelect = Array.from(selects).find(select => select.name.includes('[quoteItem]'));
-                if (quoteItemSelect) {
-                    // Trouver l'option correspondant au produit (maintenant avec #N - préfixe)
-                    const options = quoteItemSelect.querySelectorAll('option');
-                    for (let i = 0; i < options.length; i++) {
-                        // Chercher le texte original du produit dans l'option (après le préfixe #N - )
-                        if (options[i].textContent.includes('#' + (productId + 1) + ' - ' + productName) && options[i].value) {
-                            quoteItemSelect.selectedIndex = i;
-                            break;
-                        }
-                    }
-                }
+    });
+
+    function resolveImagePreviewContainer(input) {
+        var dz = input.closest('.product-proposal-dropzone');
+        if (dz) {
+            var el = dz.querySelector('.image-upload-container');
+            if (el) {
+                return el;
             }
-                
-            // Réinitialiser les icônes Lucide
+        }
+        return input.closest('.image-upload-container');
+    }
+
+    function handleImageUpload(input, container) {
+        if (!container) {
+            return;
+        }
+        if (input.files && input.files.length > 0) {
+            Array.from(input.files).forEach(function (file) {
+                if (file.type.startsWith('image/')) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        var preview = document.createElement('div');
+                        preview.className = 'image-preview temp';
+                        preview.innerHTML =
+                            '<img src="' +
+                            e.target.result +
+                            '" alt="">' +
+                            '<button type="button" class="remove-image"><i data-lucide="x" style="width: 16px; height: 16px;"></i></button>';
+                        container.appendChild(preview);
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                        preview.querySelector('.remove-image').addEventListener('click', function () {
+                            preview.remove();
+                            var dt = new DataTransfer();
+                            var files = input.files;
+                            for (var i = 0; i < files.length; i++) {
+                                if (files[i] !== file) {
+                                    dt.items.add(files[i]);
+                                }
+                            }
+                            input.files = dt.files;
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    }
+
+    $(document).on('change', '.image-upload-input', function () {
+        handleImageUpload(this, resolveImagePreviewContainer(this));
+    });
+
+    initProductProposalBlocks(document);
+
+    const proposalsContainer = document.querySelector('.product-proposals-container');
+    if (proposalsContainer && (proposalsContainer.children.length === 0 ||
+        (proposalsContainer.children.length === 1 && proposalsContainer.querySelector('.alert')))) {
+        const quoteItems = document.querySelectorAll('.list-group-item');
+        if (quoteItems.length > 0) {
+            if (proposalsContainer.querySelector('.alert')) {
+                proposalsContainer.innerHTML = '';
+            }
+            quoteItems.forEach(function (item, index) {
+                const productName = item.querySelector('strong').textContent;
+                addProductProposal(index, productName);
+            });
+        }
+    }
+
+    // Gestion des options d'expédition
+    const shippingContainer = document.querySelector('.shipping-options-container');
+    if (shippingContainer) {
+        let shippingIndex = parseInt(shippingContainer.dataset.index, 10) || 0;
+
+        document.getElementById('add-shipping-option').addEventListener('click', function (e) {
+            e.preventDefault();
+            let prototype = shippingContainer.dataset.prototype;
+            prototype = prototype.replace(/__name__/g, shippingIndex);
+            if (shippingContainer.querySelector('.alert')) {
+                shippingContainer.innerHTML = '';
+            }
+            shippingContainer.insertAdjacentHTML('beforeend', prototype);
+            shippingIndex += 1;
+            shippingContainer.dataset.index = String(shippingIndex);
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
-        }, 10);
-        
-        // Ajouter l'événement de suppression
-        proposalItem.querySelector('.remove-product-proposal').addEventListener('click', function() {
-            proposalItem.remove();
-            if (proposalsContainer.children.length === 0) {
-                proposalsContainer.innerHTML = `
-                    <div class="alert alert-info">
-                        Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
-                    </div>
-                `;
+        });
+
+        document.addEventListener('click', function (e) {
+            const removeBtn = e.target.closest('.remove-shipping-option');
+            if (!removeBtn || !shippingContainer.contains(removeBtn)) {
+                return;
+            }
+            e.preventDefault();
+            const item = removeBtn.closest('.shipping-option-item');
+            if (item) {
+                item.remove();
+            }
+            if (shippingContainer.querySelectorAll('.shipping-option-item').length === 0) {
+                shippingContainer.innerHTML =
+                    '<div class="alert alert-info">Aucune option d\'expédition ajoutée. Cliquez sur le bouton + pour commencer.</div>';
             }
         });
-        
-        proposalIndex++;
     }
-    
-    // Ajouter des événements de suppression pour les propositions existantes
-    document.querySelectorAll('.remove-product-proposal').forEach(button => {
-        button.addEventListener('click', function() {
-            const item = this.closest('.product-proposal-item');
-            item.remove();
-            if (proposalsContainer.children.length === 0) {
-                proposalsContainer.innerHTML = `
-                    <div class="alert alert-info">
-                        Aucune proposition de produit ajoutée. Cliquez sur le bouton + pour commencer.
-                    </div>
-                `;
-            }
-        });
-    });
-    
-    // Gestion des options d'expédition
-    const shippingContainer = document.querySelector('.shipping-options-container');
-    let shippingIndex = parseInt(shippingContainer.dataset.index);
-    
-    document.getElementById('add-shipping-option').addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        // Obtenir et préparer le prototype
-        let prototype = shippingContainer.dataset.prototype;
-        prototype = prototype.replace(/__name__/g, shippingIndex);
-        
-        // Créer l'élément d'option d'expédition
-        const shippingItem = document.createElement('div');
-        shippingItem.className = 'shipping-option-item admin-card mb-3';
-        shippingItem.innerHTML = `
-            <div class="admin-card-header bg-light d-flex justify-content-between">
-                <h6 class="mb-0">Option d'expédition #${shippingIndex + 1}</h6>
-                <button type="button" class="btn btn-sm btn-danger remove-shipping-option">
-                    <i data-lucide="trash-2"></i> Supprimer
-                </button>
-            </div>
-            <div class="admin-card-body">
-                ${prototype}
-            </div>
-        `;
-        
-        // Ajouter l'élément à la liste
-        if (shippingContainer.querySelector('.alert')) {
-            shippingContainer.innerHTML = '';
-        }
-        shippingContainer.appendChild(shippingItem);
-        
-        // Ajouter l'événement de suppression
-        shippingItem.querySelector('.remove-shipping-option').addEventListener('click', function() {
-            shippingItem.remove();
-            if (shippingContainer.children.length === 0) {
-                shippingContainer.innerHTML = `
-                    <div class="alert alert-info">
-                        Aucune option d'expédition ajoutée. Cliquez sur le bouton + pour commencer.
-                    </div>
-                `;
-            }
-        });
-        
-        shippingIndex++;
-    });
-    
-    // Ajouter des événements de suppression pour les options d'expédition existantes
-    document.querySelectorAll('.remove-shipping-option').forEach(button => {
-        button.addEventListener('click', function() {
-            const item = this.closest('.shipping-option-item');
-            item.remove();
-            if (shippingContainer.children.length === 0) {
-                shippingContainer.innerHTML = `
-                    <div class="alert alert-info">
-                        Aucune option d'expédition ajoutée. Cliquez sur le bouton + pour commencer.
-                    </div>
-                `;
-            }
-        });
-    });
 });
 </script>
 {% endblock %} 

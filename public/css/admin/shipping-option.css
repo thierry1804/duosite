@@ -1,0 +1,117 @@
+/* Options d'expédition — création / édition d'offre */
+.shipping-option-card {
+    border-color: #dee2e6 !important;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    background: #fff;
+}
+
+.shipping-option-card__head {
+    padding-bottom: 0;
+}
+
+.shipping-option-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 999px;
+    flex-shrink: 0;
+}
+
+.shipping-option-badge--express {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+.shipping-option-badge--standard {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.shipping-option-badge--neutral {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.shipping-option-name-input {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #212529;
+    border: none !important;
+    background: transparent !important;
+    padding-left: 0 !important;
+    padding-top: 0.125rem !important;
+    padding-bottom: 0.125rem !important;
+    box-shadow: none !important;
+    min-width: 0;
+}
+
+.shipping-option-name-input:focus {
+    outline: none;
+    box-shadow: none !important;
+}
+
+.shipping-option-card__desc .shipping-option-desc-input {
+    width: 100%;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    border: none;
+    background: #f1f3f5;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    resize: vertical;
+    color: #343a40;
+}
+
+.shipping-option-card__desc .shipping-option-desc-input:focus {
+    background: #e9ecef;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.2);
+}
+
+.shipping-option-card__fields .form-label {
+    font-size: 0.8125rem;
+    color: #6c757d;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+}
+
+.shipping-option-card__fields .input-group-text {
+    background: #e9ecef;
+    color: #495057;
+    font-size: 0.875rem;
+}
+
+.shipping-options-toolbar .btn-add-shipping {
+    width: 28px;
+    height: 28px;
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.shipping-options-toolbar .btn-add-shipping:hover {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.shipping-info-banner {
+    background: rgba(13, 202, 240, 0.12);
+    border: 1px solid rgba(13, 202, 240, 0.35);
+    color: #055160;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+}
+
+.shipping-info-banner .shipping-info-icon {
+    color: #0dcaf0;
+    flex-shrink: 0;
+}
+
+@media (max-width: 767.98px) {
+    .shipping-option-remove {
+        border-radius: 50%;
+    }
+}

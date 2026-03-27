@@ -284,7 +284,7 @@
                         <td>{{ option.name }}</td>
                         <td>{{ (option.description ?: 'Aucune description')|nl2br }}</td>
                         <td>{{ option.estimatedDeliveryDays ? option.estimatedDeliveryDays ~ ' jours' : 'Non défini' }}</td>
-                        <td>{{ option.price|number_format(2, ',', ' ') }} Ar</td>
+                        <td>{{ option.price|number_format(2, ',', ' ') }} USD</td>
                     </tr>
                     {% endfor %}
                 </tbody>

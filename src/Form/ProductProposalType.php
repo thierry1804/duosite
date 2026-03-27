@@ -22,21 +22,37 @@ class ProductProposalType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('imageFiles', FileType::class, [
+                'label' => 'Images du produit',
+                'multiple' => true,
+                'required' => false,
+                'mapped' => true,
+                'attr' => [
+                    'class' => 'form-control image-upload-input product-proposal-file-input',
+                    'accept' => 'image/png,image/jpeg,image/jpg,image/webp,image/gif',
+                ],
+                'row_attr' => [
+                    'class' => 'col-12 mb-0 product-proposal-field-images',
+                ],
+            ])
             ->add('quoteItem', EntityType::class, [
                 'label' => 'Produit / Article',
                 'class' => QuoteItem::class,
                 'choice_label' => function (QuoteItem $quoteItem) {
                     static $counter = 0;
                     $counter++;
-                    return '#' . $counter . ' - ' . $quoteItem->getProductType() . ' - ' . substr($quoteItem->getDescription(), 0, 50) . 
+                    return '#' . $counter . ' - ' . $quoteItem->getProductType() . ' - ' . substr($quoteItem->getDescription(), 0, 50) .
                            (strlen($quoteItem->getDescription()) > 50 ? '...' : '');
                 },
                 'placeholder' => 'Sélectionnez un produit',
                 'choices' => $options['quote_items'],
                 'required' => true,
                 'attr' => [
-                    'class' => 'form-select product-select'
-                ]
+                    'class' => 'form-select product-select product-proposal-quote-item',
+                ],
+                'row_attr' => [
+                    'class' => 'col-12 mb-0 product-proposal-field-quote-item',
+                ],
             ])
             ->add('minPrice', MoneyType::class, [
                 'label' => 'Prix minimum (RMB)',
@@ -44,45 +60,45 @@ class ProductProposalType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => '13.00'
+                    'placeholder' => '13.00',
                 ],
                 'row_attr' => [
-                    'class' => 'col-md-6'
-                ]
+                    'class' => 'd-none',
+                ],
             ])
             ->add('maxPrice', MoneyType::class, [
-                'label' => 'PU',
+                'label' => 'Prix fournisseur',
                 'currency' => 'RMB',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => '130.00'
+                    'placeholder' => '13.00',
                 ],
                 'row_attr' => [
-                'class' => 'col-md-12'
-                ]
+                    'class' => 'col-12 col-md-4 mb-0 product-proposal-field-price',
+                ],
             ])
             ->add('dimensions', TextType::class, [
                 'label' => 'Dimensions / Taille',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Ex: 10cm x 15cm x 5cm; S, M, L, XL, etc.'
+                    'placeholder' => 'Ex: 10cm x 15cm x 5cm',
                 ],
                 'row_attr' => [
-                    'class' => 'col-md-12'
-                ]
+                    'class' => 'col-12 col-md-4 mb-0 product-proposal-field-dimensions',
+                ],
             ])
             ->add('weight', NumberType::class, [
-                'label' => 'Poids (g)',
+                'label' => 'Poids',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => '190'
+                    'placeholder' => '190',
                 ],
                 'row_attr' => [
-                    'class' => 'col-md-12'
-                ]
+                    'class' => 'col-12 col-md-4 mb-0 product-proposal-field-weight',
+                ],
             ])
             ->add('comments', TextareaType::class, [
                 'label' => 'Infos complémentaires',
@@ -90,22 +106,11 @@ class ProductProposalType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'rows' => 3,
-                    'placeholder' => 'j lkjlkjlkjhlkhl'
-                ]
-            ])
-            ->add('imageFiles', FileType::class, [
-                'label' => 'Images',
-                'multiple' => true,
-                'required' => false,
-                'mapped' => true,
-                'attr' => [
-                    'class' => 'form-control image-upload-input',
-                    'accept' => 'image/*',
-                    'style' => 'display: none;'
+                    'placeholder' => 'Matériaux, couleurs, particularités...',
                 ],
                 'row_attr' => [
-                    'class' => 'image-upload-container'
-                ]
+                    'class' => 'col-12 mb-0 product-proposal-field-comments',
+                ],
             ])
             ->add('removedImages', CollectionType::class, [
                 'entry_type' => HiddenType::class,
@@ -113,6 +118,9 @@ class ProductProposalType extends AbstractType
                 'mapped' => false,
                 'required' => false,
                 'prototype' => true,
+                'row_attr' => [
+                    'class' => 'd-none',
+                ],
             ])
         ;
     }

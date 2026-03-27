@@ -8,10 +8,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Form\FormView;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 
 class ShippingOptionType extends AbstractType
 {
@@ -19,55 +17,41 @@ class ShippingOptionType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'label' => 'Nom du mode d\'expédition',
+                'label' => false,
                 'attr' => [
-                    'class' => 'form-control',
-                    'placeholder' => 'Ex: Standard, Express, Premium...'
-                ]
+                    'class' => 'form-control shipping-option-name-input',
+                    'placeholder' => 'Ex. Aérien Express',
+                ],
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Description',
+                'label' => false,
                 'required' => false,
                 'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 2,
-                    'placeholder' => 'Description détaillée du mode d\'expédition'
-                ]
+                    'class' => 'form-control shipping-option-desc-input',
+                    'rows' => 3,
+                    'placeholder' => '',
+                ],
             ])
             ->add('estimatedDeliveryDays', IntegerType::class, [
-                'label' => 'Délai max de livraison (jours)',
+                'label' => 'Délai max de livraison',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Délai en jours',
-                    'min' => 1
+                    'min' => 1,
                 ],
-                'row_attr' => [
-                    'class' => 'col-md-6 mb-3'
-                ]
             ])
-            ->add('price', MoneyType::class, [
-                'label' => 'Tarif en MGA',
-                'currency' => ' MGA',
+            ->add('price', NumberType::class, [
+                'label' => 'Tarif',
+                'scale' => 2,
+                'html5' => true,
+                'required' => true,
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Tarif en MGA'
+                    'placeholder' => '0.00',
+                    'step' => '0.01',
                 ],
-                'row_attr' => [
-                    'class' => 'col-md-6 mb-3'
-                ]
             ])
         ;
-    }
-
-    public function buildView(FormView $view, FormInterface $form, array $options)
-    {
-        parent::buildView($view, $form, $options);
-        
-        // Ajouter une classe row pour permettre l'alignement horizontal
-        $view->vars['attr']['class'] = isset($view->vars['attr']['class']) 
-            ? $view->vars['attr']['class'] . ' row' 
-            : 'row';
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -76,4 +60,4 @@ class ShippingOptionType extends AbstractType
             'data_class' => ShippingOption::class,
         ]);
     }
-} 
+}

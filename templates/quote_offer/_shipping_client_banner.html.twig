@@ -1,0 +1,13 @@
+{% if quote.shippingMethod|length > 0 %}
+    {% set methodLabels = {
+        'maritime': 'Maritime',
+        'aerien_express': 'Aérien Express',
+        'aerien_normal': 'Aérien Standard'
+    } %}
+    <div class="shipping-info-banner mb-3 d-flex align-items-start gap-2">
+        <i data-lucide="info" class="shipping-info-icon mt-1" style="width: 18px; height: 18px;"></i>
+        <div>
+            Le client a sélectionné : {% for method in quote.shippingMethod %}<strong>{{ methodLabels[method]|default(method) }}</strong>{% if not loop.last %}{% if quote.shippingMethod|length == 2 %} et {% else %}, {% endif %}{% endif %}{% endfor %}. Les options ont été pré-remplies — ajustez les prix et détails si nécessaire.
+        </div>
+    </div>
+{% endif %}
