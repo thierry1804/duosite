@@ -1,0 +1,64 @@
+{# Bloc d’information (inclus uniquement lorsque le service est suspendu — pas de formulaire dans le DOM). #}
+<style>
+    .service-suspended-panel {
+        max-width: 28rem;
+        background: #fafafa;
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 1.5rem 1.35rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .service-suspended-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin: 0 0 0.75rem;
+        line-height: 1.35;
+    }
+    .service-suspended-text {
+        font-size: 0.9375rem;
+        color: #3d3d3d;
+        line-height: 1.55;
+        margin: 0 0 1rem;
+    }
+    .service-suspended-sub {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #2a2a2a;
+        margin: 0 0 0.5rem;
+    }
+    .service-suspended-contacts {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.9375rem;
+        line-height: 1.65;
+    }
+    .service-suspended-contacts li {
+        margin-bottom: 0.35rem;
+    }
+    .service-suspended-contacts a {
+        color: #1a3d5c;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+    .service-suspended-contacts a:hover {
+        color: #0f2840;
+    }
+</style>
+<div class="service-suspended-panel" role="region" aria-labelledby="service-suspended-title">
+    <h2 id="service-suspended-title" class="service-suspended-title">Service momentanément indisponible</h2>
+    <p class="service-suspended-text">
+        La création de demandes de devis et de commandes en ligne est momentanément interrompue.
+        Notre équipe fait le nécessaire pour que tout soit rétabli dans les meilleurs délais.
+    </p>
+    <p class="service-suspended-sub">Service commercial</p>
+    <ul class="service-suspended-contacts">
+        <li>
+            <a href="mailto:commercial@duoimport.mg">commercial@duoimport.mg</a>
+        </li>
+        <li>
+            <a href="tel:+261384271168">+261 38 42 711 68</a>
+        </li>
+    </ul>
+</div>

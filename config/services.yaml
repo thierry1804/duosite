@@ -4,6 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    # Mettre APP_QUOTE_ORDER_SUSPENDED=0 dans .env.local pour réactiver les formulaires (devis + commande import).
+    env(APP_QUOTE_ORDER_SUSPENDED): '1'
+    app.quote_and_order_suspended: '%env(bool:APP_QUOTE_ORDER_SUSPENDED)%'
     quote_photos_directory: '%kernel.project_dir%/public/uploads/quote_photos'
     product_proposal_images_directory: '%kernel.project_dir%/public/uploads/product_proposals'
     import_product_photos_directory: '%kernel.project_dir%/public/uploads/import_products'

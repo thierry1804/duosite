@@ -232,6 +232,20 @@
 {% endblock %}
 
 {% block body %}
+{% if app_quote_order_suspended %}
+<div class="container py-5">
+    {% for label, messages in app.flashes %}
+        {% if label == 'success' or label == 'error' or label == 'warning' %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+    {% include '_service_suspended_notice.html.twig' %}
+</div>
+{% else %}
 <div class="container py-5">
     <div class="quote-page-heading">
         <h1>Demande de devis</h1>
@@ -243,7 +257,7 @@
     </p>
 
     {% for label, messages in app.flashes %}
-        {% if label == 'success' or label == 'error' %}
+        {% if label == 'success' or label == 'error' or label == 'warning' %}
             {% for message in messages %}
                 <div class="alert alert-{{ label == 'error' ? 'danger' : label }}">
                     {{ message }}
@@ -439,10 +453,12 @@
         </div>
     {{ form_end(form) }}
 </div>
+{% endif %}
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
+{% if not app_quote_order_suspended %}
 <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js" crossorigin="anonymous"></script>
 <script src="{{ asset('js/quote.min.js') }}" defer></script>
 <script>
@@ -578,4 +594,5 @@
     }
 })();
 </script>
+{% endif %}
 {% endblock %} 

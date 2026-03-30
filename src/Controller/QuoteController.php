@@ -30,12 +30,15 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class QuoteController extends AbstractController
 {
     #[Route('/quote', name: 'app_quote', methods: ['GET', 'POST'])]
     public function index(
-        Request $request, 
+        Request $request,
+        #[Autowire('%app.quote_and_order_suspended%')]
+        bool $quoteAndOrderSuspended,
         MailerInterface $mailer,
         TransportInterface $transport,
         EntityManagerInterface $entityManager,
@@ -69,6 +72,14 @@ class QuoteController extends AbstractController
         $quote->addItem($item);
         
         $form = $this->createForm(QuoteType::class, $quote);
+        if ($request->isMethod('POST') && $quoteAndOrderSuspended) {
+            $this->addFlash(
+                'warning',
+                'L\'envoi de demandes de devis est momentanément indisponible. Merci de contacter le service commercial.'
+            );
+
+            return $this->redirectToRoute('app_quote');
+        }
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {

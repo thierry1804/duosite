@@ -16,6 +16,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ImportOrderController extends AbstractController
 {
@@ -40,6 +41,8 @@ class ImportOrderController extends AbstractController
     #[Route('/commande-import', name: 'app_import_order_new', methods: ['GET', 'POST'])]
     public function new(
         Request $request,
+        #[Autowire('%app.quote_and_order_suspended%')]
+        bool $quoteAndOrderSuspended,
         EntityManagerInterface $entityManager,
         ImportProductRepository $productRepository,
         MailerInterface $mailer
@@ -49,6 +52,14 @@ class ImportOrderController extends AbstractController
             $order->addItem(new ImportOrderItem());
         }
         $form = $this->createForm(ImportOrderType::class, $order);
+        if ($request->isMethod('POST') && $quoteAndOrderSuspended) {
+            $this->addFlash(
+                'warning',
+                'La passation de commande en ligne est momentanément indisponible. Merci de contacter le service commercial.'
+            );
+
+            return $this->redirectToRoute('app_import_order_new');
+        }
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

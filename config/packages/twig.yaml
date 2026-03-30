@@ -2,6 +2,8 @@ twig:
     file_name_pattern: '*.twig'
     debug: '%kernel.debug%'
     form_themes: ['bootstrap_5_layout.html.twig']
+    globals:
+        app_quote_order_suspended: '%app.quote_and_order_suspended%'
 
 when@test:
     twig:
