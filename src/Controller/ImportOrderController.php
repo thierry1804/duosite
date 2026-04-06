@@ -51,6 +51,32 @@ class ImportOrderController extends AbstractController
         if ($order->getItems()->count() === 0) {
             $order->addItem(new ImportOrderItem());
         }
+
+        $hashPayload = null;
+        $hParam = trim($request->query->get('h', ''));
+        if ($hParam !== '') {
+            try {
+                $decoded = base64_decode($hParam, true);
+                if ($decoded !== false) {
+                    $data = json_decode($decoded, true);
+                    if (is_array($data)) {
+                        $hashPayload = $data;
+                        $firstItem = $order->getItems()->first();
+                        if ($firstItem) {
+                            if (!empty($data['color'])) {
+                                $firstItem->setColor((string) $data['color']);
+                            }
+                            if (!empty($data['qty']) && is_numeric($data['qty'])) {
+                                $firstItem->setQuantity((int) $data['qty']);
+                            }
+                        }
+                    }
+                }
+            } catch (\Throwable) {
+                $hashPayload = null;
+            }
+        }
+
         $form = $this->createForm(ImportOrderType::class, $order);
         if ($request->isMethod('POST') && $quoteAndOrderSuspended) {
             $this->addFlash(
@@ -124,6 +150,7 @@ class ImportOrderController extends AbstractController
 
         return $this->render('import_order/new.html.twig', [
             'form' => $form->createView(),
+            'hashPayload' => $hashPayload,
         ]);
     }
 
