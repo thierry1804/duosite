@@ -119,7 +119,8 @@
                         {% for item in order.items %}
                             <li class="d-flex align-items-center gap-2 mb-2">
                                 {% if item.productPhotoFilename %}
-                                    <img src="{{ asset('uploads/import_products/' ~ item.productPhotoFilename) }}" alt="" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% set photoSrc = item.productPhotoFilename starts with 'http' ? item.productPhotoFilename : asset('uploads/import_products/' ~ item.productPhotoFilename) %}
+                                    <img src="{{ photoSrc }}" alt="" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
                                 {% endif %}
                                 <span>{{ item.productName }} — {{ item.productPrice }} MGA × {{ item.quantity }} — {{ item.color }}</span>
                             </li>

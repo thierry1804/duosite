@@ -58,16 +58,33 @@ class ImportOrderController extends AbstractController
             try {
                 $decoded = base64_decode($hParam, true);
                 if ($decoded !== false) {
-                    $data = json_decode($decoded, true);
+                    // External service sends base64(urlencode(json)).
+                    // Keep a fallback on raw decoded JSON for backward compatibility.
+                    $urlDecoded = urldecode($decoded);
+                    $data = json_decode($urlDecoded, true);
+                    if (!is_array($data)) {
+                        $data = json_decode($decoded, true);
+                    }
                     if (is_array($data)) {
                         $hashPayload = $data;
                         $firstItem = $order->getItems()->first();
                         if ($firstItem) {
+                            $firstItem->setProductCode($this->resolveHashProductCode($data));
                             if (!empty($data['color'])) {
                                 $firstItem->setColor((string) $data['color']);
                             }
                             if (!empty($data['qty']) && is_numeric($data['qty'])) {
                                 $firstItem->setQuantity((int) $data['qty']);
+                            }
+                            if (!empty($data['name'])) {
+                                $firstItem->setProductName((string) $data['name']);
+                            }
+                            $hashPrice = $this->normalizeHashPrice($data['price'] ?? null);
+                            if ($hashPrice !== null) {
+                                $firstItem->setProductPrice($hashPrice);
+                            }
+                            if (!empty($data['img']) && is_string($data['img'])) {
+                                $firstItem->setProductPhotoFilename((string) $data['img']);
                             }
                         }
                     }
@@ -104,11 +121,27 @@ class ImportOrderController extends AbstractController
                     $hasError = true;
                     break;
                 }
-                $product = $productRepository->findOneByCode(trim($code));
-                if (!$product) {
-                    $this->addFlash('error', sprintf('Code produit invalide : %s.', $code));
-                    $hasError = true;
-                    break;
+                $normalizedCode = trim($code);
+                if ($this->isExternalHashCode($normalizedCode)) {
+                    $name = trim((string) $item->getProductName());
+                    $price = trim((string) $item->getProductPrice());
+                    if ($name === '' || $price === '') {
+                        $this->addFlash('error', 'Produit externe invalide: nom ou prix manquant.');
+                        $hasError = true;
+                        break;
+                    }
+                    $item->setProductCode($normalizedCode);
+                } else {
+                    $product = $productRepository->findOneByCode($normalizedCode);
+                    if (!$product) {
+                        $this->addFlash('error', sprintf('Code produit invalide : %s.', $code));
+                        $hasError = true;
+                        break;
+                    }
+                    $item->setProductName($product->getName());
+                    $item->setProductPrice($product->getPrice());
+                    $item->setProductPhotoFilename($product->getPhotoFilename());
+                    $item->setProductCode($normalizedCode);
                 }
                 $color = $item->getColor();
                 if ($color === null || trim($color) === '') {
@@ -116,10 +149,6 @@ class ImportOrderController extends AbstractController
                     $hasError = true;
                     break;
                 }
-                $item->setProductName($product->getName());
-                $item->setProductPrice($product->getPrice());
-                $item->setProductPhotoFilename($product->getPhotoFilename());
-                $item->setProductCode(trim($code));
                 $item->setColor(trim($color));
             }
             if ($hasError) {
@@ -152,6 +181,54 @@ class ImportOrderController extends AbstractController
             'form' => $form->createView(),
             'hashPayload' => $hashPayload,
         ]);
+    }
+
+    private function resolveHashProductCode(array $data): string
+    {
+        if (!empty($data['code']) && is_string($data['code'])) {
+            return trim(substr($data['code'], 0, 20));
+        }
+
+        $seedParts = [
+            (string) ($data['name'] ?? ''),
+            (string) ($data['img'] ?? ''),
+            (string) ($data['color'] ?? ''),
+            (string) ($data['price'] ?? ''),
+        ];
+        $seed = implode('|', $seedParts);
+        $shortHash = strtoupper(substr(hash('sha1', $seed), 0, 12));
+
+        return 'EBV' . $shortHash;
+    }
+
+    private function normalizeHashPrice(mixed $rawPrice): ?string
+    {
+        if ($rawPrice === null || $rawPrice === '') {
+            return null;
+        }
+
+        $normalized = preg_replace('/[^0-9,.\-]/', '', (string) $rawPrice);
+        if ($normalized === null || $normalized === '') {
+            return null;
+        }
+
+        $normalized = str_replace(' ', '', $normalized);
+        if (str_contains($normalized, ',') && str_contains($normalized, '.')) {
+            $normalized = str_replace(',', '', $normalized);
+        } elseif (str_contains($normalized, ',')) {
+            $normalized = str_replace(',', '.', $normalized);
+        }
+
+        if (!is_numeric($normalized)) {
+            return null;
+        }
+
+        return number_format((float) $normalized, 2, '.', '');
+    }
+
+    private function isExternalHashCode(string $code): bool
+    {
+        return str_starts_with(strtoupper($code), 'EBV');
     }
 
     #[Route('/commande-import/confirmation/{token}', name: 'app_import_order_confirmation', methods: ['GET'])]

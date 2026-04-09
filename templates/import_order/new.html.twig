@@ -215,6 +215,9 @@
             display: flex; width: 110px; flex-shrink: 0;
             background: #f3f4f6; border-right: 1px solid #eee;
             align-items: center; justify-content: center;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            overflow: hidden;
         }
         .item-row.is-verified .item-preview-photo {
             width: 100%; align-self: stretch; border-radius: 0;
@@ -512,7 +515,12 @@
                                 {% for item in form.items %}
                                     {% set fromHash = loop.first and hashPayload is not null %}
                                     {% set hashImg = fromHash and hashPayload.img is defined and hashPayload.img starts with 'http' %}
-                                    <article class="item-row{{ fromHash ? ' is-verified' : '' }}" data-index="{{ item.vars.name }}" aria-label="Ligne produit">
+                                    <article
+                                        class="item-row{{ fromHash ? ' is-verified' : '' }}"
+                                        data-index="{{ item.vars.name }}"
+                                        {% if fromHash and hashPayload.price is defined %}data-hash-price="{{ hashPayload.price }}"{% endif %}
+                                        aria-label="Ligne produit"
+                                    >
                                         <span class="item-badge" aria-hidden="true">{{ '%02d'|format(loop.index) }}</span>
                                         <button type="button" class="btn-remove-item remove-item" aria-label="Retirer cette ligne"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5h11M5.5 4.5V3a1 1 0 011-1h3a1 1 0 011 1v1.5m1.5 0v8a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 014 12.5v-8h8z"/><path d="M6.5 7v4M9.5 7v4"/></svg></button>
                                         <div class="item-row-inner">
@@ -942,6 +950,15 @@
         function initPrefilledRows() {
             if (!container) return;
             container.querySelectorAll('.item-row.is-verified').forEach(function(row) {
+                var rawHashPrice = row.getAttribute('data-hash-price');
+                var priceEl = row.querySelector('.item-unit-price');
+                if (priceEl && rawHashPrice != null && rawHashPrice !== '') {
+                    var num = parseFloat(String(rawHashPrice).replace(',', '.'));
+                    if (!isNaN(num)) {
+                        priceEl.dataset.unitPrice = String(num);
+                        priceEl.textContent = fmtMga(num) + ' MGA';
+                    }
+                }
                 updateColorDot(row);
             });
         }

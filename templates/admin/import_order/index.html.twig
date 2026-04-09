@@ -46,10 +46,17 @@
                             <td>
                                 {% if order.items|length > 0 %}
                                     {% for item in order.items %}
-                                        {{ item.productName }} × {{ item.quantity }}{% if not loop.last %}<br>{% endif %}
+                                        {{ item.productName }} × {{ item.quantity }}
+                                        {% if item.productCode and item.productCode starts with 'EBV' %}
+                                            <span class="badge bg-info text-dark ms-1">Produit externe (EBV)</span>
+                                        {% endif %}
+                                        {% if not loop.last %}<br>{% endif %}
                                     {% endfor %}
                                 {% else %}
                                     {{ order.productName }} — {{ order.color }}
+                                    {% if order.productCode and order.productCode starts with 'EBV' %}
+                                        <span class="badge bg-info text-dark ms-1">Produit externe (EBV)</span>
+                                    {% endif %}
                                 {% endif %}
                             </td>
                             <td><span class="badge bg-secondary">{{ order.statusLabel }}</span></td>

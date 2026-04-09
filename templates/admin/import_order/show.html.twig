@@ -18,91 +18,158 @@
         <div class="alert alert-danger">{{ message }}</div>
     {% endfor %}
 
-    <div class="row">
-        <div class="col-lg-6 mb-4">
-            <div class="admin-card">
-                <div class="admin-card-header">Client et commande</div>
-                <div class="admin-card-body">
-                    <p><strong>Nom :</strong> {{ order.fullName }}</p>
-                    <p><strong>Email :</strong> {{ order.email }}</p>
-                    <p><strong>Téléphone :</strong> {{ order.phone }}</p>
-                    <p><strong>Adresse de livraison :</strong><br>{{ order.deliveryAddress|nl2br }}</p>
-                    {% if order.items|length > 0 %}
-                        <p><strong>Produits :</strong></p>
-                        <ul class="mb-2 list-unstyled">
+    <div class="admin-card mb-3">
+        <div class="admin-card-header">Produits</div>
+        <div class="admin-card-body p-0">
+            {% set orderTotal = 0 %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>Code</th>
+                            <th>Produit</th>
+                            <th>Couleur</th>
+                            <th class="text-end">PU (MGA)</th>
+                            <th class="text-end">Qté</th>
+                            <th class="text-end">Sous-total (MGA)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if order.items|length > 0 %}
                             {% for item in order.items %}
-                                <li class="d-flex align-items-center gap-2 mb-2">
-                                    {% if item.productPhotoFilename %}
-                                        <img src="{{ asset('uploads/import_products/' ~ item.productPhotoFilename) }}" alt="" class="rounded" style="width: 36px; height: 36px; object-fit: cover;">
-                                    {% endif %}
-                                    <span>{{ item.productName }} ({{ item.productCode }}) — {{ item.productPrice }} MGA × {{ item.quantity }} — {{ item.color }}</span>
-                                </li>
+                                {% set lineTotal = (item.productPrice + 0) * item.quantity %}
+                                {% set orderTotal = orderTotal + lineTotal %}
+                                <tr>
+                                    <td>
+                                        {% if item.productPhotoFilename %}
+                                            {% set photoSrc = item.productPhotoFilename starts with 'http' ? item.productPhotoFilename : asset('uploads/import_products/' ~ item.productPhotoFilename) %}
+                                            <img src="{{ photoSrc }}" alt="" class="rounded" style="width: 36px; height: 36px; object-fit: cover;">
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><code>{{ item.productCode }}</code></td>
+                                    <td>
+                                        {{ item.productName }}
+                                        {% if item.productCode and item.productCode starts with 'EBV' %}
+                                            <span class="badge bg-info text-dark ms-1">Produit externe (EBV)</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.color }}</td>
+                                    <td class="text-end">{{ item.productPrice }}</td>
+                                    <td class="text-end">{{ item.quantity }}</td>
+                                    <td class="text-end fw-semibold">{{ lineTotal|number_format(2, '.', ' ') }}</td>
+                                </tr>
                             {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p><strong>Produit :</strong> {{ order.productName }} ({{ order.productCode }}) — {{ order.productPrice }} MGA</p>
-                        <p><strong>Couleur :</strong> {{ order.color }}</p>
-                    {% endif %}
-                    <p><strong>Paiement :</strong> {{ order.paymentMethodLabel }} — Réf. {{ order.paymentReference ?? '-' }}</p>
-                    <p><strong>Type d'envoi :</strong> {{ order.shippingTypeLabel }}</p>
-                    <p><strong>Date :</strong> {{ order.createdAt|date('d/m/Y H:i') }}</p>
-                    <p class="mb-0"><strong>Lien de suivi :</strong> <a href="{{ trackingUrl }}" target="_blank" rel="noopener">{{ trackingUrl }}</a></p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6 mb-4">
-            <div class="admin-card">
-                <div class="admin-card-header">Informations et statut</div>
-                <div class="admin-card-body">
-                    <form method="post" action="{{ path('app_admin_import_order_show', { id: order.id }) }}">
-                        <div class="mb-3">
-                            <label class="form-label">Poids</label>
-                            <input type="text" name="weight" class="form-control" value="{{ order.weight ?? '' }}" placeholder="Ex: 1.2 kg">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Dimensions</label>
-                            <input type="text" name="dimensions" class="form-control" value="{{ order.dimensions ?? '' }}" placeholder="Ex: 30 x 20 x 10 cm">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Estimation frais / volume</label>
-                            <input type="text" name="shippingEstimate" class="form-control" value="{{ order.shippingEstimate ?? '' }}">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Informations d'expédition</label>
-                            <textarea name="shippingInfo" class="form-control" rows="3">{{ order.shippingInfo ?? '' }}</textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Statut</label>
-                            <select name="status" class="form-control form-select">
-                                <option value="{{ order.status }}" selected>{{ statusLabels[order.status] ?? order.status }}</option>
-                                {% for statusKey, statusLabel in possibleTransitions %}
-                                    <option value="{{ statusKey }}">{{ statusLabel }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Commentaire (optionnel)</label>
-                            <input type="text" name="comment" class="form-control">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Enregistrer</button>
-                    </form>
-                </div>
+                        {% else %}
+                            {% set lineTotal = (order.productPrice + 0) %}
+                            {% set orderTotal = lineTotal %}
+                            <tr>
+                                <td><span class="text-muted">-</span></td>
+                                <td><code>{{ order.productCode }}</code></td>
+                                <td>
+                                    {{ order.productName }}
+                                    {% if order.productCode and order.productCode starts with 'EBV' %}
+                                        <span class="badge bg-info text-dark ms-1">Produit externe (EBV)</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ order.color }}</td>
+                                <td class="text-end">{{ order.productPrice }}</td>
+                                <td class="text-end">1</td>
+                                <td class="text-end fw-semibold">{{ lineTotal|number_format(2, '.', ' ') }}</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="6" class="text-end">Montant total</th>
+                            <th class="text-end">{{ orderTotal|number_format(2, '.', ' ') }} MGA</th>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
     </div>
 
-    <div class="admin-card">
-        <div class="admin-card-header">Historique des statuts</div>
-        <div class="admin-card-body">
-            {% if order.statusHistory|length > 0 %}
-                <ul class="list-unstyled mb-0">
-                    {% for entry in order.statusHistory %}
-                    <li class="mb-2">{{ entry.createdAt|date('d/m/Y H:i') }} — {{ entry.newStatusLabel }} (par {{ entry.changedBy ?? 'system' }})</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-muted mb-0">Enregistrée le {{ order.createdAt|date('d/m/Y à H:i') }}.</p>
-            {% endif %}
+    <div class="row g-3">
+        <div class="col-lg-4 d-flex">
+            <div class="admin-card h-100 w-100">
+                <div class="admin-card-header">Client et commande</div>
+                <div class="admin-card-body">
+                    <p class="mb-2"><strong>Nom :</strong> {{ order.fullName }}</p>
+                    <p class="mb-2"><strong>Email :</strong> {{ order.email }}</p>
+                    <p class="mb-2"><strong>Téléphone :</strong> {{ order.phone }}</p>
+                    <p class="mb-2"><strong>Paiement :</strong> {{ order.paymentMethodLabel }}</p>
+                    <p class="mb-2"><strong>Référence :</strong> {{ order.paymentReference ?? '-' }}</p>
+                    <p class="mb-2"><strong>Type d'envoi :</strong> {{ order.shippingTypeLabel }}</p>
+                    <p class="mb-2"><strong>Date :</strong> {{ order.createdAt|date('d/m/Y H:i') }}</p>
+                    <p class="mb-2"><strong>Adresse :</strong><br>{{ order.deliveryAddress|nl2br }}</p>
+                    <p class="mb-0">
+                        <strong>Suivi :</strong>
+                        <a href="{{ trackingUrl }}" target="_blank" rel="noopener" title="{{ trackingUrl }}">Ouvrir le lien de suivi</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 d-flex">
+            <div class="admin-card h-100 w-100">
+                <div class="admin-card-header">Informations et statut</div>
+                <div class="admin-card-body">
+                    <form method="post" action="{{ path('app_admin_import_order_show', { id: order.id }) }}">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Poids</label>
+                                <input type="text" name="weight" class="form-control" value="{{ order.weight ?? '' }}" placeholder="Ex: 1.2 kg">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Dimensions</label>
+                                <input type="text" name="dimensions" class="form-control" value="{{ order.dimensions ?? '' }}" placeholder="Ex: 30 x 20 x 10 cm">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Estimation frais / volume</label>
+                                <input type="text" name="shippingEstimate" class="form-control" value="{{ order.shippingEstimate ?? '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Statut</label>
+                                <select name="status" class="form-control form-select">
+                                    <option value="{{ order.status }}" selected>{{ statusLabels[order.status] ?? order.status }}</option>
+                                    {% for statusKey, statusLabel in possibleTransitions %}
+                                        <option value="{{ statusKey }}">{{ statusLabel }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Informations d'expédition</label>
+                                <textarea name="shippingInfo" class="form-control" rows="3">{{ order.shippingInfo ?? '' }}</textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Commentaire (optionnel)</label>
+                                <input type="text" name="comment" class="form-control">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="admin-card">
+                <div class="admin-card-header">Historique des statuts</div>
+                <div class="admin-card-body">
+                    {% if order.statusHistory|length > 0 %}
+                        <ul class="list-unstyled mb-0">
+                            {% for entry in order.statusHistory %}
+                            <li class="mb-2">{{ entry.createdAt|date('d/m/Y H:i') }} — {{ entry.newStatusLabel }} (par {{ entry.changedBy ?? 'system' }})</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">Enregistrée le {{ order.createdAt|date('d/m/Y à H:i') }}.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
