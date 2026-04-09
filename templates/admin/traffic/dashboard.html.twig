@@ -7,128 +7,186 @@
 {% endblock %}
 
 {% block body %}
+    <style>
+        .traffic-dashboard-wrap {
+            position: relative;
+        }
+
+        .traffic-loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(1px);
+            z-index: 20;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+        }
+
+        .traffic-loading-overlay.is-visible {
+            display: flex;
+        }
+
+        .traffic-kpi-card {
+            height: 100%;
+        }
+
+        .traffic-kpi-icon {
+            min-width: 64px;
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .traffic-kpi-info p {
+            margin-bottom: 0.1rem;
+        }
+
+        .traffic-kpi-info small {
+            line-height: 1.25;
+        }
+    </style>
+
     <h1 class="mb-4">Statistiques trafic</h1>
 
-    <div class="d-flex gap-2 mb-4">
-        <button class="btn btn-outline-primary js-period-btn active" data-period="today">Aujourd'hui</button>
-        <button class="btn btn-outline-primary js-period-btn" data-period="7d">7 jours</button>
-        <button class="btn btn-outline-primary js-period-btn" data-period="30d">30 jours</button>
-    </div>
+    <div id="trafficDashboardWrap" class="traffic-dashboard-wrap">
+        <div id="trafficLoadingOverlay" class="traffic-loading-overlay" aria-hidden="true">
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status" aria-label="Chargement"></div>
+                <div class="mt-2 text-muted">Mise a jour des statistiques...</div>
+            </div>
+        </div>
 
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="stats-card">
-                <div class="stats-card-icon bg-primary text-white">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stats-card-info">
-                    <h3 id="kpiVisitors">0</h3>
-                    <p>Visiteurs</p>
-                </div>
-            </div>
+        <div class="d-flex gap-2 mb-4">
+            <button class="btn btn-outline-primary js-period-btn active" data-period="today">Aujourd'hui</button>
+            <button class="btn btn-outline-primary js-period-btn" data-period="7d">7 jours</button>
+            <button class="btn btn-outline-primary js-period-btn" data-period="30d">30 jours</button>
         </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="stats-card">
-                <div class="stats-card-icon bg-info text-white">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="stats-card-info">
-                    <h3 id="kpiSessions">0</h3>
-                    <p>Sessions</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="stats-card">
-                <div class="stats-card-icon bg-success text-white">
-                    <i class="fas fa-eye"></i>
-                </div>
-                <div class="stats-card-info">
-                    <h3 id="kpiViews">0</h3>
-                    <p>Pages vues</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="stats-card">
-                <div class="stats-card-icon bg-warning text-dark">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stats-card-info">
-                    <h3 id="kpiEngagement">0 s</h3>
-                    <p>Duree moyenne</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col-lg-8 mb-4">
-            <div class="admin-card">
-                <div class="admin-card-header">
-                    <h5 class="mb-0">Evolution du trafic</h5>
-                </div>
-                <div class="admin-card-body">
-                    <canvas id="trafficChart" height="120"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 mb-4">
-            <div class="admin-card">
-                <div class="admin-card-header">
-                    <h5 class="mb-0">Sources principales</h5>
-                </div>
-                <div class="admin-card-body">
-                    <ul id="sourcesList" class="list-group list-group-flush">
-                        <li class="list-group-item text-muted">Chargement...</li>
-                    </ul>
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card traffic-kpi-card">
+                    <div class="stats-card-icon traffic-kpi-icon bg-primary text-white">
+                        <span id="kpiVisitors">0</span>
+                    </div>
+                    <div class="stats-card-info traffic-kpi-info">
+                        <p>Visiteurs</p>
+                        <small class="text-muted d-block">Nombre de personnes uniques sur la periode selectionnee.</small>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-lg-6 mb-4">
-            <div class="admin-card">
-                <div class="admin-card-header">
-                    <h5 class="mb-0">Pages les plus consultees</h5>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card traffic-kpi-card">
+                    <div class="stats-card-icon traffic-kpi-icon bg-info text-white">
+                        <span id="kpiSessions">0</span>
+                    </div>
+                    <div class="stats-card-info traffic-kpi-info">
+                        <p>Sessions</p>
+                        <small class="text-muted d-block">Nombre total de visites (une personne peut visiter plusieurs fois).</small>
+                    </div>
                 </div>
-                <div class="admin-card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Page</th>
-                                    <th class="text-end">Vues</th>
-                                </tr>
-                            </thead>
-                            <tbody id="topPagesTable">
-                                <tr><td colspan="2" class="text-center text-muted">Chargement...</td></tr>
-                            </tbody>
-                        </table>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card traffic-kpi-card">
+                    <div class="stats-card-icon traffic-kpi-icon bg-success text-white">
+                        <span id="kpiViews">0</span>
+                    </div>
+                    <div class="stats-card-info traffic-kpi-info">
+                        <p>Pages vues</p>
+                        <small class="text-muted d-block">Total des pages consultees sur le site.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="stats-card traffic-kpi-card">
+                    <div class="stats-card-icon traffic-kpi-icon bg-warning text-dark">
+                        <span id="kpiEngagement">0 s</span>
+                    </div>
+                    <div class="stats-card-info traffic-kpi-info">
+                        <p>Duree moyenne</p>
+                        <small class="text-muted d-block">Temps moyen d'engagement par session.</small>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-6 mb-4">
-            <div class="admin-card">
-                <div class="admin-card-header">
-                    <h5 class="mb-0">Campagnes detectees</h5>
+
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h5 class="mb-0">Evolution du trafic</h5>
+                    </div>
+                    <div class="admin-card-body">
+                        <div style="height: 340px;">
+                            <canvas id="trafficChart" height="220"></canvas>
+                        </div>
+                    </div>
                 </div>
-                <div class="admin-card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Campagne</th>
-                                    <th>Source</th>
-                                    <th class="text-end">Sessions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="campaignsTable">
-                                <tr><td colspan="3" class="text-center text-muted">Chargement...</td></tr>
-                            </tbody>
-                        </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h5 class="mb-0">Pages les plus consultees</h5>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Page</th>
+                                        <th class="text-end">Vues</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topPagesTable">
+                                    <tr><td colspan="2" class="text-center text-muted">Chargement...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h5 class="mb-0">Campagnes detectees</h5>
+                    </div>
+                    <div class="admin-card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Campagne</th>
+                                        <th>Source</th>
+                                        <th class="text-end">Sessions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="campaignsTable">
+                                    <tr><td colspan="3" class="text-center text-muted">Chargement...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="admin-card">
+                    <div class="admin-card-header">
+                        <h5 class="mb-0">Sources principales</h5>
+                    </div>
+                    <div class="admin-card-body">
+                        <ul id="sourcesList" class="list-group list-group-flush">
+                            <li class="list-group-item text-muted">Chargement...</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -146,11 +204,25 @@
             const numberFormat = new Intl.NumberFormat('fr-FR');
             const periodButtons = Array.from(document.querySelectorAll('.js-period-btn'));
             const trafficMeta = document.getElementById('trafficMeta');
+            const loadingOverlay = document.getElementById('trafficLoadingOverlay');
             let trafficChart = null;
+            let isLoading = false;
 
             function setActivePeriod(period) {
                 periodButtons.forEach((button) => {
                     button.classList.toggle('active', button.dataset.period === period);
+                });
+            }
+
+            function setLoading(loading) {
+                isLoading = loading;
+                if (loadingOverlay) {
+                    loadingOverlay.classList.toggle('is-visible', loading);
+                    loadingOverlay.setAttribute('aria-hidden', loading ? 'false' : 'true');
+                }
+
+                periodButtons.forEach((button) => {
+                    button.disabled = loading;
                 });
             }
 
@@ -222,6 +294,14 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                ticks: {
+                                    minRotation: 90,
+                                    maxRotation: 90
+                                }
+                            }
+                        },
                         plugins: {
                             legend: {
                                 position: 'top'
@@ -232,44 +312,52 @@
             }
 
             async function loadStats(period) {
+                if (isLoading) {
+                    return;
+                }
+
+                setLoading(true);
                 setActivePeriod(period);
                 trafficMeta.textContent = 'Chargement des statistiques...';
+                try {
+                    const response = await fetch('{{ path('app_admin_traffic_overview') }}?period=' + encodeURIComponent(period));
+                    const payload = await response.json();
 
-                const response = await fetch('{{ path('app_admin_traffic_overview') }}?period=' + encodeURIComponent(period));
-                const payload = await response.json();
+                    document.getElementById('kpiVisitors').textContent = numberFormat.format(payload.kpis.visitors || 0);
+                    document.getElementById('kpiSessions').textContent = numberFormat.format(payload.kpis.sessions || 0);
+                    document.getElementById('kpiViews').textContent = numberFormat.format(payload.kpis.pageViews || 0);
+                    document.getElementById('kpiEngagement').textContent = numberFormat.format(payload.kpis.avgEngagementSeconds || 0) + ' s';
 
-                document.getElementById('kpiVisitors').textContent = numberFormat.format(payload.kpis.visitors || 0);
-                document.getElementById('kpiSessions').textContent = numberFormat.format(payload.kpis.sessions || 0);
-                document.getElementById('kpiViews').textContent = numberFormat.format(payload.kpis.pageViews || 0);
-                document.getElementById('kpiEngagement').textContent = numberFormat.format(payload.kpis.avgEngagementSeconds || 0) + ' s';
+                    renderChart(payload.trend || []);
 
-                renderChart(payload.trend || []);
+                    renderList('#sourcesList', payload.sources || [], 'Aucune source disponible.', (item) => (
+                        '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                        '<span>' + item.label + '</span>' +
+                        '<span class="badge bg-primary rounded-pill">' + numberFormat.format(item.sessions || 0) + '</span>' +
+                        '</li>'
+                    ));
 
-                renderList('#sourcesList', payload.sources || [], 'Aucune source disponible.', (item) => (
-                    '<li class="list-group-item d-flex justify-content-between align-items-center">' +
-                    '<span>' + item.label + '</span>' +
-                    '<span class="badge bg-primary rounded-pill">' + numberFormat.format(item.sessions || 0) + '</span>' +
-                    '</li>'
-                ));
+                    renderTable('#topPagesTable', payload.topPages || [], 2, 'Aucune page disponible.', (item) => (
+                        '<tr>' +
+                        '<td>' + item.path + '</td>' +
+                        '<td class="text-end">' + numberFormat.format(item.views || 0) + '</td>' +
+                        '</tr>'
+                    ));
 
-                renderTable('#topPagesTable', payload.topPages || [], 2, 'Aucune page disponible.', (item) => (
-                    '<tr>' +
-                    '<td>' + item.path + '</td>' +
-                    '<td class="text-end">' + numberFormat.format(item.views || 0) + '</td>' +
-                    '</tr>'
-                ));
+                    renderTable('#campaignsTable', payload.campaigns || [], 3, 'Aucune campagne detectee.', (item) => (
+                        '<tr>' +
+                        '<td>' + item.name + '</td>' +
+                        '<td>' + item.sourceMedium + '</td>' +
+                        '<td class="text-end">' + numberFormat.format(item.sessions || 0) + '</td>' +
+                        '</tr>'
+                    ));
 
-                renderTable('#campaignsTable', payload.campaigns || [], 3, 'Aucune campagne detectee.', (item) => (
-                    '<tr>' +
-                    '<td>' + item.name + '</td>' +
-                    '<td>' + item.sourceMedium + '</td>' +
-                    '<td class="text-end">' + numberFormat.format(item.sessions || 0) + '</td>' +
-                    '</tr>'
-                ));
-
-                const updatedAt = payload.lastUpdatedAt ? new Date(payload.lastUpdatedAt).toLocaleString('fr-FR') : null;
-                const errorMessage = payload.error ? ' | ' + payload.error : '';
-                trafficMeta.textContent = updatedAt ? ('Derniere mise a jour : ' + updatedAt + errorMessage) : errorMessage;
+                    const updatedAt = payload.lastUpdatedAt ? new Date(payload.lastUpdatedAt).toLocaleString('fr-FR') : null;
+                    const errorMessage = payload.error ? ' | ' + payload.error : '';
+                    trafficMeta.textContent = updatedAt ? ('Derniere mise a jour : ' + updatedAt + errorMessage) : errorMessage;
+                } finally {
+                    setLoading(false);
+                }
             }
 
             periodButtons.forEach((button) => {
@@ -280,6 +368,7 @@
 
             loadStats('today').catch(() => {
                 trafficMeta.textContent = 'Impossible de charger les statistiques.';
+                setLoading(false);
             });
         })();
     </script>
