@@ -11,6 +11,8 @@ parameters:
     quote_photos_directory: '%kernel.project_dir%/public/uploads/quote_photos'
     product_proposal_images_directory: '%kernel.project_dir%/public/uploads/product_proposals'
     import_product_photos_directory: '%kernel.project_dir%/public/uploads/import_products'
+    ga4.property_id: '%env(string:GA4_PROPERTY_ID)%'
+    ga4.credentials_path: '%env(string:GA4_CREDENTIALS_PATH)%'
 
 services:
     # default configuration for services in *this* file
@@ -93,6 +95,11 @@ services:
             $alertEmailTo: '%alert_email_to%'
             $alertEmailCc: '%alert_email_cc%'
             $dashboardUrl: '%alert_dashboard_url%'
+
+    App\Service\Ga4ReportingService:
+        arguments:
+            $ga4PropertyId: '%ga4.property_id%'
+            $ga4CredentialsPath: '%ga4.credentials_path%'
 
     App\Command\OrangeSmsSendTestCommand:
         arguments:

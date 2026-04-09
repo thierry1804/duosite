@@ -1,0 +1,286 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques trafic - Duo Import MDG{% endblock %}
+
+{% block breadcrumb %}
+    <li><span class="dropdown-item disabled" aria-current="page">Statistiques trafic</span></li>
+{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Statistiques trafic</h1>
+
+    <div class="d-flex gap-2 mb-4">
+        <button class="btn btn-outline-primary js-period-btn active" data-period="today">Aujourd'hui</button>
+        <button class="btn btn-outline-primary js-period-btn" data-period="7d">7 jours</button>
+        <button class="btn btn-outline-primary js-period-btn" data-period="30d">30 jours</button>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-primary text-white">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stats-card-info">
+                    <h3 id="kpiVisitors">0</h3>
+                    <p>Visiteurs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-info text-white">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stats-card-info">
+                    <h3 id="kpiSessions">0</h3>
+                    <p>Sessions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-success text-white">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="stats-card-info">
+                    <h3 id="kpiViews">0</h3>
+                    <p>Pages vues</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="stats-card">
+                <div class="stats-card-icon bg-warning text-dark">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-card-info">
+                    <h3 id="kpiEngagement">0 s</h3>
+                    <p>Duree moyenne</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Evolution du trafic</h5>
+                </div>
+                <div class="admin-card-body">
+                    <canvas id="trafficChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Sources principales</h5>
+                </div>
+                <div class="admin-card-body">
+                    <ul id="sourcesList" class="list-group list-group-flush">
+                        <li class="list-group-item text-muted">Chargement...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Pages les plus consultees</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Page</th>
+                                    <th class="text-end">Vues</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topPagesTable">
+                                <tr><td colspan="2" class="text-center text-muted">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="mb-0">Campagnes detectees</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Campagne</th>
+                                    <th>Source</th>
+                                    <th class="text-end">Sessions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="campaignsTable">
+                                <tr><td colspan="3" class="text-center text-muted">Chargement...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p id="trafficMeta" class="text-muted small mb-0"></p>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            const numberFormat = new Intl.NumberFormat('fr-FR');
+            const periodButtons = Array.from(document.querySelectorAll('.js-period-btn'));
+            const trafficMeta = document.getElementById('trafficMeta');
+            let trafficChart = null;
+
+            function setActivePeriod(period) {
+                periodButtons.forEach((button) => {
+                    button.classList.toggle('active', button.dataset.period === period);
+                });
+            }
+
+            function renderList(selector, items, emptyMessage, formatter) {
+                const node = document.querySelector(selector);
+                if (!node) {
+                    return;
+                }
+
+                if (!items.length) {
+                    node.innerHTML = '<li class="list-group-item text-muted">' + emptyMessage + '</li>';
+                    return;
+                }
+
+                node.innerHTML = items.map(formatter).join('');
+            }
+
+            function renderTable(selector, rows, colspan, emptyMessage, formatter) {
+                const node = document.querySelector(selector);
+                if (!node) {
+                    return;
+                }
+
+                if (!rows.length) {
+                    node.innerHTML = '<tr><td colspan="' + colspan + '" class="text-center text-muted">' + emptyMessage + '</td></tr>';
+                    return;
+                }
+
+                node.innerHTML = rows.map(formatter).join('');
+            }
+
+            function renderChart(trend) {
+                const canvas = document.getElementById('trafficChart');
+                if (!canvas) {
+                    return;
+                }
+
+                const labels = trend.map((point) => point.date);
+                const visitors = trend.map((point) => point.visitors);
+                const sessions = trend.map((point) => point.sessions);
+
+                if (trafficChart) {
+                    trafficChart.destroy();
+                }
+
+                trafficChart = new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Visiteurs',
+                                data: visitors,
+                                borderColor: '#0d6efd',
+                                backgroundColor: 'rgba(13, 110, 253, 0.15)',
+                                tension: 0.3,
+                                fill: true
+                            },
+                            {
+                                label: 'Sessions',
+                                data: sessions,
+                                borderColor: '#198754',
+                                backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                                tension: 0.3,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        }
+                    }
+                });
+            }
+
+            async function loadStats(period) {
+                setActivePeriod(period);
+                trafficMeta.textContent = 'Chargement des statistiques...';
+
+                const response = await fetch('{{ path('app_admin_traffic_overview') }}?period=' + encodeURIComponent(period));
+                const payload = await response.json();
+
+                document.getElementById('kpiVisitors').textContent = numberFormat.format(payload.kpis.visitors || 0);
+                document.getElementById('kpiSessions').textContent = numberFormat.format(payload.kpis.sessions || 0);
+                document.getElementById('kpiViews').textContent = numberFormat.format(payload.kpis.pageViews || 0);
+                document.getElementById('kpiEngagement').textContent = numberFormat.format(payload.kpis.avgEngagementSeconds || 0) + ' s';
+
+                renderChart(payload.trend || []);
+
+                renderList('#sourcesList', payload.sources || [], 'Aucune source disponible.', (item) => (
+                    '<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                    '<span>' + item.label + '</span>' +
+                    '<span class="badge bg-primary rounded-pill">' + numberFormat.format(item.sessions || 0) + '</span>' +
+                    '</li>'
+                ));
+
+                renderTable('#topPagesTable', payload.topPages || [], 2, 'Aucune page disponible.', (item) => (
+                    '<tr>' +
+                    '<td>' + item.path + '</td>' +
+                    '<td class="text-end">' + numberFormat.format(item.views || 0) + '</td>' +
+                    '</tr>'
+                ));
+
+                renderTable('#campaignsTable', payload.campaigns || [], 3, 'Aucune campagne detectee.', (item) => (
+                    '<tr>' +
+                    '<td>' + item.name + '</td>' +
+                    '<td>' + item.sourceMedium + '</td>' +
+                    '<td class="text-end">' + numberFormat.format(item.sessions || 0) + '</td>' +
+                    '</tr>'
+                ));
+
+                const updatedAt = payload.lastUpdatedAt ? new Date(payload.lastUpdatedAt).toLocaleString('fr-FR') : null;
+                const errorMessage = payload.error ? ' | ' + payload.error : '';
+                trafficMeta.textContent = updatedAt ? ('Derniere mise a jour : ' + updatedAt + errorMessage) : errorMessage;
+            }
+
+            periodButtons.forEach((button) => {
+                button.addEventListener('click', function () {
+                    loadStats(button.dataset.period);
+                });
+            });
+
+            loadStats('today').catch(() => {
+                trafficMeta.textContent = 'Impossible de charger les statistiques.';
+            });
+        })();
+    </script>
+{% endblock %}

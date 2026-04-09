@@ -66,6 +66,11 @@
                         <i data-lucide="shopping-cart"></i> <span>Commandes d'import</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ path('app_admin_traffic_dashboard') }}" class="{{ app.request.get('_route') starts with 'app_admin_traffic_' ? 'active' : '' }}">
+                        <i data-lucide="bar-chart-3"></i> <span>Statistiques trafic</span>
+                    </a>
+                </li>
             </ul>
             
             <ul class="bottom-menu">
