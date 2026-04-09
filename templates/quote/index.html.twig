@@ -228,6 +228,39 @@
         background: #f3f4f6 !important;
     }
 
+    /* Modale paiement devis : un peu plus large */
+    .quote-payment-modal .modal-dialog {
+        max-width: min(720px, calc(100vw - 2rem));
+    }
+
+    /* Bloc « Deux possibilités » — attirer l’œil sans agresser */
+    .quote-payment-two-options {
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        margin-bottom: 1rem;
+        background: #f0f7ff;
+        border: 2px solid #0d6efd;
+        animation: quote-payment-two-options-blink 1.4s ease-in-out infinite;
+    }
+    @keyframes quote-payment-two-options-blink {
+        0%, 100% {
+            opacity: 1;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.25);
+        }
+        50% {
+            opacity: 0.88;
+            border-color: #6ea8fe;
+            box-shadow: 0 0 12px 2px rgba(13, 110, 253, 0.2);
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .quote-payment-two-options {
+            animation: none;
+            opacity: 1;
+        }
+    }
+
 </style>
 {% endblock %}
 
@@ -369,7 +402,7 @@
                                 
                                 <!-- Description en dessous -->
                                 <div class="col-12 mb-3">
-                                    {{ form_row(itemForm.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                                    {{ form_row(itemForm.description) }}
                                 </div>
                             </div>
                         </div>
@@ -387,7 +420,7 @@
             <i class="fas fa-plus-circle me-2"></i> Ajouter un produit
         </button>
         <p class="small text-muted mb-4">
-            Les {{ freeItemsLimit|default(2) }} premiers articles sont gratuits. A partir du {{ (freeItemsLimit|default(2)) + 1 }}e article, chaque article suppleméntaire est facturé {{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar.
+            Les {{ freeItemsLimit|default(2) }} premiers articles sont gratuits. À partir du {{ (freeItemsLimit|default(2)) + 1 }}e article, chaque article supplémentaire est facturé {{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar.
         </p>
         </div>
         
@@ -468,16 +501,22 @@
     {{ form_end(form) }}
 </div>
 
-<div class="modal fade" id="quotePaymentModal" tabindex="-1" aria-labelledby="quotePaymentModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade quote-payment-modal" id="quotePaymentModal" tabindex="-1" aria-labelledby="quotePaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="quotePaymentModalLabel">Demande payante a partir du {{ (freeItemsLimit|default(2)) + 1 }}e article</h5>
+                <h5 class="modal-title" id="quotePaymentModalLabel">Paiement — au-delà de {{ freeItemsLimit|default(2) }} articles</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
                 <p class="mb-2">Vous avez atteint la limite des {{ freeItemsLimit|default(2) }} articles gratuits.</p>
-                <p class="mb-2">A partir du {{ (freeItemsLimit|default(2)) + 1 }}e article, chaque article suppleméntaire est facturé <strong>{{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar</strong>.</p>
+                <div class="quote-payment-two-options small mb-3" role="status" aria-live="polite">
+                    <p class="mb-0">
+                        <strong>Deux possibilités :</strong> fermez cette fenêtre avec « Annuler », supprimez les lignes produits en trop (croix rouge) pour ne garder que {{ freeItemsLimit|default(2) }} articles au maximum, puis renvoyez votre demande sans frais.
+                        Sinon, effectuez le paiement indiqué ci-dessous pour envoyer votre demande avec plus de {{ freeItemsLimit|default(2) }} articles.
+                    </p>
+                </div>
+                <p class="mb-2">À partir du {{ (freeItemsLimit|default(2)) + 1 }}e article, chaque article supplémentaire est facturé <strong>{{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar</strong>.</p>
                 <div class="alert alert-light border mb-3">
                     <div class="d-flex justify-content-between">
                         <span>Articles payants</span>
@@ -488,12 +527,20 @@
                         <strong id="quotePaymentItemPrice">{{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar</strong>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span>Montant total a payer</span>
+                        <span>Montant total à payer</span>
                         <strong id="quotePaymentTotal">0 Ar</strong>
                     </div>
                 </div>
-                <p class="mb-2">Veuillez effectuer le paiement au numéro suivant : <strong id="quotePaymentPhone">{{ primaryContactPhone }}</strong></p>
-                <p class="mb-3">Ensuite, renseignez la référence de paiement pour continuer l'ajout de produits.</p>
+                <p class="mb-2">
+                    Veuillez effectuer le paiement au numéro suivant :
+                    <strong id="quotePaymentPhone">{{ primaryContactPhone }}</strong>
+                    <span class="text-muted"> (il est préférable de confirmer le paiement par appel, s'il vous plaît)</span>
+                </p>
+                <p class="mb-2 small text-muted">
+                    <strong>Important :</strong> le paiement ne signifie pas un traitement immédiat de votre demande.
+                    Le devis sera traité dans un délai de <strong>24 h à 72 h après confirmation du paiement</strong> par notre équipe.
+                </p>
+                <p class="mb-3">Ensuite, indiquez la référence de votre paiement ci-dessous pour envoyer votre demande.</p>
                 <label for="quotePaymentReferenceInput" class="form-label">Référence de paiement</label>
                 <input type="text" id="quotePaymentReferenceInput" class="form-control" placeholder="Ex: TXN-123456" />
                 <div id="quotePaymentReferenceError" class="text-danger small mt-2 d-none">
@@ -502,7 +549,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" id="quotePaymentValidateBtn">Valider et continuer</button>
+                <button type="button" class="btn btn-primary" id="quotePaymentValidateBtn">Valider et envoyer</button>
             </div>
         </div>
     </div>

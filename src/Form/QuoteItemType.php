@@ -62,13 +62,16 @@ class QuoteItemType extends AbstractType
                         'message' => 'La description du produit est obligatoire'
                     ]),
                     new Length([
-                        'min' => 10,
+                        'min' => QuoteItem::DESCRIPTION_MIN_LENGTH,
                         'minMessage' => 'La description doit contenir au moins {{ limit }} caractères'
                     ])
                 ],
                 'attr' => [
+                    'class' => 'form-control quote-item-description',
                     'placeholder' => 'Décrivez le produit en détail (caractéristiques, dimensions, matériaux, etc.)',
-                    'rows' => 4
+                    'rows' => 4,
+                    'minlength' => (string) QuoteItem::DESCRIPTION_MIN_LENGTH,
+                    'data-min-length' => (string) QuoteItem::DESCRIPTION_MIN_LENGTH,
                 ]
             ])
             ->add('quantity', NumberType::class, [

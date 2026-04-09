@@ -12,6 +12,9 @@ use Symfony\Component\HttpFoundation\File\File;
 #[ORM\HasLifecycleCallbacks]
 class QuoteItem
 {
+    /** Longueur minimale de la description (formulaire + validation). */
+    public const DESCRIPTION_MIN_LENGTH = 10;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -30,7 +33,7 @@ class QuoteItem
 
     #[ORM\Column(type: 'text')]
     #[Assert\NotBlank(message: 'La description du produit est obligatoire')]
-    #[Assert\Length(min: 10, minMessage: 'La description doit contenir au moins {{ limit }} caractères')]
+    #[Assert\Length(min: self::DESCRIPTION_MIN_LENGTH, minMessage: 'La description doit contenir au moins {{ limit }} caractères')]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
