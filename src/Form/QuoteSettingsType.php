@@ -15,22 +15,6 @@ class QuoteSettingsType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('freeItemsLimit', IntegerType::class, [
-                'label' => 'Nombre d\'articles gratuits pour le premier devis',
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Veuillez entrer un nombre d\'articles gratuits',
-                    ]),
-                    new Positive([
-                        'message' => 'Le nombre d\'articles gratuits doit être positif',
-                    ]),
-                ],
-                'attr' => [
-                    'min' => 1,
-                    'class' => 'form-control',
-                ],
-                'help' => 'Pour le premier devis d\'un utilisateur, combien d\'articles sont gratuits ?',
-            ])
             ->add('itemPrice', IntegerType::class, [
                 'label' => 'Prix par article (en Ariary)',
                 'constraints' => [

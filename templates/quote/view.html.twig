@@ -328,8 +328,6 @@
                         </div>
                         <div class="admin-card-body">
                             {% set feeDetails = feeDetails is defined ? feeDetails : {} %}
-                            {% set isFirstQuote = feeDetails.isFirstQuote ?? (quote.user ? (quote.user.quotes|length <= 1) : true) %}
-                            
                             <div class="mb-3">
                                 <p class="mb-2">
                                     <strong>Statut:</strong> 
@@ -344,12 +342,10 @@
                                     {% endif %}
                                 </p>
                                 
-                                {% if isFirstQuote %}
-                                    <div class="alert alert-info mb-3">
-                                        <i data-lucide="info" class="icon-sm me-2"></i>
-                                        <strong>Premier devis</strong> - Les {{ feeDetails.freeItemsLimit|default(3) }} premiers produits sont gratuits.
-                                    </div>
-                                {% endif %}
+                                <div class="alert alert-info mb-3">
+                                    <i data-lucide="info" class="icon-sm me-2"></i>
+                                    Les {{ feeDetails.freeItemsLimit|default(2) }} premiers produits sont gratuits.
+                                </div>
                                 
                                 <div class="d-flex justify-content-between border-bottom py-2">
                                     <span>Nombre total de produits:</span>
@@ -378,6 +374,25 @@
                                         <span>Montant total:</span>
                                         <strong>{{ feeDetails.totalFee|default(feeDetails.paidItems|default(quote.items|length) * feeDetails.itemPrice|default(5000))|number_format(0, ',', ' ') }} Ar</strong>
                                     </div>
+
+                                    <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                                        <span>Reference mobile money:</span>
+                                        <strong>
+                                            {% if quote.transactionReference %}
+                                                {{ quote.transactionReference }}
+                                            {% else %}
+                                                <span class="text-muted">Non renseignee</span>
+                                            {% endif %}
+                                        </strong>
+                                    </div>
+
+                                    {% if quote.isPaymentRequired and not quote.isPaid %}
+                                        <div class="mt-3">
+                                            <a href="{{ path('app_quote_mark_as_paid', {'id': quote.id}) }}" class="btn btn-success btn-sm">
+                                                <i data-lucide="credit-card" class="me-2"></i> Confirmer paiement
+                                            </a>
+                                        </div>
+                                    {% endif %}
                                     
                                     {% if not quote.isPaid and quote.isPaymentRequired %}
                                         <div class="alert alert-warning mt-3 mb-0">

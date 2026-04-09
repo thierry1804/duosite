@@ -116,6 +116,52 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gestion du bouton d'ajout d'élément
     const addItemButton = document.querySelector('.add-item-btn');
     const itemsWrapper = document.querySelector('.quote-items-wrapper');
+    const paymentModalElement = document.getElementById('quotePaymentModal');
+    const paymentReferenceInput = document.getElementById('quotePaymentReferenceInput');
+    const paymentReferenceError = document.getElementById('quotePaymentReferenceError');
+    const paymentValidateButton = document.getElementById('quotePaymentValidateBtn');
+    const transactionReferenceInput = document.getElementById('quote_transactionReference');
+    const paymentPaidItems = document.getElementById('quotePaymentPaidItems');
+    const paymentTotal = document.getElementById('quotePaymentTotal');
+    const formFreeItemsLimit = form ? parseInt(form.dataset.freeItemsLimit || '2', 10) : 2;
+    const itemPrice = form ? parseInt(form.dataset.itemPrice || '0', 10) : 0;
+    const freeItemsLimit = Number.isNaN(formFreeItemsLimit)
+        ? (addItemButton ? parseInt(addItemButton.dataset.freeItemsLimit || '2', 10) : 2)
+        : formFreeItemsLimit;
+    const paymentModal = paymentModalElement && window.bootstrap ? new window.bootstrap.Modal(paymentModalElement) : null;
+    let paymentValidatedForExtraItems = !!(transactionReferenceInput && transactionReferenceInput.value.trim() !== '');
+    let isSubmittingAfterPaymentModal = false;
+
+    if (paymentValidateButton && paymentReferenceInput) {
+        paymentValidateButton.addEventListener('click', function() {
+            const reference = paymentReferenceInput.value.trim();
+            if (!reference) {
+                if (paymentReferenceError) {
+                    paymentReferenceError.classList.remove('d-none');
+                }
+                return;
+            }
+
+            if (paymentReferenceError) {
+                paymentReferenceError.classList.add('d-none');
+            }
+            if (transactionReferenceInput) {
+                transactionReferenceInput.value = reference;
+            }
+            paymentValidatedForExtraItems = true;
+            isSubmittingAfterPaymentModal = true;
+            if (paymentModal) {
+                paymentModal.hide();
+            }
+            if (form) {
+                if (typeof form.requestSubmit === 'function') {
+                    form.requestSubmit();
+                } else {
+                    form.submit();
+                }
+            }
+        });
+    }
     
     if (addItemButton && itemsWrapper) {
         addItemButton.addEventListener('click', function() {
@@ -421,6 +467,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gestion du loader pendant la soumission
     if (form) {
         form.addEventListener('submit', function(event) {
+            if (isSubmittingAfterPaymentModal) {
+                isSubmittingAfterPaymentModal = false;
+                return true;
+            }
+
+            const currentItemsCount = document.querySelectorAll('.quote-item').length;
+            const currentReference = transactionReferenceInput ? transactionReferenceInput.value.trim() : '';
+
+            if (currentItemsCount > freeItemsLimit && !currentReference) {
+                event.preventDefault();
+                const paidItems = currentItemsCount - freeItemsLimit;
+                const totalAmount = Math.max(0, paidItems) * Math.max(0, itemPrice);
+                if (paymentPaidItems) {
+                    paymentPaidItems.textContent = String(Math.max(0, paidItems));
+                }
+                if (paymentTotal) {
+                    paymentTotal.textContent = `${totalAmount.toLocaleString('fr-FR')} Ar`;
+                }
+                if (paymentModal) {
+                    paymentModal.show();
+                } else {
+                    alert('Le paiement est requis a partir du 3e article. Veuillez renseigner la reference de paiement.');
+                }
+                return false;
+            }
+
             // Vérifier si le choix d'envoi est visible (maintenant toujours visible)
             if (shippingMethodContainer && shippingMethodContainer.style.display === 'block') {
                 const shippingMethodSelected = Array.from(

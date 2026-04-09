@@ -8,6 +8,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -106,6 +107,9 @@ class QuoteType extends AbstractType
                         'message' => 'Vous devez accepter la politique de confidentialité'
                     ])
                 ]
+            ])
+            ->add('transactionReference', HiddenType::class, [
+                'required' => false,
             ])
             ->add('items', CollectionType::class, [
                 'entry_type' => QuoteItemType::class,

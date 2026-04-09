@@ -15,7 +15,7 @@ class QuoteSettings
     private ?int $id = null;
 
     #[ORM\Column]
-    private int $freeItemsLimit = 5;
+    private int $freeItemsLimit = 2;
 
     #[ORM\Column]
     private int $itemPrice = 2000;

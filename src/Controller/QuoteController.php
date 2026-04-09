@@ -7,7 +7,9 @@ use App\Entity\QuoteOffer;
 use App\Entity\QuoteSettings;
 use App\Entity\User;
 use App\Entity\QuoteItem;
+use App\Entity\QuoteStatusHistory;
 use App\Form\QuoteType;
+use App\Repository\QuoteSettingsRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -45,10 +47,13 @@ class QuoteController extends AbstractController
         UserRepository $userRepository,
         UserPasswordHasherInterface $passwordHasher,
         SluggerInterface $slugger,
+        QuoteSettingsRepository $quoteSettingsRepository,
         QuoteFeeCalculator $feeCalculator,
         UserIdentityTracker $identityTracker,
         QuoteTrackerService $quoteTrackerService,
-        EventDispatcherInterface $eventDispatcher
+        EventDispatcherInterface $eventDispatcher,
+        #[Autowire('%app.primary_contact_phone%')]
+        string $primaryContactPhone
     ): Response
     {
         $quote = new Quote();
@@ -82,9 +87,14 @@ class QuoteController extends AbstractController
         }
         $form->handleRequest($request);
 
+        $quoteSettings = $quoteSettingsRepository->getSettings();
+        $freeItemsLimit = 2;
+        $itemPrice = $quoteSettings->getItemPrice();
+
         if ($form->isSubmitted()) {
             // Vérifier que chaque item a les champs obligatoires remplis
             $itemsValid = true;
+            $paymentReferenceValid = true;
             foreach ($quote->getItems() as $item) {
                 if (empty($item->getProductType()) || empty($item->getDescription()) || empty($item->getQuantity())) {
                     $itemsValid = false;
@@ -97,8 +107,21 @@ class QuoteController extends AbstractController
                     break;
                 }
             }
+
+            $itemCount = count($quote->getItems());
+            if ($itemCount > $freeItemsLimit) {
+                $transactionReference = trim((string) $quote->getTransactionReference());
+                if ($transactionReference === '') {
+                    $paymentReferenceValid = false;
+                }
+                // Sur une nouvelle demande publique, le paiement ne peut pas être auto-confirmé côté client.
+                $quote->setPaymentStatus('pending');
+            } else {
+                $quote->setPaymentStatus('not_required');
+                $quote->setTransactionReference(null);
+            }
             
-            if ($form->isValid() && $itemsValid) {
+            if ($form->isValid() && $itemsValid && $paymentReferenceValid) {
                 try {
                     // Définir le statut initial
                     $quote->setStatus('pending');
@@ -283,11 +306,17 @@ class QuoteController extends AbstractController
                 if (!$itemsValid) {
                     $this->addFlash('error', 'Veuillez remplir tous les champs obligatoires pour chaque produit (type, description et quantité).');
                 }
+                if (!$paymentReferenceValid) {
+                    $this->addFlash('error', 'Le paiement est requis à partir du 3e article. Veuillez renseigner la référence de paiement pour continuer.');
+                }
             }
         }
         
         return $this->render('quote/index.html.twig', [
             'form' => $form->createView(),
+            'freeItemsLimit' => $freeItemsLimit,
+            'itemPrice' => $itemPrice,
+            'primaryContactPhone' => $primaryContactPhone,
         ]);
     }
     
@@ -309,7 +338,7 @@ class QuoteController extends AbstractController
 
         // Un seul chargement des paramètres + une requête pour les comptes par user (au lieu de N)
         $quoteSettings = $entityManager->getRepository(QuoteSettings::class)->findOneBy([]);
-        $freeItemsLimit = $quoteSettings ? $quoteSettings->getFreeItemsLimit() : 3;
+        $freeItemsLimit = 2;
         $userIds = array_unique(array_filter(array_map(fn (Quote $q) => $q->getUser()?->getId(), $allQuotes)));
         $userQuotesCountMap = $quoteRepository->countByUserIds($userIds);
 
@@ -714,8 +743,24 @@ class QuoteController extends AbstractController
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
+            $previousStatus = (string) $quote->getStatus();
+
             // Marquer le devis comme payé
             $quote->setPaymentStatus('completed');
+
+            // Historiser explicitement la confirmation de paiement (sans changer le statut métier du devis)
+            $history = new QuoteStatusHistory();
+            $history->setQuote($quote);
+            $history->setOldStatus($previousStatus);
+            $history->setNewStatus($previousStatus);
+            $history->setChangedBy($this->getUser()?->getEmail() ?? 'system');
+            $history->setComment(sprintf(
+                'Paiement confirme (reference: %s, date: %s).',
+                $quote->getTransactionReference() ?? 'N/A',
+                $quote->getPaymentDate()?->format('d/m/Y H:i') ?? 'N/A'
+            ));
+            $entityManager->persist($history);
+
             $entityManager->flush();
             
             $this->addFlash('success', 'Le paiement du devis a été confirmé. Vous pouvez maintenant le traiter.');

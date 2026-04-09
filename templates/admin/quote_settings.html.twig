@@ -18,14 +18,6 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            {{ form_label(form.freeItemsLimit) }}
-                            {{ form_widget(form.freeItemsLimit, {'attr': {'class': 'form-control'}}) }}
-                            <div class="form-text">{{ form_help(form.freeItemsLimit) }}</div>
-                            <div class="invalid-feedback">{{ form_errors(form.freeItemsLimit) }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
                             {{ form_label(form.itemPrice) }}
                             {{ form_widget(form.itemPrice, {'attr': {'class': 'form-control'}}) }}
                             <div class="form-text">{{ form_help(form.itemPrice) }}</div>
@@ -37,9 +29,8 @@
                 <div class="alert alert-info">
                     <h5>Règles de gestion actuelles :</h5>
                     <ul>
-                        <li>Pour la première demande de devis d'un utilisateur, les {{ form.vars.value.freeItemsLimit }} premiers articles sont gratuits.</li>
-                        <li>Au-delà de {{ form.vars.value.freeItemsLimit }} articles, chaque article supplémentaire est facturé {{ form.vars.value.itemPrice|number_format(0, ' ', '.') }} Ariary.</li>
-                        <li>Pour tous les devis suivants, tous les articles sont facturés {{ form.vars.value.itemPrice|number_format(0, ' ', '.') }} Ariary chacun.</li>
+                        <li>Les 2 premiers articles d'une demande sont gratuits.</li>
+                        <li>A partir du 3e article, chaque article supplémentaire est facturé {{ form.vars.value.itemPrice|number_format(0, ' ', '.') }} Ariary.</li>
                     </ul>
                 </div>
                 

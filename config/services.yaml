@@ -7,6 +7,7 @@ parameters:
     # Mettre APP_QUOTE_ORDER_SUSPENDED=0 dans .env.local pour réactiver les formulaires (devis + commande import).
     env(APP_QUOTE_ORDER_SUSPENDED): '1'
     app.quote_and_order_suspended: '%env(bool:APP_QUOTE_ORDER_SUSPENDED)%'
+    app.primary_contact_phone: '+261 38 42 711 68'
     quote_photos_directory: '%kernel.project_dir%/public/uploads/quote_photos'
     product_proposal_images_directory: '%kernel.project_dir%/public/uploads/product_proposals'
     import_product_photos_directory: '%kernel.project_dir%/public/uploads/import_products'

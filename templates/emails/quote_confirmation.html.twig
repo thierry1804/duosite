@@ -59,14 +59,13 @@
                     <h4>Détails du calcul:</h4>
                     <ul>
                         <li>Nombre total de produits: <strong>{{ feeDetails.itemCount|default(quote.items|length) }}</strong></li>
-                        {% if feeDetails.isFirstQuote|default(false) %}
-                            <li>Produits gratuits (premier devis): <strong>{{ feeDetails.freeItems|default(0) }}</strong></li>
-                        {% endif %}
+                        <li>Produits gratuits: <strong>{{ feeDetails.freeItems|default(0) }}</strong></li>
                         <li>Produits payants: <strong>{{ feeDetails.paidItems|default(feeDetails.itemCount|default(quote.items|length)) }}</strong></li>
                         <li>Prix par produit: <strong>{{ feeDetails.itemPrice|default(5000)|number_format(0, ',', ' ') }} Ar</strong></li>
                     </ul>
                     
-                    <p>Veuillez effectuer votre paiement par mobile money au <strong>032 XX XX XX</strong> en indiquant votre numéro de devis.</p>
+                    <p>Veuillez effectuer votre paiement par mobile money au <strong>+261 38 42 711 68</strong>.</p>
+                    <p>Indiquez ensuite votre numero de devis et votre reference de paiement pour faciliter la verification.</p>
                 </div>
             {% endif %}
         </div>

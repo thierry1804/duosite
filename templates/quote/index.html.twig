@@ -283,7 +283,13 @@
         <p class="loader-text">Envoi de votre demande en cours...</p>
     </div>
     
-    {{ form_start(form, {'attr': {'class': 'needs-validation', 'id': 'quoteForm', 'novalidate': 'novalidate'}}) }}
+    {{ form_start(form, {'attr': {
+        'class': 'needs-validation',
+        'id': 'quoteForm',
+        'novalidate': 'novalidate',
+        'data-free-items-limit': freeItemsLimit|default(2),
+        'data-item-price': itemPrice|default(0)
+    }}) }}
         {{ form_errors(form) }}
 
         <div id="tour-quote-coordinates">
@@ -372,9 +378,17 @@
             {% endfor %}
         </div>
         
-        <button type="button" class="btn btn-outline-primary add-item-btn" id="quote-add-item-btn">
+        <button
+            type="button"
+            class="btn btn-outline-primary add-item-btn"
+            id="quote-add-item-btn"
+            data-free-items-limit="{{ freeItemsLimit|default(2) }}"
+        >
             <i class="fas fa-plus-circle me-2"></i> Ajouter un produit
         </button>
+        <p class="small text-muted mb-4">
+            Les {{ freeItemsLimit|default(2) }} premiers articles sont gratuits. A partir du {{ (freeItemsLimit|default(2)) + 1 }}e article, chaque article suppleméntaire est facturé {{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar.
+        </p>
         </div>
         
         <div id="tour-quote-shipping">
@@ -453,6 +467,46 @@
         </div>
     {{ form_end(form) }}
 </div>
+
+<div class="modal fade" id="quotePaymentModal" tabindex="-1" aria-labelledby="quotePaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quotePaymentModalLabel">Demande payante a partir du {{ (freeItemsLimit|default(2)) + 1 }}e article</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Vous avez atteint la limite des {{ freeItemsLimit|default(2) }} articles gratuits.</p>
+                <p class="mb-2">A partir du {{ (freeItemsLimit|default(2)) + 1 }}e article, chaque article suppleméntaire est facturé <strong>{{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar</strong>.</p>
+                <div class="alert alert-light border mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Articles payants</span>
+                        <strong id="quotePaymentPaidItems">0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Prix unitaire</span>
+                        <strong id="quotePaymentItemPrice">{{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Montant total a payer</span>
+                        <strong id="quotePaymentTotal">0 Ar</strong>
+                    </div>
+                </div>
+                <p class="mb-2">Veuillez effectuer le paiement au numéro suivant : <strong id="quotePaymentPhone">{{ primaryContactPhone }}</strong></p>
+                <p class="mb-3">Ensuite, renseignez la référence de paiement pour continuer l'ajout de produits.</p>
+                <label for="quotePaymentReferenceInput" class="form-label">Référence de paiement</label>
+                <input type="text" id="quotePaymentReferenceInput" class="form-control" placeholder="Ex: TXN-123456" />
+                <div id="quotePaymentReferenceError" class="text-danger small mt-2 d-none">
+                    Veuillez renseigner la référence de paiement.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="quotePaymentValidateBtn">Valider et continuer</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endif %}
 {% endblock %}
 
@@ -460,7 +514,7 @@
 {{ parent() }}
 {% if not app_quote_order_suspended %}
 <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js" crossorigin="anonymous"></script>
-<script src="{{ asset('js/quote.min.js') }}" defer></script>
+<script src="{{ asset('js/quote.js') }}" defer></script>
 <script>
 (function() {
     function getDriverFactory() {
