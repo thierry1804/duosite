@@ -367,12 +367,12 @@
                                 {% if feeDetails.paidItems|default(0) > 0 %}
                                     <div class="d-flex justify-content-between border-bottom py-2">
                                         <span>Prix par produit:</span>
-                                        <strong>{{ feeDetails.itemPrice|default(5000)|number_format(0, ',', ' ') }} Ar</strong>
+                                        <strong>{{ feeDetails.itemPrice|default(2000)|number_format(0, ',', ' ') }} Ar</strong>
                                     </div>
                                     
                                     <div class="d-flex justify-content-between py-2">
                                         <span>Montant total:</span>
-                                        <strong>{{ feeDetails.totalFee|default(feeDetails.paidItems|default(quote.items|length) * feeDetails.itemPrice|default(5000))|number_format(0, ',', ' ') }} Ar</strong>
+                                        <strong>{{ feeDetails.totalFee|default(feeDetails.paidItems|default(quote.items|length) * feeDetails.itemPrice|default(2000))|number_format(0, ',', ' ') }} Ar</strong>
                                     </div>
 
                                     <div class="d-flex justify-content-between border-top pt-2 mt-2">

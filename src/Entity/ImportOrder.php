@@ -286,7 +286,7 @@ class ImportOrder
         return match ($this->shippingType) {
             'maritime' => 'Envoi maritime (délai estimé : 50-70 jours)',
             'air_express' => 'Envoi aérien express (délai estimé : 3-5 jours)',
-            'air_normal' => 'Envoi aérien normal (délai estimé : 10-30 jours)',
+            'air_normal' => 'Envoi aérien normal (délai estimé : 10-20 jours)',
             default => $this->shippingType,
         };
     }
@@ -297,7 +297,7 @@ class ImportOrder
         return match ($this->shippingType) {
             'maritime' => 'Maritime (50-70 j.)',
             'air_express' => 'Aérien express (3-5 j.)',
-            'air_normal' => 'Aérien normal (10-30 j.)',
+            'air_normal' => 'Aérien normal (10-20 j.)',
             default => $this->shippingType,
         };
     }

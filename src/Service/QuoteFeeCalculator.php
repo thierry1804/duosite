@@ -30,7 +30,7 @@ class QuoteFeeCalculator
         $settings = $this->cachedSettings;
         // Règle métier fixe: 2 articles gratuits maximum par demande.
         $freeItemsLimit = 2;
-        $itemPrice = $settings ? $settings->getItemPrice() : 5000;
+        $itemPrice = $settings ? $settings->getItemPrice() : 2000;
         $itemCount = count($quote->getItems());
 
         if ($itemCount <= $freeItemsLimit) {

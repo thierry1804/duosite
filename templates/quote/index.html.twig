@@ -422,6 +422,10 @@
         <p class="small text-muted mb-4">
             Les {{ freeItemsLimit|default(2) }} premiers articles sont gratuits. À partir du {{ (freeItemsLimit|default(2)) + 1 }}e article, chaque article supplémentaire est facturé {{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar.
         </p>
+        <div class="alert alert-light border mb-4" id="tour-quote-payment-modalities">
+            <h3 class="h6 mb-2">Modalités de paiement</h3>
+            <p class="small mb-0">Le paiement s'effectue par Mobile Money. Les frais de retrait sont entièrement à la charge du client. Le traitement du devis ne débutera qu'à réception du paiement.</p>
+        </div>
         </div>
         
         <div id="tour-quote-shipping">
@@ -468,7 +472,7 @@
                     </div>
                     {{ form_errors(form.shippingMethod) }}
                     <p class="small text-muted mt-2 fst-italic">
-                        <strong>Les envois aériens</strong> ont un départ hebdomadaire. Les délais de <strong>3 à 5 jours</strong> et <strong>10 à 30 jours</strong> <u>commencent uniquement à partir du départ de l’avion</u>, après réception des marchandises auprès des fournisseurs.
+                        <strong>Les envois aériens</strong> ont un départ hebdomadaire. Les délais de <strong>3 à 5 jours</strong> et <strong>10 à 20 jours</strong> <u>commencent uniquement à partir du départ de l’avion</u>, après réception des marchandises auprès des fournisseurs.
                     </p>
                 </div>
             </div>

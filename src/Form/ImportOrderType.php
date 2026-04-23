@@ -63,7 +63,7 @@ class ImportOrderType extends AbstractType
                 'choices' => [
                     'Envoi maritime (délai estimé : 50-70 jours)' => 'maritime',
                     'Envoi aérien express (délai estimé : 3-5 jours)' => 'air_express',
-                    'Envoi aérien normal (délai estimé : 10-30 jours)' => 'air_normal',
+                    'Envoi aérien normal (délai estimé : 10-20 jours)' => 'air_normal',
                 ],
                 'attr' => ['class' => 'form-control form-select'],
             ])

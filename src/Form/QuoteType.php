@@ -72,7 +72,7 @@ class QuoteType extends AbstractType
                 'choices' => [
                     'Envoi maritime (délai estimé: 50-70 jours)' => 'maritime',
                     'Envoi aérien express (délai estimé: 3-5 jours)' => 'aerien_express',
-                    'Envoi aérien normal (délai estimé: 10-30 jours)' => 'aerien_normal',
+                    'Envoi aérien normal (délai estimé: 10-20 jours)' => 'aerien_normal',
                 ],
                 'expanded' => true,
                 'multiple' => true,

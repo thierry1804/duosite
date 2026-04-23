@@ -42,8 +42,8 @@
             <p>Nombre total d'articles : <strong>{{ feeDetails.itemCount|default(quote.items|length) }}</strong></p>
             <p>Articles gratuits : <strong>{{ feeDetails.freeItems|default(0) }}</strong></p>
             <p>Articles payants : <strong>{{ feeDetails.paidItems|default(quote.items|length) }}</strong></p>
-            <p>Prix par article : <strong>{{ feeDetails.itemPrice|default(5000)|number_format(0, ',', ' ') }} Ar</strong></p>
-            <p>Montant total : <strong>{{ feeDetails.totalFee|default(feeDetails.paidItems|default(quote.items|length) * feeDetails.itemPrice|default(5000))|number_format(0, ',', ' ') }} Ar</strong></p>
+            <p>Prix par article : <strong>{{ feeDetails.itemPrice|default(2000)|number_format(0, ',', ' ') }} Ar</strong></p>
+            <p>Montant total : <strong>{{ feeDetails.totalFee|default(feeDetails.paidItems|default(quote.items|length) * feeDetails.itemPrice|default(2000))|number_format(0, ',', ' ') }} Ar</strong></p>
             {% if quote.transactionReference %}
                 <p>Reference de paiement client : <strong>{{ quote.transactionReference }}</strong></p>
             {% endif %}
