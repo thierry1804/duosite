@@ -8,9 +8,14 @@ use App\Entity\QuoteSettings;
 use App\Entity\User;
 use App\Entity\QuoteItem;
 use App\Entity\QuoteStatusHistory;
+use App\Form\AdminManualQuoteType;
 use App\Form\QuoteType;
 use App\Repository\QuoteSettingsRepository;
 use App\Repository\UserRepository;
+use App\Entity\ProductProposal;
+use App\Entity\ShippingOption;
+use App\Shipping\ShippingOptionChoices;
+use App\Service\ExchangeRateService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -320,6 +325,357 @@ class QuoteController extends AbstractController
         ]);
     }
     
+    #[Route('/admin/quote/create-manual', name: 'app_admin_quote_create_manual', methods: ['GET', 'POST'])]
+    public function createManual(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository,
+        UserPasswordHasherInterface $passwordHasher,
+        SluggerInterface $slugger,
+        UserIdentityTracker $identityTracker,
+        QuoteTrackerService $quoteTrackerService,
+        ExchangeRateService $exchangeRateService,
+        PdfGenerator $pdfGenerator,
+        MailerInterface $mailer,
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $quote = new Quote();
+        $quote->setServices(['Sourcing et négociation', 'Transport et logistique']);
+        $quote->setPrivacyPolicy(true);
+        $quote->addItem(new QuoteItem());
+
+        $rmbRate = $exchangeRateService->getRmbMgaRate();
+
+        $form = $this->createForm(AdminManualQuoteType::class, $quote);
+        if ($rmbRate !== null) {
+            $form->get('rmbMgaExchangeRate')->setData((float) $rmbRate);
+        }
+        $form->get('offerTitle')->setData('Offre ' . date('d/m/Y'));
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $action = (string) $request->request->get('action', 'draft');
+            if (!in_array($action, ['draft', 'send'], true)) {
+                $action = 'draft';
+            }
+
+            $freeItemsLimit = 2;
+            $itemsValid = true;
+            foreach ($quote->getItems() as $item) {
+                if (empty($item->getProductType()) || empty($item->getDescription()) || empty($item->getQuantity())) {
+                    $itemsValid = false;
+                    break;
+                }
+                if ($item->getProductType() === 'Autre' && empty($item->getOtherProductType())) {
+                    $itemsValid = false;
+                    break;
+                }
+            }
+
+            if (!$itemsValid) {
+                $this->addFlash('error', 'Chaque article doit avoir un type, une description et une quantité.');
+            } elseif (count($quote->getItems()) === 0) {
+                $this->addFlash('error', 'Ajoutez au moins un article.');
+            } else {
+                $itemCount = count($quote->getItems());
+                $paymentConfirmed = (bool) $form->get('paymentConfirmed')->getData();
+                $transactionReference = trim((string) $quote->getTransactionReference());
+
+                if ($itemCount > $freeItemsLimit) {
+                    if ($transactionReference === '') {
+                        $this->addFlash('error', 'Une référence de paiement est obligatoire pour plus de 2 articles.');
+
+                        return $this->render('quote/create_manual.html.twig', [
+                            'form' => $form->createView(),
+                            'rmb_rate' => $rmbRate,
+                            'users_json' => $this->buildUsersJsonForManualQuote($userRepository),
+                        ]);
+                    }
+                    $quote->setPaymentStatus('pending');
+                    if ($paymentConfirmed) {
+                        $quote->setPaymentStatus('completed');
+                        $quote->setPaymentDate(new \DateTime());
+                    }
+                } else {
+                    $quote->setPaymentStatus('not_required');
+                    $quote->setTransactionReference(null);
+                }
+
+                if ($action === 'send' && $quote->isPaymentRequired() && !$quote->isPaid()) {
+                    $this->addFlash('error', 'Confirmez le paiement avant d\'envoyer l\'offre au client (ou enregistrez en brouillon).');
+
+                    return $this->render('quote/create_manual.html.twig', [
+                        'form' => $form->createView(),
+                        'rmb_rate' => $rmbRate,
+                        'users_json' => $this->buildUsersJsonForManualQuote($userRepository),
+                    ]);
+                }
+
+                /** @var User|null $selectedUser */
+                $selectedUser = $form->get('selectedUser')->getData();
+                if ($selectedUser instanceof User) {
+                    $quote->setFirstName($selectedUser->getFirstName());
+                    $quote->setLastName($selectedUser->getLastName());
+                    $quote->setEmail($selectedUser->getEmail());
+                    $quote->setPhone($selectedUser->getPhone() ?? $quote->getPhone());
+                    $quote->setCompany($selectedUser->getCompany() ?? $quote->getCompany());
+                    $quote->setUser($selectedUser);
+                    $identityTracker->traceUserIdentity($quote);
+                } else {
+                    $existingUser = $userRepository->findByEmailOrPhone(
+                        (string) $quote->getEmail(),
+                        (string) $quote->getPhone()
+                    );
+                    if ($existingUser) {
+                        $quote->setUser($existingUser);
+                        $identityTracker->traceUserIdentity($quote);
+                    } else {
+                        $newUser = new User();
+                        $newUser->setEmail($quote->getEmail());
+                        $newUser->setFirstName($quote->getFirstName());
+                        $newUser->setLastName($quote->getLastName());
+                        $newUser->setPhone($quote->getPhone());
+                        $newUser->setCompany($quote->getCompany());
+                        $randomPassword = bin2hex(random_bytes(8));
+                        $newUser->setPassword($passwordHasher->hashPassword($newUser, $randomPassword));
+                        $entityManager->persist($newUser);
+                        $quote->setUser($newUser);
+                        $identityTracker->traceUserIdentity($quote);
+                    }
+                }
+
+                $quote->setPrivacyPolicy(true);
+                $quote->setStatus('pending');
+
+                // Photos des articles
+                $filesData = $request->files->get('admin_manual_quote');
+                if (isset($filesData['items']) && is_array($filesData['items'])) {
+                    $uploadDir = $this->getParameter('quote_photos_directory');
+                    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                        throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $uploadDir));
+                    }
+                    foreach ($form->get('items') as $index => $itemForm) {
+                        if (!isset($filesData['items'][$index]['photoFile']) || !$filesData['items'][$index]['photoFile']) {
+                            continue;
+                        }
+                        $photoFile = $filesData['items'][$index]['photoFile'];
+                        $item = $itemForm->getData();
+                        $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
+                        $safeFilename = $slugger->slug($originalFilename);
+                        $newFilename = $safeFilename . '-' . uniqid() . '.' . $photoFile->guessExtension();
+                        try {
+                            $photoFile->move($uploadDir, $newFilename);
+                            $item->setPhotoFilename($newFilename);
+                        } catch (FileException $e) {
+                            error_log('Erreur upload photo article: ' . $e->getMessage());
+                        }
+                    }
+                }
+
+                $entityManager->persist($quote);
+                $entityManager->flush();
+
+                $quoteTrackerService->createInitialHistory($quote, $this->getUser()?->getEmail() ?? 'admin');
+                $quoteTrackerService->changeStatus(
+                    $quote,
+                    'in_progress',
+                    'Créé manuellement par l\'admin',
+                    $this->getUser()?->getEmail()
+                );
+
+                // Offre
+                $offer = new QuoteOffer();
+                $offer->setQuote($quote);
+                $offer->setTitle((string) $form->get('offerTitle')->getData());
+                $offer->setDescription($form->get('offerDescription')->getData());
+                $rate = $form->get('rmbMgaExchangeRate')->getData();
+                if ($rate !== null && $rate !== '') {
+                    $offer->setRmbMgaExchangeRate((string) $rate);
+                }
+
+                $itemsList = $quote->getItems()->toArray();
+                $proposalForms = $form->get('productProposals');
+                foreach ($proposalForms as $proposalForm) {
+                    /** @var ProductProposal $proposal */
+                    $proposal = $proposalForm->getData();
+                    if (!$proposal instanceof ProductProposal) {
+                        continue;
+                    }
+                    $itemIndex = $proposalForm->get('quoteItemIndex')->getData();
+                    if ($itemIndex === null || !isset($itemsList[(int) $itemIndex])) {
+                        $this->addFlash('error', 'Une proposition produit référence un article invalide. Complétez l\'offre depuis la fiche devis.');
+                        $entityManager->flush();
+
+                        return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+                    }
+                    $proposal->setQuoteItem($itemsList[(int) $itemIndex]);
+                    $offer->addProductProposal($proposal);
+
+                    $imageFiles = $proposal->getImageFiles();
+                    if ($imageFiles) {
+                        $uploadDir = $this->getParameter('product_proposal_images_directory');
+                        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                            throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $uploadDir));
+                        }
+                        foreach ($imageFiles as $imageFile) {
+                            if (!$imageFile) {
+                                continue;
+                            }
+                            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                            $safeFilename = $slugger->slug($originalFilename);
+                            $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                            try {
+                                $imageFile->move($uploadDir, $newFilename);
+                                $proposal->addImage($newFilename);
+                            } catch (FileException $e) {
+                                error_log('Erreur upload image proposition: ' . $e->getMessage());
+                            }
+                        }
+                    }
+                }
+
+                $shippingOptionsData = $form->get('shippingOptions')->getData();
+                if ($shippingOptionsData) {
+                    foreach ($shippingOptionsData as $shippingOption) {
+                        if ($shippingOption instanceof ShippingOption) {
+                            $offer->addShippingOption($shippingOption);
+                        }
+                    }
+                }
+
+                // Préremplir shipping si aucune option saisie mais méthodes choisies sur le devis
+                if ($offer->getShippingOptions()->isEmpty() && !empty($quote->getShippingMethod())) {
+                    $this->addDefaultShippingOptionsFromQuote($offer, $quote);
+                }
+
+                $offer->calculateTotalPrice();
+                $offer->setStatus('draft');
+                $entityManager->persist($offer);
+                $entityManager->flush();
+
+                try {
+                    $pdfPath = $pdfGenerator->generateQuoteOfferPdf($offer);
+                    $offer->setPdfFilePath($pdfPath);
+                    $entityManager->flush();
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Devis créé mais erreur PDF : ' . $e->getMessage());
+
+                    return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+                }
+
+                if ($action === 'send') {
+                    $offer->setStatus('sent');
+                    try {
+                        $email = (new Email())
+                            ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG'))
+                            ->to($quote->getEmail())
+                            ->subject('Votre devis #' . $quote->getQuoteNumber())
+                            ->html($this->renderView('emails/quote_offer.html.twig', [
+                                'quote' => $quote,
+                                'offer' => $offer,
+                            ]));
+
+                        if ($offer->getPdfFilePath()) {
+                            $pdfFullPath = $this->getParameter('kernel.project_dir') . '/public' . $offer->getPdfFilePath();
+                            if (file_exists($pdfFullPath)) {
+                                $email->attachFromPath($pdfFullPath, 'devis.pdf', 'application/pdf');
+                            }
+                        }
+
+                        $mailer->send($email);
+
+                        if ($quoteTrackerService->isTransitionAllowed($quote->getStatus(), 'waiting_customer')) {
+                            $quoteTrackerService->changeStatus(
+                                $quote,
+                                'waiting_customer',
+                                'Offre créée manuellement et envoyée au client',
+                                $this->getUser()?->getEmail()
+                            );
+                        }
+                        $entityManager->flush();
+                        $this->addFlash('success', 'Devis créé et offre envoyée au client avec le PDF.');
+                    } catch (\Exception $e) {
+                        $entityManager->flush();
+                        $this->addFlash('error', 'Devis créé, PDF généré, mais échec de l\'email : ' . $e->getMessage());
+                    }
+                } else {
+                    $entityManager->flush();
+                    $this->addFlash('success', 'Devis et offre enregistrés en brouillon (PDF généré).');
+                }
+
+                return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+            }
+        }
+
+        return $this->render('quote/create_manual.html.twig', [
+            'form' => $form->createView(),
+            'rmb_rate' => $rmbRate,
+            'users_json' => $this->buildUsersJsonForManualQuote($userRepository),
+        ]);
+    }
+
+    /**
+     * @return list<array{id: int, firstName: ?string, lastName: ?string, email: ?string, phone: ?string, company: ?string}>
+     */
+    private function buildUsersJsonForManualQuote(UserRepository $userRepository): array
+    {
+        $users = $userRepository->createQueryBuilder('u')
+            ->orderBy('u.lastName', 'ASC')
+            ->addOrderBy('u.firstName', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $payload = [];
+        foreach ($users as $user) {
+            /** @var User $user */
+            $payload[] = [
+                'id' => $user->getId(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'email' => $user->getEmail(),
+                'phone' => $user->getPhone(),
+                'company' => $user->getCompany(),
+            ];
+        }
+
+        return $payload;
+    }
+
+    private function addDefaultShippingOptionsFromQuote(QuoteOffer $offer, Quote $quote): void
+    {
+        $shippingNames = [
+            'maritime' => ShippingOptionChoices::MARITIME,
+            'aerien_express' => ShippingOptionChoices::AIR_EXPRESS,
+            'aerien_normal' => ShippingOptionChoices::AIR_STANDARD,
+        ];
+        $deliveryDays = [
+            'maritime' => 45,
+            'aerien_express' => 7,
+            'aerien_normal' => 15,
+        ];
+        $shippingDescriptions = [
+            'aerien_express' => "Les départs sont effectués chaque lundi et jeudi matin. Après la validation de votre commande, la réception des articles à l'entrepôt peut prendre 2 à 7 jours, selon le fournisseur et sa province.\nLe délai de transport express (3 à 5 jours) commence à être compté à partir du jour du départ du vol.\nLe poids minimum facturé est de 250 g. Tout article de moins de 250 g sera donc facturé à 250 g.\nLes frais d'expédition sont calculés au kilo.",
+            'aerien_normal' => "Le départ est effectué tout les vendredis matin. Après la validation de votre commande, la réception des articles à l'entrepôt peut prendre 2 à 7 jours, selon le fournisseur et sa province.\nLe délai de transport normal (10 à 15 jours) commence à être compté à partir du jour du départ du vol.\nLe poids minimum facturé est de 250 g. Tout article de moins de 250 g sera donc facturé à 250 g.\nLes frais d'expédition sont calculés au kilo.",
+            'maritime' => "Il y a deux départs chaque semaine (les jours exacts peuvent varier selon le planning des navires). Après la validation de votre commande, la réception des articles à l'entrepôt peut prendre 2 à 7 jours, selon le fournisseur et sa province.\nLe délai de transport maritime est estimé entre 55 et 75 jours, à compter du départ du bateau.\nLes frais d'expédition sont calculés au CBM (mètre cube). Pour les volumes inférieurs à 0,25 CBM, le tarif appliqué est plus élevé que pour les volumes supérieurs à 0,25 CBM.",
+        ];
+
+        foreach ($quote->getShippingMethod() as $methodCode) {
+            if (!isset($shippingNames[$methodCode])) {
+                continue;
+            }
+            $shippingOption = new ShippingOption();
+            $shippingOption->setName($shippingNames[$methodCode]);
+            $shippingOption->setDescription($shippingDescriptions[$methodCode] ?? 'Option d\'expédition choisie par le client');
+            $shippingOption->setPrice(0);
+            if (isset($deliveryDays[$methodCode])) {
+                $shippingOption->setEstimatedDeliveryDays($deliveryDays[$methodCode]);
+            }
+            $offer->addShippingOption($shippingOption);
+        }
+    }
+
     #[Route('/quote/dashboard', name: 'app_quote_dashboard')]
     public function dashboard(EntityManagerInterface $entityManager, QuoteFeeCalculator $feeCalculator): Response
     {

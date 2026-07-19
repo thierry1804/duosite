@@ -1,0 +1,18 @@
+{# Un item proposition complet (prototype / rendu) pour le wizard manuel #}
+<div class="product-proposal-item mb-4">
+    <div class="product-proposal-heading d-flex justify-content-between align-items-start mb-2">
+        <div class="d-flex align-items-start gap-2">
+            <span class="product-proposal-dot" aria-hidden="true"></span>
+            <div>
+                <div class="product-proposal-title fw-semibold">Proposition</div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline-danger btn-sm remove-product-proposal">
+            <i data-lucide="trash-2"></i>
+            <span class="ms-1">Supprimer</span>
+        </button>
+    </div>
+    <div class="product-proposal-card border rounded bg-white p-3">
+        {% include 'quote/_manual_product_proposal_fields.html.twig' with { productProposalForm: productProposalForm } %}
+    </div>
+</div>

@@ -7,7 +7,13 @@
 {% endblock %}
 
 {% block body %}
-    <h1 class="mb-4">Gestion des devis</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Gestion des devis</h1>
+        <a href="{{ path('app_admin_quote_create_manual') }}" class="btn btn-dark">
+            <i data-lucide="file-plus" class="me-1" style="width:16px;height:16px;"></i>
+            Créer un devis
+        </a>
+    </div>
     
     <div class="admin-card">
         <div class="admin-card-header">

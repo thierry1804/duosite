@@ -1,0 +1,30 @@
+{# Champs proposition pour wizard manuel (index d'article au lieu d'Entity QuoteItem) #}
+<div class="product-proposal-section">
+    <span class="form-label d-block">{{ productProposalForm.imageFiles.vars.label }}</span>
+    <div class="product-proposal-dropzone">
+        <label for="{{ productProposalForm.imageFiles.vars.id }}" class="product-proposal-dropzone-area mb-0">
+            <i data-lucide="image" class="product-proposal-dropzone-icon"></i>
+            <span class="product-proposal-dropzone-text">Glissez vos images ici ou <span class="text-primary">parcourir</span></span>
+            <span class="product-proposal-dropzone-hint">PNG, JPG, WEBP — max 5 Mo par image</span>
+            {{ form_widget(productProposalForm.imageFiles) }}
+        </label>
+        <div class="image-upload-container"></div>
+    </div>
+    {{ form_errors(productProposalForm.imageFiles) }}
+</div>
+<hr class="product-proposal-divider my-0">
+<div class="product-proposal-section">
+    {{ form_row(productProposalForm.quoteItemIndex) }}
+</div>
+<hr class="product-proposal-divider my-0">
+<div class="product-proposal-section py-3">
+    <div class="row g-3 product-proposal-details-row">
+        {{ form_row(productProposalForm.maxPrice) }}
+        {{ form_row(productProposalForm.dimensions) }}
+        {{ form_row(productProposalForm.weight) }}
+    </div>
+</div>
+<hr class="product-proposal-divider my-0">
+<div class="product-proposal-section">
+    {{ form_row(productProposalForm.comments) }}
+</div>
