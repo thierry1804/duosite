@@ -1,0 +1,16 @@
+{# Carte article pour le wizard manuel (rendu initial + prototype collection) #}
+<div class="quote-item-card">
+    <div class="quote-item-toolbar">
+        <span class="item-label">Article</span>
+        <button type="button" class="btn btn-sm btn-outline-danger remove-quote-item" aria-label="Supprimer">
+            <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
+        </button>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6">{{ form_row(itemForm.productType) }}</div>
+        <div class="col-md-3">{{ form_row(itemForm.quantity) }}</div>
+        <div class="col-md-3">{{ form_row(itemForm.budget) }}</div>
+        <div class="col-12">{{ form_row(itemForm.description) }}</div>
+        <div class="col-md-6">{{ form_row(itemForm.photoFile) }}</div>
+    </div>
+</div>
