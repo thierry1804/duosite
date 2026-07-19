@@ -105,7 +105,7 @@
             <table style="width: 100%; border: none;">
                 <tr>
                     <td style="border: none;">
-                        <img src="{{ absolute_url(asset('images/logo.webp')) }}" alt="Logo" class="logo">
+                        <img src="{{ pdf_logo ?? absolute_url(asset('images/logo.webp')) }}" alt="Logo" class="logo">
                     </td>
                     <td style="border: none;">
                         <h1>Offre de devis #{{ offer.quote.quoteNumber ~ '-' ~ offer.id }}</h1>
@@ -317,14 +317,15 @@
                             {% if proposal.weight %}Poids : {{ proposal.weight }} g{% endif %}
                         </p>
                         {% endif %}
-                        {% if proposal.images|length > 0 %}
+                        {% set resolvedImages = catalog_images[loop.index0]|default([]) %}
+                        {% if resolvedImages|length > 0 %}
                             <table style="width: 100%; border-collapse: collapse;">
-                                {% for images in proposal.images|batch(2) %}
+                                {% for images in resolvedImages|batch(2) %}
                                     <tr>
-                                        {% for image in images %}
+                                        {% for imgSrc in images %}
                                             <td style="width: 50%; padding: 10px; text-align: center;">
-                                                <img src="{{ absolute_url(asset('uploads/product_proposals/' ~ image)) }}" 
-                                                     alt="Image {{ loop.parent.loop.index }}.{{ loop.index }}"
+                                                <img src="{{ imgSrc }}"
+                                                     alt=""
                                                      style="width: 200px; height: auto; object-fit: contain;">
                                             </td>
                                         {% endfor %}

@@ -343,7 +343,7 @@ class QuoteController extends AbstractController
         $quote = new Quote();
         $quote->setServices(['Sourcing et négociation', 'Transport et logistique']);
         $quote->setPrivacyPolicy(true);
-        $quote->addItem(new QuoteItem());
+        $quote->setShippingMethod([]);
 
         $rmbRate = $exchangeRateService->getRmbMgaRate();
 
@@ -352,36 +352,37 @@ class QuoteController extends AbstractController
             $form->get('rmbMgaExchangeRate')->setData((float) $rmbRate);
         }
         $form->get('offerTitle')->setData('Offre ' . date('d/m/Y'));
+        if (!$request->isMethod('POST')) {
+            $form->get('articleLines')->setData([['quantity' => 1]]);
+        }
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        $wizardStep = 1;
+
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $this->addFlash(
+                'error',
+                'Le formulaire contient des erreurs. Vérifiez le client, les articles et le transit, puis réessayez. Si l\'attente a été longue, consultez aussi le tableau de bord des devis.'
+            );
+            $wizardStep = 2;
+        } elseif ($form->isSubmitted() && $form->isValid()) {
             $action = (string) $request->request->get('action', 'draft');
             if (!in_array($action, ['draft', 'send'], true)) {
                 $action = 'draft';
             }
 
-            $freeItemsLimit = 2;
-            $itemsValid = true;
-            foreach ($quote->getItems() as $item) {
-                if (empty($item->getProductType()) || empty($item->getDescription()) || empty($item->getQuantity())) {
-                    $itemsValid = false;
-                    break;
-                }
-                if ($item->getProductType() === 'Autre' && empty($item->getOtherProductType())) {
-                    $itemsValid = false;
-                    break;
-                }
-            }
-
-            if (!$itemsValid) {
-                $this->addFlash('error', 'Chaque article doit avoir un type, une description et une quantité.');
-            } elseif (count($quote->getItems()) === 0) {
+            $articleLines = $form->get('articleLines')->getData() ?? [];
+            if (!is_array($articleLines) || count($articleLines) === 0) {
                 $this->addFlash('error', 'Ajoutez au moins un article.');
+                $wizardStep = 2;
             } else {
-                $itemCount = count($quote->getItems());
+                @set_time_limit(180);
+
+                $itemCount = count($articleLines);
                 $paymentConfirmed = (bool) $form->get('paymentConfirmed')->getData();
                 $transactionReference = trim((string) $quote->getTransactionReference());
+                $freeItemsLimit = 2;
 
                 if ($itemCount > $freeItemsLimit) {
                     if ($transactionReference === '') {
@@ -391,6 +392,7 @@ class QuoteController extends AbstractController
                             'form' => $form->createView(),
                             'rmb_rate' => $rmbRate,
                             'users_json' => $this->buildUsersJsonForManualQuote($userRepository),
+                            'wizard_step' => 2,
                         ]);
                     }
                     $quote->setPaymentStatus('pending');
@@ -410,6 +412,7 @@ class QuoteController extends AbstractController
                         'form' => $form->createView(),
                         'rmb_rate' => $rmbRate,
                         'users_json' => $this->buildUsersJsonForManualQuote($userRepository),
+                        'wizard_step' => 2,
                     ]);
                 }
 
@@ -449,29 +452,104 @@ class QuoteController extends AbstractController
                 $quote->setPrivacyPolicy(true);
                 $quote->setStatus('pending');
 
-                // Photos des articles
+                $uploadDir = $this->getParameter('quote_photos_directory');
+                if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                    throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $uploadDir));
+                }
+
                 $filesData = $request->files->get('admin_manual_quote');
-                if (isset($filesData['items']) && is_array($filesData['items'])) {
-                    $uploadDir = $this->getParameter('quote_photos_directory');
-                    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
-                        throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $uploadDir));
+                $createdItems = [];
+                $lineIndex = 0;
+                foreach ($form->get('articleLines') as $lineForm) {
+                    $line = $lineForm->getData();
+                    if (!is_array($line)) {
+                        ++$lineIndex;
+                        continue;
                     }
-                    foreach ($form->get('items') as $index => $itemForm) {
-                        if (!isset($filesData['items'][$index]['photoFile']) || !$filesData['items'][$index]['photoFile']) {
-                            continue;
-                        }
-                        $photoFile = $filesData['items'][$index]['photoFile'];
-                        $item = $itemForm->getData();
+
+                    $item = new QuoteItem();
+                    $item->setProductType($line['productType'] ?? null);
+                    $item->setDescription($line['description'] ?? null);
+                    $item->setQuantity(isset($line['quantity']) ? (int) $line['quantity'] : null);
+                    $quote->addItem($item);
+
+                    $uploadedPhotoFilename = null;
+                    if (isset($filesData['articleLines'][$lineIndex]['photoFile']) && $filesData['articleLines'][$lineIndex]['photoFile']) {
+                        $photoFile = $filesData['articleLines'][$lineIndex]['photoFile'];
                         $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
                         $safeFilename = $slugger->slug($originalFilename);
                         $newFilename = $safeFilename . '-' . uniqid() . '.' . $photoFile->guessExtension();
                         try {
                             $photoFile->move($uploadDir, $newFilename);
                             $item->setPhotoFilename($newFilename);
+                            $uploadedPhotoFilename = $newFilename;
+
+                            // Catalogue PDF = images de la proposition (product_proposals/)
+                            $proposalDir = $this->getParameter('product_proposal_images_directory');
+                            if (!is_dir($proposalDir) && !mkdir($proposalDir, 0755, true) && !is_dir($proposalDir)) {
+                                throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $proposalDir));
+                            }
+                            $sourcePath = $uploadDir . DIRECTORY_SEPARATOR . $newFilename;
+                            $destPath = $proposalDir . DIRECTORY_SEPARATOR . $newFilename;
+                            if (!is_file($destPath)) {
+                                if (!@copy($sourcePath, $destPath)) {
+                                    error_log('Erreur copie photo vers product_proposals: ' . $newFilename);
+                                }
+                            }
                         } catch (FileException $e) {
                             error_log('Erreur upload photo article: ' . $e->getMessage());
                         }
                     }
+
+                    $proposal = new ProductProposal();
+                    $proposal->setQuoteItem($item);
+                    if ($uploadedPhotoFilename) {
+                        $proposal->addImage($uploadedPhotoFilename);
+                    }
+                    if (isset($line['unitPrice']) && $line['unitPrice'] !== '' && $line['unitPrice'] !== null) {
+                        $proposal->setMaxPrice((string) $line['unitPrice']);
+                        $proposal->setMinPrice((string) $line['unitPrice']);
+                    }
+                    if (!empty($line['dimensions'])) {
+                        $proposal->setDimensions((string) $line['dimensions']);
+                    }
+                    if (isset($line['weight']) && $line['weight'] !== '' && $line['weight'] !== null) {
+                        $proposal->setWeight((string) $line['weight']);
+                    }
+                    $createdItems[] = ['item' => $item, 'proposal' => $proposal];
+                    ++$lineIndex;
+                }
+
+                if (count($createdItems) === 0) {
+                    $this->addFlash('error', 'Ajoutez au moins un article valide.');
+
+                    return $this->render('quote/create_manual.html.twig', [
+                        'form' => $form->createView(),
+                        'rmb_rate' => $rmbRate,
+                        'users_json' => $this->buildUsersJsonForManualQuote($userRepository),
+                        'wizard_step' => 2,
+                    ]);
+                }
+
+                $shippingOptionsData = $form->get('shippingOptions')->getData();
+                $hasShipping = false;
+                if ($shippingOptionsData) {
+                    foreach ($shippingOptionsData as $shippingOption) {
+                        if ($shippingOption instanceof ShippingOption) {
+                            $hasShipping = true;
+                            break;
+                        }
+                    }
+                }
+                if (!$hasShipping) {
+                    $this->addFlash('error', 'Ajoutez au moins un mode de transit.');
+
+                    return $this->render('quote/create_manual.html.twig', [
+                        'form' => $form->createView(),
+                        'rmb_rate' => $rmbRate,
+                        'users_json' => $this->buildUsersJsonForManualQuote($userRepository),
+                        'wizard_step' => 2,
+                    ]);
                 }
 
                 $entityManager->persist($quote);
@@ -485,70 +563,26 @@ class QuoteController extends AbstractController
                     $this->getUser()?->getEmail()
                 );
 
-                // Offre
                 $offer = new QuoteOffer();
                 $offer->setQuote($quote);
                 $offer->setTitle((string) $form->get('offerTitle')->getData());
-                $offer->setDescription($form->get('offerDescription')->getData());
                 $rate = $form->get('rmbMgaExchangeRate')->getData();
                 if ($rate !== null && $rate !== '') {
                     $offer->setRmbMgaExchangeRate((string) $rate);
                 }
 
-                $itemsList = $quote->getItems()->toArray();
-                $proposalForms = $form->get('productProposals');
-                foreach ($proposalForms as $proposalForm) {
-                    /** @var ProductProposal $proposal */
-                    $proposal = $proposalForm->getData();
-                    if (!$proposal instanceof ProductProposal) {
-                        continue;
-                    }
-                    $itemIndex = $proposalForm->get('quoteItemIndex')->getData();
-                    if ($itemIndex === null || !isset($itemsList[(int) $itemIndex])) {
-                        $this->addFlash('error', 'Une proposition produit référence un article invalide. Complétez l\'offre depuis la fiche devis.');
-                        $entityManager->flush();
+                foreach ($createdItems as $pair) {
+                    $offer->addProductProposal($pair['proposal']);
+                }
 
-                        return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
-                    }
-                    $proposal->setQuoteItem($itemsList[(int) $itemIndex]);
-                    $offer->addProductProposal($proposal);
-
-                    $imageFiles = $proposal->getImageFiles();
-                    if ($imageFiles) {
-                        $uploadDir = $this->getParameter('product_proposal_images_directory');
-                        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
-                            throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $uploadDir));
-                        }
-                        foreach ($imageFiles as $imageFile) {
-                            if (!$imageFile) {
-                                continue;
-                            }
-                            $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                            $safeFilename = $slugger->slug($originalFilename);
-                            $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
-                            try {
-                                $imageFile->move($uploadDir, $newFilename);
-                                $proposal->addImage($newFilename);
-                            } catch (FileException $e) {
-                                error_log('Erreur upload image proposition: ' . $e->getMessage());
-                            }
-                        }
+                foreach ($shippingOptionsData as $shippingOption) {
+                    if ($shippingOption instanceof ShippingOption) {
+                        $offer->addShippingOption($shippingOption);
                     }
                 }
 
-                $shippingOptionsData = $form->get('shippingOptions')->getData();
-                if ($shippingOptionsData) {
-                    foreach ($shippingOptionsData as $shippingOption) {
-                        if ($shippingOption instanceof ShippingOption) {
-                            $offer->addShippingOption($shippingOption);
-                        }
-                    }
-                }
-
-                // Préremplir shipping si aucune option saisie mais méthodes choisies sur le devis
-                if ($offer->getShippingOptions()->isEmpty() && !empty($quote->getShippingMethod())) {
-                    $this->addDefaultShippingOptionsFromQuote($offer, $quote);
-                }
+                $quote->setShippingMethod($this->shippingMethodCodesFromOffer($offer));
+                $entityManager->flush();
 
                 $offer->calculateTotalPrice();
                 $offer->setStatus('draft');
@@ -566,7 +600,6 @@ class QuoteController extends AbstractController
                 }
 
                 if ($action === 'send') {
-                    $offer->setStatus('sent');
                     try {
                         $email = (new Email())
                             ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG'))
@@ -586,6 +619,7 @@ class QuoteController extends AbstractController
 
                         $mailer->send($email);
 
+                        $offer->setStatus('sent');
                         if ($quoteTrackerService->isTransitionAllowed($quote->getStatus(), 'waiting_customer')) {
                             $quoteTrackerService->changeStatus(
                                 $quote,
@@ -595,14 +629,31 @@ class QuoteController extends AbstractController
                             );
                         }
                         $entityManager->flush();
-                        $this->addFlash('success', 'Devis créé et offre envoyée au client avec le PDF.');
+                        $this->addFlash(
+                            'success',
+                            sprintf(
+                                'Devis %s créé et email envoyé à %s (offre marquée comme envoyée).',
+                                $quote->getQuoteNumber(),
+                                $quote->getEmail()
+                            )
+                        );
                     } catch (\Exception $e) {
                         $entityManager->flush();
-                        $this->addFlash('error', 'Devis créé, PDF généré, mais échec de l\'email : ' . $e->getMessage());
+                        $this->addFlash(
+                            'error',
+                            sprintf(
+                                'Devis %s créé avec PDF, mais l\'email n\'a PAS été envoyé (%s). Vous pouvez renvoyer l\'offre depuis la fiche devis.',
+                                $quote->getQuoteNumber(),
+                                $e->getMessage()
+                            )
+                        );
                     }
                 } else {
                     $entityManager->flush();
-                    $this->addFlash('success', 'Devis et offre enregistrés en brouillon (PDF généré).');
+                    $this->addFlash(
+                        'success',
+                        sprintf('Devis %s et offre enregistrés en brouillon (PDF généré). Aucun email envoyé.', $quote->getQuoteNumber())
+                    );
                 }
 
                 return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
@@ -613,7 +664,29 @@ class QuoteController extends AbstractController
             'form' => $form->createView(),
             'rmb_rate' => $rmbRate,
             'users_json' => $this->buildUsersJsonForManualQuote($userRepository),
+            'wizard_step' => $wizardStep,
         ]);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function shippingMethodCodesFromOffer(QuoteOffer $offer): array
+    {
+        $map = [
+            ShippingOptionChoices::MARITIME => 'maritime',
+            ShippingOptionChoices::AIR_EXPRESS => 'aerien_express',
+            ShippingOptionChoices::AIR_STANDARD => 'aerien_normal',
+        ];
+        $codes = [];
+        foreach ($offer->getShippingOptions() as $option) {
+            $name = $option->getName();
+            if ($name !== null && isset($map[$name])) {
+                $codes[] = $map[$name];
+            }
+        }
+
+        return $codes !== [] ? array_values(array_unique($codes)) : ['maritime'];
     }
 
     /**
@@ -650,27 +723,20 @@ class QuoteController extends AbstractController
             'aerien_express' => ShippingOptionChoices::AIR_EXPRESS,
             'aerien_normal' => ShippingOptionChoices::AIR_STANDARD,
         ];
-        $deliveryDays = [
-            'maritime' => 45,
-            'aerien_express' => 7,
-            'aerien_normal' => 15,
-        ];
-        $shippingDescriptions = [
-            'aerien_express' => "Les départs sont effectués chaque lundi et jeudi matin. Après la validation de votre commande, la réception des articles à l'entrepôt peut prendre 2 à 7 jours, selon le fournisseur et sa province.\nLe délai de transport express (3 à 5 jours) commence à être compté à partir du jour du départ du vol.\nLe poids minimum facturé est de 250 g. Tout article de moins de 250 g sera donc facturé à 250 g.\nLes frais d'expédition sont calculés au kilo.",
-            'aerien_normal' => "Le départ est effectué tout les vendredis matin. Après la validation de votre commande, la réception des articles à l'entrepôt peut prendre 2 à 7 jours, selon le fournisseur et sa province.\nLe délai de transport normal (10 à 15 jours) commence à être compté à partir du jour du départ du vol.\nLe poids minimum facturé est de 250 g. Tout article de moins de 250 g sera donc facturé à 250 g.\nLes frais d'expédition sont calculés au kilo.",
-            'maritime' => "Il y a deux départs chaque semaine (les jours exacts peuvent varier selon le planning des navires). Après la validation de votre commande, la réception des articles à l'entrepôt peut prendre 2 à 7 jours, selon le fournisseur et sa province.\nLe délai de transport maritime est estimé entre 55 et 75 jours, à compter du départ du bateau.\nLes frais d'expédition sont calculés au CBM (mètre cube). Pour les volumes inférieurs à 0,25 CBM, le tarif appliqué est plus élevé que pour les volumes supérieurs à 0,25 CBM.",
-        ];
+        $defaultsByName = ShippingOptionChoices::defaultsByName();
 
         foreach ($quote->getShippingMethod() as $methodCode) {
             if (!isset($shippingNames[$methodCode])) {
                 continue;
             }
+            $name = $shippingNames[$methodCode];
+            $defaults = $defaultsByName[$name] ?? null;
             $shippingOption = new ShippingOption();
-            $shippingOption->setName($shippingNames[$methodCode]);
-            $shippingOption->setDescription($shippingDescriptions[$methodCode] ?? 'Option d\'expédition choisie par le client');
+            $shippingOption->setName($name);
+            $shippingOption->setDescription($defaults['description'] ?? 'Option d\'expédition choisie par le client');
             $shippingOption->setPrice(0);
-            if (isset($deliveryDays[$methodCode])) {
-                $shippingOption->setEstimatedDeliveryDays($deliveryDays[$methodCode]);
+            if ($defaults !== null) {
+                $shippingOption->setEstimatedDeliveryDays($defaults['estimatedDeliveryDays']);
             }
             $offer->addShippingOption($shippingOption);
         }

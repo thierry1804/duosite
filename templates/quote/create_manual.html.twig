@@ -4,10 +4,10 @@
 
 {% block stylesheets %}
 {{ parent() }}
-<link rel="stylesheet" href="{{ asset('css/admin/product-proposal.css') }}">
 <link rel="stylesheet" href="{{ asset('css/admin/shipping-option.css') }}">
 <style>
-    .wizard-steps { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .wizard-page { padding-bottom: 96px; }
+    .wizard-steps { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .wizard-step-btn {
         border: 1px solid #dee2e6;
         background: #fff;
@@ -20,21 +20,240 @@
     .wizard-step-btn.done { border-color: #198754; color: #198754; }
     .wizard-pane { display: none; }
     .wizard-pane.active { display: block; }
-    .quote-item-card {
+    .substep-nav {
+        display: flex; gap: 4px; margin-bottom: 16px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .substep-nav-btn {
+        border: 0; background: transparent; color: #6c757d;
+        padding: 8px 14px; font-size: 0.9rem; border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+    }
+    .substep-nav-btn.active { color: #212529; font-weight: 600; border-bottom-color: #212529; }
+    .substep-nav-btn.done { color: #198754; }
+    .substep-pane { display: none; }
+    .substep-pane.active { display: block; }
+    .section-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .section-head h5 { margin: 0; }
+    .articles-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .articles-grid-wrap {
+        overflow-x: auto;
         border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 16px;
+        border-radius: 6px;
         background: #fff;
+    }
+    .articles-grid {
+        margin: 0;
+        min-width: 780px;
+        table-layout: fixed;
+    }
+    .articles-grid thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #f8f9fa;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6c757d;
+        white-space: nowrap;
+        border-bottom-width: 1px;
+        vertical-align: middle;
+    }
+    .articles-grid thead th:first-child {
+        width: 1.5rem;
+        max-width: 1.5rem;
+        padding-left: 0.35rem;
+        padding-right: 0.15rem;
+    }
+    .articles-grid thead th:nth-child(2) {
+        width: 2.75rem;
+        max-width: 2.75rem;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+    .articles-grid .article-line-main > td {
+        vertical-align: middle;
+        padding-top: 0.4rem;
+        padding-bottom: 0.4rem;
+    }
+    .articles-grid .article-line-main:hover { background: #f8f9fa; }
+    .articles-grid .article-line.is-complete .article-line-main { background: #f8f9fa; }
+    .articles-grid .article-line.is-complete .article-complete-label { display: inline !important; }
+    .articles-grid .article-line-num {
+        width: 1.5rem;
+        max-width: 1.5rem;
+        padding-left: 0.35rem !important;
+        padding-right: 0.15rem !important;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-align: center;
+    }
+    .articles-grid .article-line-photo {
+        width: 2.75rem;
+        max-width: 2.75rem;
+        padding-left: 0.25rem !important;
+        padding-right: 0.25rem !important;
+    }
+    .articles-grid .article-line-type { width: 10rem; max-width: 10rem; }
+    .articles-grid .article-line-qty { width: 3.75rem; max-width: 3.75rem; }
+    .articles-grid .article-line-price { width: 6.75rem; max-width: 6.75rem; }
+    .articles-grid .article-line-desc { width: auto; }
+    .articles-grid .article-line-actions { width: 8.75rem; max-width: 8.75rem; white-space: nowrap; }
+    .articles-grid .article-photo-picker {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 31px;
+        margin: 0;
+        border: 1px dashed #ced4da;
+        border-radius: 4px;
+        background: #fff;
+        cursor: pointer;
+        overflow: hidden;
+        color: #6c757d;
+    }
+    .articles-grid .article-photo-picker:hover { border-color: #adb5bd; background: #f8f9fa; }
+    .articles-grid .article-photo-picker.has-file { border-style: solid; }
+    .articles-grid .article-photo-preview {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+    .articles-grid .article-photo-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .articles-grid .article-photo-input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    .articles-grid .article-line-price .input-group {
+        flex-wrap: nowrap;
+    }
+    .articles-grid .article-line-price .input-group-text,
+    .articles-grid .article-line-price .form-control,
+    .articles-grid .article-line-type .form-select,
+    .articles-grid .article-line-qty .form-control {
+        min-height: 31px;
+        height: 31px;
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+        font-size: 0.875rem;
+        line-height: 1.2;
+    }
+    .articles-grid .article-line-price .input-group-text {
+        padding-left: 0.4rem;
+        padding-right: 0.4rem;
+    }
+    .articles-grid .article-desc-wrap {
         position: relative;
     }
-    .quote-item-card .remove-quote-item {
-        position: absolute;
-        top: 10px;
-        right: 10px;
+    .articles-grid .article-desc-input {
+        height: 31px;
+        min-height: 31px;
+        max-height: 31px;
+        resize: none;
+        overflow: hidden;
+        padding-right: 2.6rem;
+        line-height: 1.2;
     }
+    .articles-grid .article-desc-counter {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.7rem;
+        color: #6c757d;
+        pointer-events: none;
+        line-height: 1;
+    }
+    .articles-grid .article-field-error,
+    .articles-grid .article-line-main .invalid-feedback,
+    .articles-grid .article-line-main .form-error,
+    .articles-grid .article-line-main ul {
+        display: none !important;
+    }
+    .articles-grid-hint { margin-top: 0.5rem; }
+    .articles-grid-wrap.has-line-errors + .articles-grid-hint { display: none; }
+    .articles-grid .article-line-detail[hidden] { display: none !important; }
+    .articles-grid .article-line-detail-cell {
+        background: #fafafa;
+        border-top: 0;
+        padding: 12px 12px 14px;
+    }
+    .articles-grid .article-line-detail-cell .form-label { font-size: 0.8rem; margin-bottom: 2px; }
     .payment-block { display: none; }
     .payment-block.visible { display: block; }
+    .client-fields-grid.hidden { display: none !important; }
+    .client-summary {
+        display: none;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 14px 16px;
+        background: #f8f9fa;
+    }
+    .client-summary.visible { display: block; }
+    .client-summary-name { font-weight: 600; margin-bottom: 4px; }
+    .client-summary-meta { color: #6c757d; font-size: 0.9rem; }
+    .client-listbox {
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        max-height: 220px;
+        overflow-y: auto;
+        background: #fff;
+    }
+    .client-listbox-item {
+        display: block; width: 100%; text-align: left; border: 0;
+        border-bottom: 1px solid #eee; background: transparent;
+        padding: 10px 12px; font-size: 0.9rem; color: #212529; cursor: pointer;
+    }
+    .client-listbox-item:last-child { border-bottom: 0; }
+    .client-listbox-item:hover, .client-listbox-item:focus {
+        background: #f1f3f5;
+        outline: 2px solid #86b7fe;
+        outline-offset: -2px;
+    }
+    .client-listbox-item.is-selected { background: #212529; color: #fff; }
+    .client-listbox-item.is-selected:focus { outline-color: #212529; }
+    .client-listbox-item .clb-name { font-weight: 600; display: block; }
+    .client-listbox-item .clb-meta { font-size: 0.8rem; opacity: 0.8; }
+    .client-listbox-empty { padding: 14px 12px; color: #6c757d; font-size: 0.9rem; margin: 0; }
+    .wizard-alert { display: none; margin-bottom: 12px; }
+    .wizard-alert.visible { display: block; }
+    .wizard-sticky-footer {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030;
+        background: #fff; border-top: 1px solid #dee2e6; padding: 10px 24px;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+    }
+    .wizard-sticky-inner {
+        max-width: 1400px; margin: 0 auto; display: flex; flex-wrap: wrap;
+        align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .wizard-sticky-totals {
+        font-size: 0.9rem; font-weight: 600; color: #212529;
+        display: none; min-width: 160px;
+    }
+    .wizard-sticky-totals.visible { display: block; }
+    .wizard-sticky-totals span { color: #6c757d; font-weight: 500; }
+    .wizard-sticky-hint { font-size: 0.85rem; color: #6c757d; width: 100%; margin: 0; display: none; }
+    .wizard-sticky-hint.visible { display: block; }
+    .wizard-processing-overlay {
+        display: none; position: fixed; inset: 0; z-index: 2000;
+        background: rgba(33, 37, 41, 0.72); align-items: center; justify-content: center; padding: 24px;
+    }
+    .wizard-processing-overlay.visible { display: flex; }
+    .wizard-processing-card {
+        background: #fff; border-radius: 10px; padding: 28px 32px; max-width: 420px; text-align: center;
+    }
 </style>
 {% endblock %}
 
@@ -44,158 +263,189 @@
 {% endblock %}
 
 {% block body %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 wizard-page" data-wizard-step="{{ wizard_step|default(1) }}" data-desc-min="10">
     <div class="d-flex align-items-center gap-2 mb-4">
-        <a href="{{ path('app_quote_dashboard') }}" class="btn btn-outline-secondary btn-sm p-2 d-inline-flex align-items-center justify-content-center flex-shrink-0" aria-label="Retour" title="Retour">
-            <i data-lucide="arrow-left" width="20" height="20" aria-hidden="true"></i>
+        <a href="{{ path('app_quote_dashboard') }}" class="btn btn-outline-secondary btn-sm p-2" aria-label="Retour">
+            <i data-lucide="arrow-left" width="20" height="20"></i>
         </a>
         <h1 class="mb-0">Créer un devis manuellement</h1>
     </div>
 
+    <div id="wizard-processing-overlay" class="wizard-processing-overlay">
+        <div class="wizard-processing-card">
+            <div class="spinner-border text-dark mb-3" role="status"></div>
+            <h2 class="h5 mb-2" id="wizard-processing-title">Traitement en cours…</h2>
+            <p class="text-muted mb-0 small" id="wizard-processing-text">Ne fermez pas cette page.</p>
+        </div>
+    </div>
+
     <div class="wizard-steps" role="tablist">
         <button type="button" class="wizard-step-btn active" data-step="1">1. Client</button>
-        <button type="button" class="wizard-step-btn" data-step="2">2. Demande</button>
-        <button type="button" class="wizard-step-btn" data-step="3">3. Offre</button>
+        <button type="button" class="wizard-step-btn" data-step="2">2. Articles &amp; transit</button>
     </div>
 
     {{ form_start(form, { attr: { id: 'manual-quote-form', enctype: 'multipart/form-data' } }) }}
     <div id="manual-quote-users-data" class="d-none" data-users="{{ users_json|json_encode|e('html_attr') }}"></div>
     {{ form_errors(form) }}
+    <div id="wizard-step-alert" class="alert alert-danger wizard-alert" role="alert"></div>
 
+    {# Étape 1 — Client #}
     <div class="wizard-pane active" data-pane="1">
         <div class="admin-card mb-4">
             <div class="admin-card-header"><h5 class="mb-0">Client</h5></div>
             <div class="admin-card-body">
                 <div class="mb-3">
-                    {{ form_row(form.selectedUser) }}
-                    <div class="form-text">Choisissez un compte existant pour préremplir, ou laissez vide et saisissez les coordonnées.</div>
+                    <label class="form-label" for="client-search-input">Rechercher un client</label>
+                    <input type="search" id="client-search-input" class="form-control mb-2" placeholder="Nom, email ou téléphone…" autocomplete="off">
+                    <label class="form-label" for="client-listbox">Clients correspondants</label>
+                    <div id="client-listbox" class="client-listbox mb-1" role="listbox" tabindex="0"></div>
+                    <div class="d-none">{{ form_widget(form.selectedUser) }}</div>
+                    {{ form_errors(form.selectedUser) }}
                 </div>
-                <div class="row g-3">
+                <div id="client-summary" class="client-summary mb-3">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <div>
+                            <div class="client-summary-name" id="client-summary-name"></div>
+                            <div class="client-summary-meta" id="client-summary-meta"></div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="client-edit-manual">Modifier / saisie manuelle</button>
+                    </div>
+                </div>
+                <div class="row g-3 client-fields-grid" id="client-fields-grid">
                     <div class="col-md-6">{{ form_row(form.firstName) }}</div>
                     <div class="col-md-6">{{ form_row(form.lastName) }}</div>
                     <div class="col-md-6">{{ form_row(form.email) }}</div>
                     <div class="col-md-6">{{ form_row(form.phone) }}</div>
-                    <div class="col-md-12">{{ form_row(form.company) }}</div>
+                    <div class="col-12">{{ form_row(form.company) }}</div>
                 </div>
             </div>
         </div>
-        <div class="d-flex justify-content-end">
-            <button type="button" class="btn btn-dark" data-wizard-next="2">Suivant</button>
-        </div>
     </div>
 
+    {# Étape 2 — Articles (2a) + Transit/Offre (2b) #}
     <div class="wizard-pane" data-pane="2">
-        <div class="admin-card mb-4">
-            <div class="admin-card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Articles demandés</h5>
-                <button type="button" class="btn btn-sm btn-outline-dark" id="add-quote-item">
-                    <i data-lucide="plus" style="width:16px;height:16px;"></i> Ajouter un article
-                </button>
-            </div>
-            <div class="admin-card-body">
-                <div id="quote-items-container"
-                     data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
-                     data-index="{{ form.items|length }}">
-                    {% for itemForm in form.items %}
-                        <div class="quote-item-card">
-                            <button type="button" class="btn btn-sm btn-outline-danger remove-quote-item" aria-label="Supprimer">
-                                <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
+        <div class="substep-nav" role="tablist">
+            <button type="button" class="substep-nav-btn active" data-substep="a">Articles</button>
+            <button type="button" class="substep-nav-btn" data-substep="b">Transit &amp; offre</button>
+        </div>
+
+        <div class="substep-pane active" data-substep-pane="a">
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <div class="section-head w-100 justify-content-between">
+                        <h5>Articles</h5>
+                        <div class="articles-toolbar">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="collapse-complete-lines">
+                                Replier les complètes
                             </button>
-                            <div class="row g-3 pe-5">
-                                <div class="col-md-6">{{ form_row(itemForm.productType) }}</div>
-                                <div class="col-md-3">{{ form_row(itemForm.quantity) }}</div>
-                                <div class="col-md-3">{{ form_row(itemForm.budget) }}</div>
-                                <div class="col-12">{{ form_row(itemForm.description) }}</div>
-                                <div class="col-md-6">{{ form_row(itemForm.photoFile) }}</div>
-                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="duplicate-last-line">
+                                <i data-lucide="copy" style="width:14px;height:14px;"></i> Dupliquer la dernière
+                            </button>
+                            <button type="button" class="btn btn-sm btn-dark" id="add-article-line">
+                                <i data-lucide="plus" style="width:16px;height:16px;"></i> Ajouter
+                            </button>
                         </div>
-                    {% endfor %}
-                </div>
-
-                <hr class="my-4">
-                {{ form_row(form.shippingMethod) }}
-                {{ form_row(form.additionalInfo) }}
-
-                <div class="payment-block mt-3 {% if form.items|length > 2 %}visible{% endif %}" id="payment-block">
-                    <div class="alert alert-warning mb-3">
-                        Plus de 2 articles : une référence de paiement est obligatoire. Cochez « Paiement confirmé » pour pouvoir envoyer l'offre.
                     </div>
-                    {{ form_row(form.transactionReference) }}
-                    {{ form_row(form.paymentConfirmed) }}
+                </div>
+                <div class="admin-card-body pt-2">
+                    <div id="article-lines-container"
+                         class="articles-grid-wrap"
+                         data-prototype="{{ include('quote/_manual_article_line.html.twig', { lineForm: form.articleLines.vars.prototype })|e('html_attr') }}"
+                         data-index="{{ form.articleLines|length }}">
+                        <table class="table table-sm align-middle articles-grid mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Photo</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Qté</th>
+                                    <th scope="col">Prix</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            {% for lineForm in form.articleLines %}
+                                {% include 'quote/_manual_article_line.html.twig' with { lineForm: lineForm } %}
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <p class="text-muted small mb-0 articles-grid-hint">
+                        Entrée = champ suivant · Alt+Shift+D = dupliquer · Compléter = dims / poids
+                    </p>
                 </div>
             </div>
         </div>
-        <div class="d-flex justify-content-between">
-            <button type="button" class="btn btn-outline-secondary" data-wizard-prev="1">Précédent</button>
-            <button type="button" class="btn btn-dark" data-wizard-next="3">Suivant</button>
-        </div>
-    </div>
 
-    <div class="wizard-pane" data-pane="3">
-        <div class="admin-card mb-4">
-            <div class="admin-card-header"><h5 class="mb-0">Offre commerciale</h5></div>
-            <div class="admin-card-body">
-                <div class="row g-3">
-                    <div class="col-md-6">{{ form_row(form.offerTitle) }}</div>
-                    <div class="col-md-6">
-                        {{ form_row(form.rmbMgaExchangeRate) }}
-                        {% if rmb_rate %}
-                            <div class="form-text">Taux du jour : {{ rmb_rate }}</div>
+        <div class="substep-pane" data-substep-pane="b">
+            <div class="payment-block mb-4 {% if form.articleLines|length > 2 %}visible{% endif %}" id="payment-block">
+                <div class="admin-card">
+                    <div class="admin-card-header"><h5 class="mb-0">Paiement</h5></div>
+                    <div class="admin-card-body">
+                        <div class="alert alert-warning mb-3">Plus de 2 articles : référence de paiement obligatoire pour pouvoir envoyer.</div>
+                        {{ form_row(form.transactionReference) }}
+                        {{ form_row(form.paymentConfirmed) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card mb-4">
+                <div class="admin-card-header">
+                    <div class="section-head">
+                        <h5>Transit</h5>
+                        <button type="button" class="btn btn-sm btn-outline-dark" id="add-shipping-option">
+                            <i data-lucide="plus" style="width:16px;height:16px;"></i> Ajouter un mode
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="shipping-options-container"
+                         data-prototype="{{ include('quote_offer/_shipping_option_prototype.html.twig', { shippingOptionForm: form.shippingOptions.vars.prototype })|e('html_attr') }}"
+                         data-index="{{ form.shippingOptions|length }}">
+                        {% if form.shippingOptions|length == 0 %}
+                            <div class="alert alert-info shipping-empty-alert mb-0">Ajoutez au moins un mode de transit (maritime, aérien…).</div>
                         {% endif %}
+                        {% for shippingOptionForm in form.shippingOptions %}
+                            {% include 'quote_offer/_shipping_option_prototype.html.twig' with { shippingOptionForm: shippingOptionForm } %}
+                        {% endfor %}
                     </div>
-                    <div class="col-12">{{ form_row(form.offerDescription) }}</div>
-                </div>
-
-                <div class="mt-4 mb-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Propositions de produits</h5>
-                    <button type="button" class="btn btn-success rounded-circle p-0" id="add-product-proposal" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;" aria-label="Ajouter une proposition">
-                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                    </button>
-                </div>
-                <div class="product-proposals-container"
-                     data-prototype="{{ include('quote/_manual_product_proposal_item.html.twig', { productProposalForm: form.productProposals.vars.prototype })|e('html_attr') }}"
-                     data-index="{{ form.productProposals|length }}">
-                    {% if form.productProposals|length == 0 %}
-                        <div class="alert alert-info proposal-empty-alert">Aucune proposition. Cliquez sur + pour en ajouter.</div>
-                    {% endif %}
-                    {% for productProposalForm in form.productProposals %}
-                        {% include 'quote/_manual_product_proposal_item.html.twig' with { productProposalForm: productProposalForm } %}
-                    {% endfor %}
-                </div>
-
-                <div class="mt-4 mb-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Options d'expédition</h5>
-                    <button type="button" class="btn btn-success rounded-circle p-0" id="add-shipping-option" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;" aria-label="Ajouter une option">
-                        <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
-                    </button>
-                </div>
-                <div class="shipping-options-container"
-                     data-prototype="{{ include('quote_offer/_shipping_option_prototype.html.twig', { shippingOptionForm: form.shippingOptions.vars.prototype })|e('html_attr') }}"
-                     data-index="{{ form.shippingOptions|length }}">
-                    {% if form.shippingOptions|length == 0 %}
-                        <div class="alert alert-info shipping-empty-alert">Aucune option. Elles seront préremplies depuis les modes d'envoi choisis si vous n'en ajoutez pas.</div>
-                    {% endif %}
-                    {% for shippingOptionForm in form.shippingOptions %}
-                        {% include 'quote_offer/_shipping_option_prototype.html.twig' with { shippingOptionForm: shippingOptionForm } %}
-                    {% endfor %}
                 </div>
             </div>
-        </div>
 
-        <div class="d-flex flex-wrap justify-content-between gap-2">
-            <button type="button" class="btn btn-outline-secondary" data-wizard-prev="2">Précédent</button>
-            <div class="d-flex flex-wrap gap-2">
-                <button type="submit" name="action" value="draft" class="btn btn-outline-dark">
-                    Enregistrer brouillon
-                </button>
-                <button type="submit" name="action" value="send" class="btn btn-dark">
-                    Envoyer au client
-                </button>
+            <div class="admin-card mb-4">
+                <div class="admin-card-header"><h5 class="mb-0">Offre</h5></div>
+                <div class="admin-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">{{ form_row(form.offerTitle) }}</div>
+                        <div class="col-md-6">
+                            {{ form_row(form.rmbMgaExchangeRate) }}
+                            {% if rmb_rate %}<div class="form-text">Taux du jour : {{ rmb_rate }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">{{ form_row(form.additionalInfo) }}</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     {{ form_widget(form._token) }}
+
+    <div class="wizard-sticky-footer">
+        <div class="wizard-sticky-inner">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <button type="button" class="btn btn-outline-secondary" id="wizard-btn-prev" style="display:none;">Précédent</button>
+                <div class="wizard-sticky-totals" id="wizard-sticky-totals">
+                    <span id="wizard-totals-count">0</span> articles · total <strong id="wizard-totals-sum">0.00</strong> RMB
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-dark" id="wizard-btn-next">Suivant</button>
+                <button type="button" class="btn btn-outline-dark" id="wizard-btn-draft" style="display:none;">Enregistrer brouillon</button>
+                <button type="button" class="btn btn-dark" id="wizard-btn-send" style="display:none;">Envoyer au client</button>
+            </div>
+            <p class="wizard-sticky-hint" id="wizard-send-hint">Confirmez le paiement pour activer l'envoi.</p>
+            <p class="wizard-sticky-hint" id="wizard-send-confirm-hint">Rien n'a encore été envoyé. Cliquez une 2<sup>e</sup> fois pour confirmer.</p>
+        </div>
+    </div>
     {{ form_end(form, { render_rest: false }) }}
 </div>
 {% endblock %}
@@ -203,272 +453,755 @@
 {% block javascripts %}
 {{ parent() }}
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="{{ asset('js/shipping-option-currency.js') }}"></script>
 <script>
 (function () {
     var form = document.getElementById('manual-quote-form');
+    var pageRoot = document.querySelector('.wizard-page');
+    var currentStep = parseInt((pageRoot && pageRoot.getAttribute('data-wizard-step')) || '1', 10) || 1;
+    var currentSubstep = 'a';
+    var descMin = parseInt((pageRoot && pageRoot.getAttribute('data-desc-min')) || '10', 10) || 10;
     var users = [];
     try {
-        var usersEl = document.getElementById('manual-quote-users-data');
-        users = JSON.parse(usersEl.getAttribute('data-users') || '[]');
-    } catch (e) {
-        users = [];
+        users = JSON.parse(document.getElementById('manual-quote-users-data').getAttribute('data-users') || '[]');
+    } catch (e) { users = []; }
+
+    var stepAlert = document.getElementById('wizard-step-alert');
+    var btnPrev = document.getElementById('wizard-btn-prev');
+    var btnNext = document.getElementById('wizard-btn-next');
+    var btnDraft = document.getElementById('wizard-btn-draft');
+    var btnSend = document.getElementById('wizard-btn-send');
+    var sendHint = document.getElementById('wizard-send-hint');
+    var sendConfirmHint = document.getElementById('wizard-send-confirm-hint');
+    var stickyTotals = document.getElementById('wizard-sticky-totals');
+    var totalsCount = document.getElementById('wizard-totals-count');
+    var totalsSum = document.getElementById('wizard-totals-sum');
+    var sendArmed = false;
+    var sendArmTimer = null;
+    var sendDefaultLabel = 'Envoyer au client';
+    var clientSearch = document.getElementById('client-search-input');
+    var userSelect = form.querySelector('[data-user-select]');
+    var clientSummary = document.getElementById('client-summary');
+    var clientFields = document.getElementById('client-fields-grid');
+    var clientListbox = document.getElementById('client-listbox');
+    var linesContainer = document.getElementById('article-lines-container');
+    var articlesTable = linesContainer.querySelector('table.articles-grid');
+    var paymentBlock = document.getElementById('payment-block');
+    var paymentConfirmed = form.querySelector('[name$="[paymentConfirmed]"]');
+    var transactionRef = form.querySelector('[name$="[transactionReference]"]');
+    var shippingContainer = document.querySelector('.shipping-options-container');
+    var shippingIndex = parseInt(shippingContainer.dataset.index, 10) || 0;
+    var processingOverlay = document.getElementById('wizard-processing-overlay');
+    var activeLine = null;
+
+    function showAlert(msg) {
+        stepAlert.textContent = msg;
+        stepAlert.classList.add('visible');
+        stepAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function hideAlert() { stepAlert.classList.remove('visible'); stepAlert.textContent = ''; }
+    function fieldValue(sel) {
+        var el = form.querySelector(sel);
+        return el ? String(el.value || '').trim() : '';
+    }
+    function lineCards() { return linesContainer.querySelectorAll('[data-article-line]'); }
+    function lineCount() { return lineCards().length; }
+    function paymentBlocksSend() {
+        return lineCount() > 2 && !(paymentConfirmed && paymentConfirmed.checked);
+    }
+    function parseMoney(val) {
+        var n = parseFloat(String(val || '').replace(',', '.').replace(/\s/g, ''));
+        return isNaN(n) ? 0 : n;
     }
 
-    function goToStep(step) {
-        document.querySelectorAll('.wizard-pane').forEach(function (pane) {
-            pane.classList.toggle('active', pane.getAttribute('data-pane') === String(step));
+    function showProcessingOverlay(title, text) {
+        document.getElementById('wizard-processing-title').textContent = title;
+        document.getElementById('wizard-processing-text').textContent = text;
+        processingOverlay.classList.add('visible');
+    }
+    function submitWithAction(action, title, text) {
+        showProcessingOverlay(title, text);
+        var existing = form.querySelector('input[name="action"][data-wizard-action="1"]');
+        if (existing) existing.remove();
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'action';
+        input.value = action;
+        input.setAttribute('data-wizard-action', '1');
+        form.appendChild(input);
+        form.submit();
+    }
+
+    function resetSendArm() {
+        sendArmed = false;
+        if (sendArmTimer) { clearTimeout(sendArmTimer); sendArmTimer = null; }
+        if (btnSend && !btnSend.dataset.sending) {
+            btnSend.textContent = sendDefaultLabel;
+            btnSend.classList.remove('btn-warning');
+            btnSend.classList.add('btn-dark');
+        }
+        if (sendConfirmHint) {
+            sendConfirmHint.classList.remove('visible');
+            sendConfirmHint.innerHTML = 'Rien n\'a encore été envoyé. Cliquez une 2<sup>e</sup> fois pour confirmer.';
+        }
+    }
+
+    function updateSendButtonState() {
+        var blocked = paymentBlocksSend();
+        btnSend.disabled = blocked;
+        sendHint.classList.toggle('visible', currentStep === 2 && currentSubstep === 'b' && blocked);
+        if (blocked) resetSendArm();
+    }
+
+    function updateStickyFooter() {
+        var onArticles = currentStep === 2 && currentSubstep === 'a';
+        var onTransit = currentStep === 2 && currentSubstep === 'b';
+        stickyTotals.classList.toggle('visible', currentStep === 2);
+        btnPrev.style.display = (currentStep > 1 || onTransit) ? '' : 'none';
+        if (currentStep === 1) {
+            btnNext.style.display = '';
+            btnDraft.style.display = 'none';
+            btnSend.style.display = 'none';
+        } else if (onArticles) {
+            btnNext.style.display = '';
+            btnDraft.style.display = 'none';
+            btnSend.style.display = 'none';
+        } else {
+            btnNext.style.display = 'none';
+            btnDraft.style.display = '';
+            btnSend.style.display = '';
+        }
+        updateSendButtonState();
+        updateTotals();
+    }
+
+    function updateTotals() {
+        var n = 0;
+        var sum = 0;
+        lineCards().forEach(function (card) {
+            n += 1;
+            var qty = card.querySelector('input[id$="_quantity"]');
+            var price = card.querySelector('input[id$="_unitPrice"]');
+            sum += parseMoney(qty && qty.value) * parseMoney(price && price.value);
+        });
+        totalsCount.textContent = String(n);
+        totalsSum.textContent = sum.toFixed(2);
+    }
+
+    function getLineFields(card) {
+        return {
+            type: card.querySelector('select[id$="_productType"]'),
+            qty: card.querySelector('input[id$="_quantity"]'),
+            price: card.querySelector('input[id$="_unitPrice"]'),
+            desc: card.querySelector('textarea[id$="_description"], .article-desc-input'),
+            dims: card.querySelector('input[id$="_dimensions"]'),
+            weight: card.querySelector('input[id$="_weight"]'),
+            photo: card.querySelector('input[id$="_photoFile"]')
+        };
+    }
+
+    function isLineComplete(card) {
+        var f = getLineFields(card);
+        var descVal = f.desc ? String(f.desc.value || '').trim() : '';
+        return !!(f.type && f.type.value
+            && f.qty && String(f.qty.value).trim()
+            && f.price && String(f.price.value).trim()
+            && descVal.length >= descMin);
+    }
+
+    function hasDetailValues(card) {
+        var f = getLineFields(card);
+        return !!(
+            (f.dims && String(f.dims.value || '').trim())
+            || (f.weight && String(f.weight.value || '').trim())
+        );
+    }
+
+    function updatePhotoPreview(card) {
+        var f = getLineFields(card);
+        var preview = card.querySelector('[data-photo-preview]');
+        var picker = card.querySelector('.article-photo-picker');
+        if (!preview || !picker) return;
+        var file = f.photo && f.photo.files && f.photo.files[0] ? f.photo.files[0] : null;
+        if (!file) {
+            picker.classList.remove('has-file');
+            preview.innerHTML = '<i data-lucide="image" style="width:16px;height:16px;"></i>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            return;
+        }
+        var url = URL.createObjectURL(file);
+        picker.classList.add('has-file');
+        preview.innerHTML = '';
+        var img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Aperçu';
+        img.onload = function () { URL.revokeObjectURL(url); };
+        preview.appendChild(img);
+    }
+
+    function updateDescCounter(card) {
+        var f = getLineFields(card);
+        var counter = card.querySelector('[data-desc-counter]');
+        if (!f.desc || !counter) return;
+        var len = String(f.desc.value || '').trim().length;
+        counter.textContent = len + '/' + descMin;
+    }
+
+    function clearLineErrors(card) {
+        card.classList.remove('was-validated-line');
+        card.querySelectorAll('.is-invalid').forEach(function (el) {
+            el.classList.remove('is-invalid');
+            el.removeAttribute('title');
+            el.removeAttribute('aria-invalid');
+        });
+        card.querySelectorAll('.article-field-error').forEach(function (el) { el.textContent = ''; });
+        syncLineErrorsHint();
+    }
+
+    function markLineErrors(card) {
+        var f = getLineFields(card);
+        var ok = true;
+        card.classList.add('was-validated-line');
+
+        function setErr(input, msg) {
+            if (!input) return;
+            if (msg) {
+                input.classList.add('is-invalid');
+                input.setAttribute('title', msg);
+                input.setAttribute('aria-invalid', 'true');
+                ok = false;
+            } else {
+                input.classList.remove('is-invalid');
+                input.removeAttribute('title');
+                input.removeAttribute('aria-invalid');
+            }
+        }
+
+        setErr(f.type, f.type && f.type.value ? '' : 'Type requis');
+        setErr(f.qty, f.qty && String(f.qty.value).trim() ? '' : 'Qté requise');
+        setErr(f.price, f.price && String(f.price.value).trim() ? '' : 'Prix requis');
+        var descVal = f.desc ? String(f.desc.value || '').trim() : '';
+        var descMsg = '';
+        if (!descVal) descMsg = 'Description requise';
+        else if (descVal.length < descMin) descMsg = 'Min. ' + descMin + ' caractères';
+        setErr(f.desc, descMsg);
+        return ok;
+    }
+
+    function syncLineErrorsHint() {
+        var hasErrors = !!linesContainer.querySelector('.was-validated-line .is-invalid');
+        linesContainer.classList.toggle('has-line-errors', hasErrors);
+    }
+
+    function refreshLineState(card) {
+        if (!card) return;
+        card.classList.toggle('is-complete', isLineComplete(card));
+        var badge = card.querySelector('[data-detail-badge]');
+        if (badge) badge.classList.toggle('d-none', !hasDetailValues(card));
+        updateDescCounter(card);
+        updateTotals();
+        updatePaymentVisibility();
+    }
+
+    function renumberLines() {
+        lineCards().forEach(function (card, i) {
+            var label = card.querySelector('.item-label');
+            if (label) label.textContent = String(i + 1);
+        });
+    }
+
+    function updatePaymentVisibility() {
+        paymentBlock.classList.toggle('visible', lineCount() > 2);
+        updateSendButtonState();
+    }
+
+    function setSubstep(sub, opts) {
+        opts = opts || {};
+        if (!opts.skipValidate && sub === 'b' && currentSubstep === 'a' && !validateArticles()) return;
+        hideAlert();
+        currentSubstep = sub;
+        document.querySelectorAll('.substep-pane').forEach(function (p) {
+            p.classList.toggle('active', p.getAttribute('data-substep-pane') === sub);
+        });
+        document.querySelectorAll('.substep-nav-btn').forEach(function (btn) {
+            var s = btn.getAttribute('data-substep');
+            btn.classList.toggle('active', s === sub);
+            btn.classList.toggle('done', s === 'a' && sub === 'b');
+        });
+        resetSendArm();
+        updateStickyFooter();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function validateStep1() {
+        if (userSelect && userSelect.value) return true;
+        if (!fieldValue('[data-contact-field="email"]') || !fieldValue('[data-contact-field="phone"]')) {
+            showAlert('Renseignez email et téléphone, ou sélectionnez un client.');
+            return false;
+        }
+        if (!fieldValue('[data-contact-field="firstName"]')) {
+            showAlert('Renseignez le prénom, ou sélectionnez un client.');
+            return false;
+        }
+        return true;
+    }
+
+    function validateArticles() {
+        if (lineCount() < 1) {
+            showAlert('Ajoutez au moins un article.');
+            return false;
+        }
+        var ok = true;
+        var firstBad = null;
+        lineCards().forEach(function (card) {
+            clearLineErrors(card);
+            if (!markLineErrors(card)) {
+                ok = false;
+                if (!firstBad) firstBad = card;
+            }
+        });
+        syncLineErrorsHint();
+        if (!ok) {
+            showAlert('Chaque article doit avoir type, description (≥' + descMin + ' car.), quantité et prix unitaire.');
+            if (firstBad) {
+                firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                var focusEl = firstBad.querySelector('select[id$="_productType"], input[id$="_quantity"]');
+                if (focusEl) focusEl.focus();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    function validateTransit() {
+        if (lineCount() > 2) {
+            var ref = transactionRef ? String(transactionRef.value || '').trim() : '';
+            if (!ref) {
+                showAlert('Référence de paiement obligatoire pour plus de 2 articles.');
+                return false;
+            }
+        }
+        if (shippingContainer.querySelectorAll('.shipping-option-item').length < 1) {
+            showAlert('Ajoutez au moins un mode de transit.');
+            return false;
+        }
+        return true;
+    }
+
+    function validateStep2() {
+        return validateArticles() && validateTransit();
+    }
+
+    function goToStep(step, opts) {
+        opts = opts || {};
+        if (!opts.skipValidate && step > currentStep) {
+            if (currentStep === 1 && !validateStep1()) return;
+        }
+        hideAlert();
+        currentStep = step;
+        if (step === 2 && !opts.keepSubstep) {
+            currentSubstep = opts.substep || 'a';
+        }
+        document.querySelectorAll('.wizard-pane').forEach(function (p) {
+            p.classList.toggle('active', p.getAttribute('data-pane') === String(step));
         });
         document.querySelectorAll('.wizard-step-btn').forEach(function (btn) {
             var s = parseInt(btn.getAttribute('data-step'), 10);
             btn.classList.toggle('active', s === step);
             btn.classList.toggle('done', s < step);
         });
-        if (step === 3) {
-            refreshProposalItemChoices();
+        if (step === 2) {
+            setSubstep(currentSubstep, { skipValidate: true });
+        } else {
+            resetSendArm();
+            updateStickyFooter();
         }
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    document.querySelectorAll('[data-wizard-next]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            goToStep(parseInt(btn.getAttribute('data-wizard-next'), 10));
-        });
+    btnNext.addEventListener('click', function () {
+        if (currentStep === 1) {
+            goToStep(2, { substep: 'a' });
+            return;
+        }
+        if (currentStep === 2 && currentSubstep === 'a') {
+            setSubstep('b');
+        }
     });
-    document.querySelectorAll('[data-wizard-prev]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            goToStep(parseInt(btn.getAttribute('data-wizard-prev'), 10));
-        });
+    btnPrev.addEventListener('click', function () {
+        if (currentStep === 2 && currentSubstep === 'b') {
+            setSubstep('a', { skipValidate: true });
+            return;
+        }
+        goToStep(currentStep - 1, { skipValidate: true });
     });
     document.querySelectorAll('.wizard-step-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            goToStep(parseInt(btn.getAttribute('data-step'), 10));
+            var t = parseInt(btn.getAttribute('data-step'), 10);
+            goToStep(t, { skipValidate: t < currentStep, substep: 'a' });
         });
     });
-
-    // Prefill client
-    var userSelect = form.querySelector('[data-user-select]');
-    if (userSelect) {
-        userSelect.addEventListener('change', function () {
-            var id = parseInt(userSelect.value, 10);
-            var user = users.find(function (u) { return u.id === id; });
-            if (!user) {
-                return;
-            }
-            var map = {
-                firstName: user.firstName || '',
-                lastName: user.lastName || '',
-                email: user.email || '',
-                phone: user.phone || '',
-                company: user.company || ''
-            };
-            Object.keys(map).forEach(function (key) {
-                var input = form.querySelector('[data-contact-field="' + key + '"]');
-                if (input) {
-                    input.value = map[key];
-                }
+    document.querySelectorAll('.substep-nav-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            setSubstep(btn.getAttribute('data-substep'), {
+                skipValidate: btn.getAttribute('data-substep') === 'a'
             });
         });
-    }
-
-    // Quote items collection
-    var itemsContainer = document.getElementById('quote-items-container');
-    var paymentBlock = document.getElementById('payment-block');
-
-    function updatePaymentVisibility() {
-        var count = itemsContainer.querySelectorAll('.quote-item-card').length;
-        paymentBlock.classList.toggle('visible', count > 2);
-    }
-
-    function getItemLabels() {
-        var labels = [];
-        itemsContainer.querySelectorAll('.quote-item-card').forEach(function (card, index) {
-            var typeSelect = card.querySelector('select[id$="_productType"]');
-            var desc = card.querySelector('textarea[id$="_description"]');
-            var type = typeSelect && typeSelect.value ? typeSelect.value : 'Article';
-            var shortDesc = desc && desc.value ? desc.value.substring(0, 40) : '';
-            labels.push('#' + (index + 1) + ' — ' + type + (shortDesc ? ' — ' + shortDesc : ''));
-        });
-        return labels;
-    }
-
-    function refreshProposalItemChoices() {
-        var labels = getItemLabels();
-        document.querySelectorAll('.product-proposal-quote-item-index').forEach(function (select) {
-            var current = select.value;
-            Array.from(select.options).forEach(function (opt) {
-                if (opt.value === '') {
-                    return;
-                }
-                var idx = parseInt(opt.value, 10);
-                if (idx < labels.length) {
-                    opt.textContent = labels[idx];
-                    opt.disabled = false;
-                    opt.hidden = false;
-                } else {
-                    opt.disabled = true;
-                    opt.hidden = true;
-                }
-            });
-            if (current !== '' && parseInt(current, 10) >= labels.length) {
-                select.value = '';
-            }
-        });
-    }
-
-    document.getElementById('add-quote-item').addEventListener('click', function () {
-        var index = parseInt(itemsContainer.getAttribute('data-index'), 10) || 0;
-        var prototype = itemsContainer.getAttribute('data-prototype');
-        var html = prototype.replace(/__name__/g, index);
-        var wrapper = document.createElement('div');
-        wrapper.className = 'quote-item-card';
-        wrapper.innerHTML =
-            '<button type="button" class="btn btn-sm btn-outline-danger remove-quote-item" aria-label="Supprimer">' +
-            '<i data-lucide="trash-2" style="width:16px;height:16px;"></i></button>' +
-            '<div class="row g-3 pe-5">' + html + '</div>';
-        itemsContainer.appendChild(wrapper);
-        itemsContainer.setAttribute('data-index', index + 1);
-        updatePaymentVisibility();
-        refreshProposalItemChoices();
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
     });
 
-    itemsContainer.addEventListener('click', function (e) {
-        var btn = e.target.closest('.remove-quote-item');
-        if (!btn) {
+    btnSend.addEventListener('click', function () {
+        if (btnSend.disabled || btnSend.dataset.sending === '1') {
+            if (btnSend.disabled) showAlert('Confirmez le paiement avant d\'envoyer.');
             return;
         }
-        var cards = itemsContainer.querySelectorAll('.quote-item-card');
-        if (cards.length <= 1) {
+        if (!validateStep2()) {
+            if (!validateArticles()) setSubstep('a', { skipValidate: true });
+            else setSubstep('b', { skipValidate: true });
             return;
         }
-        btn.closest('.quote-item-card').remove();
-        updatePaymentVisibility();
-        refreshProposalItemChoices();
+        var email = fieldValue('[data-contact-field="email"]') || 'ce client';
+        if (!sendArmed) {
+            sendArmed = true;
+            btnSend.textContent = 'Confirmer l\'envoi à ' + email;
+            btnSend.classList.remove('btn-dark');
+            btnSend.classList.add('btn-warning');
+            sendConfirmHint.classList.add('visible');
+            sendHint.classList.remove('visible');
+            sendArmTimer = setTimeout(resetSendArm, 10000);
+            return;
+        }
+        btnSend.dataset.sending = '1';
+        btnSend.disabled = true;
+        submitWithAction('send', 'Envoi du devis…', 'PDF + email vers ' + email + '. Ne fermez pas la page.');
     });
 
-    itemsContainer.addEventListener('change', function (e) {
-        if (e.target.matches('select[id$="_productType"], textarea[id$="_description"]')) {
-            refreshProposalItemChoices();
-        }
-    });
-    itemsContainer.addEventListener('input', function (e) {
-        if (e.target.matches('textarea[id$="_description"]')) {
-            refreshProposalItemChoices();
-        }
-    });
-
-    // Product proposals
-    var $proposals = $('.product-proposals-container');
-    var proposalIndex = parseInt($proposals.data('index'), 10) || 0;
-
-    function addProductProposal() {
-        var prototype = $proposals.attr('data-prototype');
-        var newForm = prototype.replace(/__name__/g, proposalIndex);
-        $proposals.find('.proposal-empty-alert').remove();
-        $proposals.append(newForm);
-        proposalIndex++;
-        $proposals.data('index', proposalIndex);
-        $proposals.attr('data-index', proposalIndex);
-        refreshProposalItemChoices();
-        initManualProposalImages($proposals[0]);
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    }
-
-    $('#add-product-proposal').on('click', function (e) {
+    btnDraft.addEventListener('click', function (e) {
         e.preventDefault();
-        addProductProposal();
+        if (!validateStep2()) {
+            if (!validateArticles()) setSubstep('a', { skipValidate: true });
+            else setSubstep('b', { skipValidate: true });
+            return;
+        }
+        resetSendArm();
+        submitWithAction('draft', 'Enregistrement…', 'Création du devis et PDF. Aucun email.');
     });
 
-    $(document).on('click', '.remove-product-proposal', function () {
-        $(this).closest('.product-proposal-item').remove();
-        if ($('.product-proposal-item', $proposals).length === 0) {
-            $proposals.append('<div class="alert alert-info proposal-empty-alert">Aucune proposition. Cliquez sur + pour en ajouter.</div>');
+    if (paymentConfirmed) paymentConfirmed.addEventListener('change', updateSendButtonState);
+
+    // Client listbox
+    function fillContactFromUser(user) {
+        ['firstName', 'lastName', 'email', 'phone', 'company'].forEach(function (key) {
+            var input = form.querySelector('[data-contact-field="' + key + '"]');
+            if (input) input.value = user[key] || '';
+        });
+    }
+    function showClientSummary(user) {
+        document.getElementById('client-summary-name').textContent =
+            ((user.firstName || '') + ' ' + (user.lastName || '')).trim() || 'Client';
+        document.getElementById('client-summary-meta').textContent =
+            [user.email, user.phone, user.company].filter(Boolean).join(' · ');
+        clientSummary.classList.add('visible');
+        clientFields.classList.add('hidden');
+    }
+    function showManualClientFields() {
+        clientSummary.classList.remove('visible');
+        clientFields.classList.remove('hidden');
+    }
+    function getFilteredUsers(query) {
+        var q = (query || '').toLowerCase().trim();
+        if (!q) return users.slice(0, 80);
+        return users.filter(function (u) {
+            return [u.firstName, u.lastName, u.email, u.phone, u.company].join(' ').toLowerCase().indexOf(q) !== -1;
+        }).slice(0, 80);
+    }
+    function selectClientById(id) {
+        if (!userSelect) return;
+        userSelect.value = id ? String(id) : '';
+        var user = id ? users.find(function (u) { return u.id === id; }) : null;
+        renderClientListbox(clientSearch ? clientSearch.value : '');
+        if (!user) { showManualClientFields(); return; }
+        fillContactFromUser(user);
+        showClientSummary(user);
+    }
+    function renderClientListbox(query) {
+        var selectedId = userSelect && userSelect.value ? parseInt(userSelect.value, 10) : null;
+        var filtered = getFilteredUsers(query);
+        clientListbox.innerHTML = '';
+        if (!filtered.length) {
+            var empty = document.createElement('p');
+            empty.className = 'client-listbox-empty';
+            empty.textContent = (query || '').trim() ? 'Aucun client trouvé.' : 'Aucun client en base.';
+            clientListbox.appendChild(empty);
+            return;
+        }
+        filtered.forEach(function (user) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'client-listbox-item' + (selectedId === user.id ? ' is-selected' : '');
+            btn.innerHTML = '<span class="clb-name">' +
+                (((user.firstName || '') + ' ' + (user.lastName || '')).trim() || user.email) +
+                '</span><span class="clb-meta">' +
+                [user.email, user.phone, user.company].filter(Boolean).join(' · ') + '</span>';
+            btn.addEventListener('click', function () { selectClientById(user.id); });
+            clientListbox.appendChild(btn);
+        });
+    }
+    if (clientSearch) clientSearch.addEventListener('input', function () { renderClientListbox(clientSearch.value); });
+    document.getElementById('client-edit-manual').addEventListener('click', function () {
+        selectClientById(null);
+        if (clientSearch) clientSearch.value = '';
+        renderClientListbox('');
+        showManualClientFields();
+    });
+
+    function focusTypeOnCard(card) {
+        if (!card) return;
+        var sel = card.querySelector('select[id$="_productType"]');
+        if (sel) sel.focus();
+    }
+
+    function rowFields(card) {
+        return Array.from(card.querySelectorAll(
+            '.article-line-main select[id$="_productType"], .article-line-main input[id$="_quantity"], .article-line-main input[id$="_unitPrice"], .article-line-main textarea.article-desc-input, .article-line-main textarea[id$="_description"]'
+        )).filter(function (el) { return !el.disabled; });
+    }
+
+    function readLineValues(card) {
+        var f = getLineFields(card);
+        return {
+            productType: f.type ? f.type.value : '',
+            quantity: f.qty ? f.qty.value : '',
+            unitPrice: f.price ? f.price.value : '',
+            description: f.desc ? f.desc.value : '',
+            dimensions: f.dims ? f.dims.value : '',
+            weight: f.weight ? f.weight.value : ''
+        };
+    }
+
+    function writeLineValues(card, values) {
+        var f = getLineFields(card);
+        if (f.type) f.type.value = values.productType || '';
+        if (f.qty) f.qty.value = values.quantity || '1';
+        if (f.price) f.price.value = values.unitPrice || '';
+        if (f.desc) f.desc.value = values.description || '';
+        if (f.dims) f.dims.value = values.dimensions || '';
+        if (f.weight) f.weight.value = values.weight || '';
+        refreshLineState(card);
+    }
+
+    function addArticleLine(values) {
+        var index = parseInt(linesContainer.getAttribute('data-index'), 10) || 0;
+        var html = linesContainer.getAttribute('data-prototype').replace(/__name__/g, String(index));
+        articlesTable.insertAdjacentHTML('beforeend', html);
+        var card = articlesTable.querySelector('[data-article-line]:last-of-type');
+        linesContainer.setAttribute('data-index', index + 1);
+        renumberLines();
+        if (card) {
+            var priceGroup = card.querySelector('.article-line-price .input-group');
+            if (priceGroup) priceGroup.classList.add('input-group-sm');
+            if (values) {
+                writeLineValues(card, values);
+            } else {
+                writeLineValues(card, { quantity: '1' });
+            }
+            updatePhotoPreview(card);
+            activeLine = card;
+        }
+        updatePaymentVisibility();
+        updateTotals();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return card;
+    }
+
+    function duplicateCard(card) {
+        if (!card) return null;
+        var values = readLineValues(card);
+        var newCard = addArticleLine(values);
+        if (newCard) {
+            newCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            focusTypeOnCard(newCard);
+        }
+        return newCard;
+    }
+
+    function setDetailExpanded(card, expanded) {
+        var detail = card.querySelector('.article-line-detail');
+        var btn = card.querySelector('.toggle-article-detail');
+        if (!detail || !btn) return;
+        if (expanded) {
+            detail.hidden = false;
+            detail.removeAttribute('hidden');
+            card.classList.add('is-expanded');
+            btn.setAttribute('aria-expanded', 'true');
+        } else {
+            detail.hidden = true;
+            detail.setAttribute('hidden', 'hidden');
+            card.classList.remove('is-expanded');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    document.getElementById('add-article-line').addEventListener('click', function () {
+        var card = addArticleLine(null);
+        focusTypeOnCard(card);
+    });
+    document.getElementById('duplicate-last-line').addEventListener('click', function () {
+        var cards = lineCards();
+        if (!cards.length) {
+            addArticleLine(null);
+            return;
+        }
+        duplicateCard(cards[cards.length - 1]);
+    });
+    document.getElementById('collapse-complete-lines').addEventListener('click', function () {
+        lineCards().forEach(function (card) {
+            if (isLineComplete(card)) setDetailExpanded(card, false);
+        });
+    });
+
+    linesContainer.addEventListener('click', function (e) {
+        var card = e.target.closest('[data-article-line]');
+        if (card) activeLine = card;
+
+        var toggle = e.target.closest('.toggle-article-detail');
+        if (toggle) {
+            var c = toggle.closest('[data-article-line]');
+            var open = toggle.getAttribute('aria-expanded') === 'true';
+            setDetailExpanded(c, !open);
+            return;
+        }
+        var dup = e.target.closest('.duplicate-article-line');
+        if (dup) {
+            duplicateCard(dup.closest('[data-article-line]'));
+            return;
+        }
+        var btn = e.target.closest('.remove-article-line');
+        if (!btn) return;
+        if (lineCount() <= 1) {
+            showAlert('Conservez au moins un article.');
+            return;
+        }
+        btn.closest('[data-article-line]').remove();
+        renumberLines();
+        updatePaymentVisibility();
+        updateTotals();
+    });
+
+    linesContainer.addEventListener('input', function (e) {
+        var card = e.target.closest('[data-article-line]');
+        if (card) {
+            activeLine = card;
+            refreshLineState(card);
+        }
+    });
+    linesContainer.addEventListener('change', function (e) {
+        var card = e.target.closest('[data-article-line]');
+        if (!card) return;
+        if (e.target.matches('input[id$="_photoFile"], .article-photo-input')) {
+            updatePhotoPreview(card);
+        }
+        refreshLineState(card);
+    });
+    linesContainer.addEventListener('focusin', function (e) {
+        var card = e.target.closest('[data-article-line]');
+        if (card) activeLine = card;
+    });
+
+    // Keyboard: Enter = next field / new line at end; Alt+Shift+D = duplicate
+    linesContainer.addEventListener('keydown', function (e) {
+        var card = e.target.closest('[data-article-line]');
+        if (!card) return;
+        activeLine = card;
+
+        if (e.altKey && e.shiftKey && (e.key === 'd' || e.key === 'D')) {
+            e.preventDefault();
+            duplicateCard(card);
+            return;
+        }
+
+        if (e.key !== 'Enter') return;
+        if (e.target.matches('textarea.article-desc-input, textarea[id$="_description"]')) {
+            if (e.shiftKey) return; // newline
+            e.preventDefault();
+            var fields = rowFields(card);
+            var idx = fields.indexOf(e.target);
+            if (idx >= 0 && idx < fields.length - 1) {
+                fields[idx + 1].focus();
+                return;
+            }
+            var newCard = addArticleLine(null);
+            focusTypeOnCard(newCard);
+            return;
+        }
+        if (e.target.matches('input, select')) {
+            e.preventDefault();
+            var fields2 = rowFields(card);
+            var idx2 = fields2.indexOf(e.target);
+            if (idx2 >= 0 && idx2 < fields2.length - 1) {
+                fields2[idx2 + 1].focus();
+                return;
+            }
+            var newCard2 = addArticleLine(null);
+            focusTypeOnCard(newCard2);
         }
     });
 
-    function initManualProposalImages(root) {
-        (root || document).querySelectorAll('.product-proposal-file-input').forEach(function (input) {
-            if (input.dataset.bound === '1') {
-                return;
-            }
-            input.dataset.bound = '1';
-            input.addEventListener('change', function () {
-                var container = input.closest('.product-proposal-dropzone');
-                var previewBox = container ? container.querySelector('.image-upload-container') : null;
-                if (!previewBox) {
-                    return;
-                }
-                previewBox.querySelectorAll('.image-preview.temp').forEach(function (el) { el.remove(); });
-                Array.from(input.files || []).forEach(function (file) {
-                    if (!file.type.startsWith('image/')) {
-                        return;
-                    }
-                    var reader = new FileReader();
-                    reader.onload = function (ev) {
-                        var preview = document.createElement('div');
-                        preview.className = 'image-preview temp';
-                        preview.innerHTML = '<img src="' + ev.target.result + '" alt=""><button type="button" class="remove-image"><i data-lucide="x" style="width:16px;height:16px;"></i></button>';
-                        previewBox.appendChild(preview);
-                        if (typeof lucide !== 'undefined') {
-                            lucide.createIcons();
-                        }
-                        preview.querySelector('.remove-image').addEventListener('click', function () {
-                            preview.remove();
-                        });
-                    };
-                    reader.readAsDataURL(file);
-                });
-            });
-        });
-    }
-    initManualProposalImages(document);
+    document.addEventListener('keydown', function (e) {
+        if (currentStep !== 2 || currentSubstep !== 'a') return;
+        if (!(e.altKey && e.shiftKey && (e.key === 'd' || e.key === 'D'))) return;
+        if (e.target.closest && e.target.closest('#article-lines-container')) return;
+        if (activeLine && linesContainer.contains(activeLine)) {
+            e.preventDefault();
+            duplicateCard(activeLine);
+        }
+    });
 
-    // Shipping options
-    var shippingContainer = document.querySelector('.shipping-options-container');
-    var shippingIndex = parseInt(shippingContainer.dataset.index, 10) || 0;
-
+    // Shipping
     document.getElementById('add-shipping-option').addEventListener('click', function (e) {
         e.preventDefault();
-        if (shippingContainer.querySelectorAll('.shipping-option-item').length >= 3) {
-            return;
-        }
+        if (shippingContainer.querySelectorAll('.shipping-option-item').length >= 3) return;
         var prototype = shippingContainer.dataset.prototype.replace(/__name__/g, shippingIndex);
-        var emptyAlert = shippingContainer.querySelector('.shipping-empty-alert');
-        if (emptyAlert) {
-            emptyAlert.remove();
-        }
+        var empty = shippingContainer.querySelector('.shipping-empty-alert');
+        if (empty) empty.remove();
         shippingContainer.insertAdjacentHTML('beforeend', prototype);
         shippingIndex += 1;
         shippingContainer.dataset.index = String(shippingIndex);
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
+        var lastSel = shippingContainer.querySelector('.shipping-option-item:last-child .shipping-option-name-input');
+        if (lastSel) lastSel.dispatchEvent(new Event('change', { bubbles: true }));
+        if (typeof window.refreshShippingAddButton === 'function') window.refreshShippingAddButton();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     });
-
     document.addEventListener('click', function (e) {
         var removeBtn = e.target.closest('.remove-shipping-option');
-        if (!removeBtn || !shippingContainer.contains(removeBtn)) {
-            return;
-        }
+        if (!removeBtn || !shippingContainer.contains(removeBtn)) return;
         e.preventDefault();
         var item = removeBtn.closest('.shipping-option-item');
-        if (item) {
-            item.remove();
-        }
+        if (item) item.remove();
         if (shippingContainer.querySelectorAll('.shipping-option-item').length === 0) {
-            shippingContainer.innerHTML =
-                '<div class="alert alert-info shipping-empty-alert">Aucune option. Elles seront préremplies depuis les modes d\'envoi choisis si vous n\'en ajoutez pas.</div>';
+            shippingContainer.innerHTML = '<div class="alert alert-info shipping-empty-alert mb-0">Ajoutez au moins un mode de transit.</div>';
         }
+        if (typeof window.refreshShippingAddButton === 'function') window.refreshShippingAddButton();
     });
 
+    // Init
+    if (userSelect && userSelect.value) {
+        var initialUser = users.find(function (u) { return u.id === parseInt(userSelect.value, 10); });
+        if (initialUser) { fillContactFromUser(initialUser); showClientSummary(initialUser); }
+    }
+    renderClientListbox('');
+    renumberLines();
+    lineCards().forEach(function (card) {
+        refreshLineState(card);
+        updatePhotoPreview(card);
+        var priceGroup = card.querySelector('.article-line-price .input-group');
+        if (priceGroup) priceGroup.classList.add('input-group-sm');
+    });
     updatePaymentVisibility();
-    refreshProposalItemChoices();
+    updateTotals();
+    if (currentStep !== 1) goToStep(currentStep, { skipValidate: true, substep: 'a' });
+    else updateStickyFooter();
 })();
 </script>
 {% endblock %}

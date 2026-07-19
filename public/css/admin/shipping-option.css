@@ -36,21 +36,19 @@
 }
 
 .shipping-option-name-input {
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: 500;
+    font-size: 0.9375rem;
     color: #212529;
-    border: none !important;
-    background: transparent !important;
-    padding-left: 0 !important;
-    padding-top: 0.125rem !important;
-    padding-bottom: 0.125rem !important;
-    box-shadow: none !important;
     min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    cursor: pointer;
 }
 
 .shipping-option-name-input:focus {
-    outline: none;
-    box-shadow: none !important;
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
 .shipping-option-card__desc .shipping-option-desc-input {

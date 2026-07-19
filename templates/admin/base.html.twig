@@ -120,8 +120,9 @@
             
             <div class="container-fluid">
                 {% for label, messages in app.flashes %}
+                    {% set alertClass = label == 'error' ? 'danger' : label %}
                     {% for message in messages %}
-                        <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                        <div class="alert alert-{{ alertClass }} alert-dismissible fade show" role="alert">
                             {{ message }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>

@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -67,24 +66,12 @@ class AdminManualQuoteType extends AbstractType
                 'required' => false,
                 'attr' => ['placeholder' => 'Entreprise', 'class' => 'form-control', 'data-contact-field' => 'company'],
             ])
-            ->add('shippingMethod', ChoiceType::class, [
-                'label' => 'Choix de l\'envoi',
-                'choices' => [
-                    'Envoi maritime (délai estimé: 50-70 jours)' => 'maritime',
-                    'Envoi aérien express (délai estimé: 3-5 jours)' => 'aerien_express',
-                    'Envoi aérien normal (délai estimé: 10-20 jours)' => 'aerien_normal',
-                ],
-                'expanded' => true,
-                'multiple' => true,
-                'required' => true,
-                'attr' => ['class' => 'shipping-method-options'],
-            ])
             ->add('additionalInfo', TextareaType::class, [
                 'label' => 'Informations complémentaires (optionnel)',
                 'required' => false,
                 'attr' => [
                     'placeholder' => 'Informations utiles pour le traitement',
-                    'rows' => 3,
+                    'rows' => 2,
                     'class' => 'form-control',
                 ],
             ])
@@ -97,21 +84,21 @@ class AdminManualQuoteType extends AbstractType
                 ],
             ])
             ->add('paymentConfirmed', CheckboxType::class, [
-                'label' => 'Paiement confirmé (requis pour envoyer l\'offre si > 2 articles)',
+                'label' => 'Paiement confirmé (requis pour envoyer si > 2 articles)',
                 'required' => false,
                 'mapped' => false,
             ])
-            ->add('items', CollectionType::class, [
-                'entry_type' => QuoteItemType::class,
+            ->add('articleLines', CollectionType::class, [
+                'entry_type' => AdminManualArticleLineType::class,
                 'entry_options' => ['label' => false],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'by_reference' => false,
-                'label' => 'Produits',
-                'attr' => ['class' => 'quote-items-collection'],
+                'mapped' => false,
+                'label' => false,
                 'prototype' => true,
+                'attr' => ['class' => 'article-lines-collection'],
             ])
-            // Offre (champs non mappés sur Quote — construits dans le contrôleur)
             ->add('offerTitle', TextType::class, [
                 'label' => 'Titre de l\'offre',
                 'mapped' => false,
@@ -121,17 +108,8 @@ class AdminManualQuoteType extends AbstractType
                     'placeholder' => 'Ex: Offre Standard',
                 ],
             ])
-            ->add('offerDescription', TextareaType::class, [
-                'label' => 'Description de l\'offre',
-                'mapped' => false,
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 3,
-                ],
-            ])
             ->add('rmbMgaExchangeRate', NumberType::class, [
-                'label' => 'Taux de change RMB/MGA',
+                'label' => 'Taux RMB/MGA',
                 'mapped' => false,
                 'required' => false,
                 'scale' => 6,
@@ -141,17 +119,6 @@ class AdminManualQuoteType extends AbstractType
                     'placeholder' => 'Ex: 556.123456',
                     'step' => '0.000001',
                 ],
-            ])
-            ->add('productProposals', CollectionType::class, [
-                'entry_type' => AdminManualProductProposalType::class,
-                'entry_options' => ['label' => false],
-                'allow_add' => true,
-                'allow_delete' => true,
-                'by_reference' => false,
-                'mapped' => false,
-                'label' => false,
-                'prototype' => true,
-                'attr' => ['class' => 'product-proposal-collection'],
             ])
             ->add('shippingOptions', CollectionType::class, [
                 'entry_type' => ShippingOptionType::class,

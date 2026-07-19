@@ -18,10 +18,10 @@
 <div class="shipping-option-card border rounded bg-white mb-3">
     <div class="shipping-option-card__head d-flex align-items-start justify-content-between gap-2">
         <div class="d-flex align-items-center gap-2 flex-wrap flex-grow-1 min-w-0">
-            <span class="{{ badgeClass }}" data-shipping-badge>{{ badgeText }}</span>
+            <span class="{{ badgeClass }}{% if not nameVal %} d-none{% endif %}" data-shipping-badge>{{ badgeText }}</span>
             <div class="flex-grow-1 min-w-0">
                 {{ form_label(shippingOptionForm.name, null, { label_attr: { class: 'form-label small text-muted mb-1' } }) }}
-                {{ form_widget(shippingOptionForm.name) }}
+                {{ form_widget(shippingOptionForm.name, { attr: { class: 'form-select shipping-option-name-input' } }) }}
             </div>
         </div>
         <button type="button" class="btn btn-outline-secondary border shipping-option-remove remove-shipping-option p-0 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;" aria-label="Supprimer cette option">

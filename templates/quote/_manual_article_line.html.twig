@@ -1,0 +1,78 @@
+{# Ligne article = tbody (saisie + détail) dans articles-grid #}
+<tbody class="article-line" data-article-line>
+    <tr class="article-line-main">
+        <td class="article-line-num item-label text-muted">1</td>
+        <td class="article-line-photo">
+            <label class="article-photo-picker mb-0" title="Photo produit">
+                <span class="article-photo-preview" data-photo-preview>
+                    <i data-lucide="image" style="width:16px;height:16px;"></i>
+                </span>
+                <span class="visually-hidden">Photo produit</span>
+                {{ form_widget(lineForm.photoFile, {
+                    attr: {
+                        class: 'article-photo-input',
+                        accept: 'image/png,image/jpeg,image/jpg,image/webp,image/gif'
+                    }
+                }) }}
+            </label>
+            {{ form_errors(lineForm.photoFile) }}
+        </td>
+        <td class="article-line-type">
+            <label class="visually-hidden" for="{{ lineForm.productType.vars.id }}">Type</label>
+            {{ form_widget(lineForm.productType, { attr: { class: 'form-select form-select-sm product-type-select' } }) }}
+            {{ form_errors(lineForm.productType) }}
+            <div class="invalid-feedback article-field-error" data-error-for="productType"></div>
+        </td>
+        <td class="article-line-qty">
+            <label class="visually-hidden" for="{{ lineForm.quantity.vars.id }}">Qté</label>
+            {{ form_widget(lineForm.quantity, { attr: { class: 'form-control form-control-sm', placeholder: 'Qté', min: 1 } }) }}
+            {{ form_errors(lineForm.quantity) }}
+            <div class="invalid-feedback article-field-error" data-error-for="quantity"></div>
+        </td>
+        <td class="article-line-price">
+            <label class="visually-hidden" for="{{ lineForm.unitPrice.vars.id }}">Prix RMB</label>
+            {{ form_widget(lineForm.unitPrice, { attr: { class: 'form-control form-control-sm', placeholder: '0.00' } }) }}
+            {{ form_errors(lineForm.unitPrice) }}
+            <div class="invalid-feedback article-field-error" data-error-for="unitPrice"></div>
+        </td>
+        <td class="article-line-desc">
+            <label class="visually-hidden" for="{{ lineForm.description.vars.id }}">Description</label>
+            <div class="article-desc-wrap">
+                {{ form_widget(lineForm.description, {
+                    attr: {
+                        class: 'form-control form-control-sm article-desc-input',
+                        rows: 1,
+                        placeholder: 'Description (min. 10 car.)',
+                        minlength: lineForm.description.vars.attr.minlength|default('10')
+                    }
+                }) }}
+                <span class="article-desc-counter" data-desc-counter aria-hidden="true">0/10</span>
+            </div>
+            {{ form_errors(lineForm.description) }}
+            <div class="invalid-feedback article-field-error" data-error-for="description"></div>
+        </td>
+        <td class="article-line-actions text-end">
+            <span class="article-complete-label text-muted small me-1 d-none" data-complete-label>OK</span>
+            <span class="article-detail-badge badge text-bg-light border d-none me-1" data-detail-badge>Détails</span>
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-secondary toggle-article-detail" title="Compléter (dims, poids)" aria-label="Compléter" aria-expanded="false">
+                    <i data-lucide="chevrons-down" style="width:14px;height:14px;"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary duplicate-article-line" title="Dupliquer (Alt+Shift+D)" aria-label="Dupliquer">
+                    <i data-lucide="copy" style="width:14px;height:14px;"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger remove-article-line" title="Supprimer" aria-label="Supprimer">
+                    <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                </button>
+            </div>
+        </td>
+    </tr>
+    <tr class="article-line-detail" hidden>
+        <td colspan="7" class="article-line-detail-cell">
+            <div class="row g-2">
+                <div class="col-md-6">{{ form_row(lineForm.dimensions) }}</div>
+                <div class="col-md-6">{{ form_row(lineForm.weight) }}</div>
+            </div>
+        </td>
+    </tr>
+</tbody>
