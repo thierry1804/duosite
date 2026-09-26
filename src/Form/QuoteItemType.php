@@ -99,10 +99,13 @@ class QuoteItemType extends AbstractType
                 ]
             ])
             ->add('photoFile', FileType::class, [
-                'label' => 'Photo du produit (facultatif)',
-                'required' => false,
+                'label' => 'Photo du produit',
+                'required' => true,
                 'mapped' => false,
                 'constraints' => [
+                    new NotBlank([
+                        'message' => 'La photo du produit est obligatoire'
+                    ]),
                     new File([
                         'maxSize' => '5M',
                         'mimeTypes' => [

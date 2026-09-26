@@ -377,9 +377,9 @@
                                         <div class="photo-upload-icon">
                                             <i class="fas fa-camera"></i>
                                         </div>
-                                        <span>Cliquez pour ajouter une photo</span>
+                                        <span>Cliquez pour ajouter une photo (obligatoire)</span>
                                     </label>
-                                    {{ form_widget(itemForm.photoFile, {'attr': {'class': 'form-control-file d-none'}}) }}
+                                    {{ form_widget(itemForm.photoFile, {'attr': {'class': 'form-control-file d-none', 'required': 'required'}}) }}
                                     <img src="#" class="product-photo-preview" alt="Aperçu de la photo">
                                 </div>
                                 {{ form_errors(itemForm.photoFile) }}
@@ -596,7 +596,7 @@
                 element: "#tour-quote-products-block",
                 popover: {
                     title: "Produits",
-                    description: "Pour chaque ligne : photo éventuelle, type, quantité, budget et description. Ajoutez des lignes si vous avez plusieurs produits.",
+                    description: "Pour chaque ligne : photo obligatoire, type, quantité, budget et description. Ajoutez des lignes si vous avez plusieurs produits.",
                     side: "bottom"
                 }
             },

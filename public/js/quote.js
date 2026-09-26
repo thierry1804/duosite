@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialiser l'aperçu des photos pour les éléments existants
     document.querySelectorAll('.form-control-file').forEach(function(fileInput) {
+        fileInput.required = true;
         initPhotoPreview(fileInput);
     });
 
@@ -203,7 +204,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 if (input.type === 'file') {
-                    // ne rien faire
+                    input.required = true;
+                    input.value = '';
                 } else if (input.type === 'select-one') {
                     input.selectedIndex = 0;
                 } else {
@@ -300,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         iconDiv.innerHTML = '<i class="fas fa-camera"></i>';
 
                         const span = document.createElement('span');
-                        span.textContent = 'Cliquez pour ajouter une photo';
+                        span.textContent = 'Cliquez pour ajouter une photo (obligatoire)';
 
                         label.appendChild(iconDiv);
                         label.appendChild(span);
@@ -310,6 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         imgPreview.className = 'product-photo-preview';
                         imgPreview.alt = 'Aperçu de la photo';
 
+                        photoFileInput.required = true;
                         photoUploadContainer.appendChild(label);
                         photoUploadContainer.appendChild(photoFileInput);
                         photoUploadContainer.appendChild(imgPreview);
@@ -521,6 +524,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Empêcher la soumission si aucune méthode n'est sélectionnée
                     event.preventDefault();
                     alert('Veuillez sélectionner au moins une méthode d\'envoi.');
+                    return false;
+                }
+            }
+
+            // Photo obligatoire sur chaque ligne produit (input masqué : validation native peu fiable)
+            const photoInputs = document.querySelectorAll('.quote-item input[type="file"].form-control-file');
+            for (const photoInput of photoInputs) {
+                if (!photoInput.files || photoInput.files.length === 0) {
+                    event.preventDefault();
+                    alert('Veuillez ajouter une photo pour chaque produit.');
+                    const label = photoInput.closest('.photo-upload-container')?.querySelector('.upload-label');
+                    if (label) {
+                        label.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                     return false;
                 }
             }
