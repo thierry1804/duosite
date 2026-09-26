@@ -1,17 +1,21 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Conditions Générales de Vente - DUO IMPORT MDG{% endblock %}
+{% block title %}{{ legalPage.title }} - DUO IMPORT MDG{% endblock %}
 
 {% block body %}
 <div class="container mt-4 mb-5">
-    <h1 class="text-center mb-4">CONDITIONS GÉNÉRALES DE VENTE</h1>
+    <h1 class="text-center mb-4">{{ legalPage.title }}</h1>
 
     <div class="cgv-web-content">
-        {% include 'cgv/_content.html.twig' %}
+        {% if legalPage.content %}
+            {{ legalPage.content|raw }}
+        {% else %}
+            {% include 'cgv/_content.html.twig' %}
+        {% endif %}
     </div>
 </div>
 <style>
-    .cgv-web-content .cgv-article { margin-bottom: 1.5rem; }
+    .cgv-web-content section { margin-bottom: 1.5rem; }
     .cgv-web-content h2 { font-size: 1.5rem; margin-bottom: 0.75rem; }
     .cgv-web-content h3 { font-size: 1.15rem; margin-top: 1rem; margin-bottom: 0.5rem; }
 </style>

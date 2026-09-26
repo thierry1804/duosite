@@ -47,6 +47,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ path('app_admin_legal_pages') }}" class="{{ app.request.get('_route') == 'app_admin_legal_pages' ? 'active' : '' }}">
+                        <i data-lucide="scale"></i> <span>Pages légales</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ path('app_admin_suspicious_users') }}" class="{{ app.request.get('_route') == 'app_admin_suspicious_users' ? 'active' : '' }}">
                         <i data-lucide="user-cog"></i> <span>Utilisateurs suspects</span>
                     </a>

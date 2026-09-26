@@ -1,0 +1,87 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Pages légales - Administration{% endblock %}
+
+{% block breadcrumb %}
+    <li><span class="dropdown-item disabled" aria-current="page">Pages légales</span></li>
+{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Pages légales</h1>
+
+    <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {{ tab == 'cgv' ? 'active' : '' }}"
+               href="{{ path('app_admin_legal_pages', {tab: 'cgv'}) }}">
+                CGV
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link {{ tab == 'privacy' ? 'active' : '' }}"
+               href="{{ path('app_admin_legal_pages', {tab: 'privacy'}) }}">
+                Politique de confidentialité
+            </a>
+        </li>
+    </ul>
+
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h5 class="mb-0">{{ page.title }}</h5>
+        </div>
+        <div class="admin-card-body">
+            <p class="text-muted small mb-3">
+                Dernière mise à jour : {{ page.updatedAt|date('d/m/Y H:i') }}
+            </p>
+            {{ form_start(form, {'attr': {'class': 'js-legal-form'}}) }}
+                <div class="mb-3">
+                    {{ form_label(form.title) }}
+                    {{ form_widget(form.title) }}
+                    {{ form_errors(form.title) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.content) }}
+                    {{ form_widget(form.content) }}
+                    {{ form_errors(form.content) }}
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">
+                        {{ tab == 'privacy' ? 'Enregistrer la politique' : 'Enregistrer les CGV' }}
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@7.5.1/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof tinymce === 'undefined') {
+                return;
+            }
+
+            tinymce.init({
+                selector: 'textarea.js-tinymce',
+                height: 480,
+                menubar: false,
+                plugins: 'lists link table code autoresize',
+                toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | link table | code',
+                valid_elements: 'h1,h2,h3,h4,p,br,ul,ol,li,strong/b,em/i,u,a[href|target|rel],table,thead,tbody,tr,th,td,section[class],span[class]',
+                branding: false,
+                license_key: 'gpl',
+                relative_urls: false,
+                remove_script_host: false
+            });
+
+            document.querySelectorAll('form.js-legal-form').forEach(function (form) {
+                form.addEventListener('submit', function () {
+                    if (typeof tinymce !== 'undefined') {
+                        tinymce.triggerSave();
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

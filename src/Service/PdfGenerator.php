@@ -5,8 +5,10 @@ namespace App\Service;
 ini_set('memory_limit', '512M');
 set_time_limit(120);
 
+use App\Entity\LegalPage;
 use App\Entity\ProductProposal;
 use App\Entity\QuoteOffer;
+use App\Repository\LegalPageRepository;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -16,13 +18,16 @@ class PdfGenerator
 {
     private Environment $twig;
     private string $publicDir;
+    private LegalPageRepository $legalPageRepository;
 
     public function __construct(
         Environment $twig,
-        KernelInterface $kernel
+        KernelInterface $kernel,
+        LegalPageRepository $legalPageRepository
     ) {
         $this->twig = $twig;
         $this->publicDir = $kernel->getProjectDir() . DIRECTORY_SEPARATOR . 'public';
+        $this->legalPageRepository = $legalPageRepository;
     }
 
     public function generateQuoteOfferPdf(QuoteOffer $offer): string
@@ -41,10 +46,14 @@ class PdfGenerator
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->setBasePath($this->publicDir);
 
+        $cgvPage = $this->legalPageRepository->findOneBySlug(LegalPage::SLUG_CGV);
+
         $html = $this->twig->render('pdf/quote_offer.html.twig', [
             'offer' => $offer,
             'pdf_logo' => $this->resolvePublicRelativePath('images/logo.webp'),
             'catalog_images' => $this->buildCatalogImages($offer),
+            'cgv_html' => $cgvPage?->getContent() ?? '',
+            'cgv_title' => $cgvPage?->getTitle() ?? 'CONDITIONS GÉNÉRALES DE VENTE',
         ]);
 
         $dompdf->loadHtml($html);

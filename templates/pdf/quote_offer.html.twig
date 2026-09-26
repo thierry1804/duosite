@@ -390,8 +390,12 @@
         </div>
 
         <div class="cgv-page">
-            <h1>CONDITIONS GÉNÉRALES DE VENTE</h1>
-            {% include 'cgv/_content.html.twig' %}
+            <h1>{{ cgv_title|default('CONDITIONS GÉNÉRALES DE VENTE') }}</h1>
+            {% if cgv_html %}
+                {{ cgv_html|raw }}
+            {% else %}
+                {% include 'cgv/_content.html.twig' %}
+            {% endif %}
         </div>
     </div>
 </body>
