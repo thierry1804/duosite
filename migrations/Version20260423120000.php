@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Aligne le tarif unitaire des articles de devis payants sur 2 000 Ar (cahier client / cohérence code).
+ * Aligne le tarif unitaire des articles de devis payants sur 2 500 Ar (cahier client / cohérence code).
  */
 final class Version20260423120000 extends AbstractMigration
 {
