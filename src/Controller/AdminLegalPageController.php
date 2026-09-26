@@ -31,7 +31,7 @@ class AdminLegalPageController extends AbstractController
             ? $legalPageRepository->getOrCreate(LegalPage::SLUG_PRIVACY, 'Politique de confidentialité')
             : $legalPageRepository->getOrCreate(LegalPage::SLUG_CGV, 'Conditions Générales de Vente');
 
-        $form = $this->createNamedForm($tab, LegalPageType::class, $page);
+        $form = $this->createForm(LegalPageType::class, $page);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
