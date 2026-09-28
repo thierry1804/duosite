@@ -360,8 +360,21 @@
         
         <div id="tour-quote-products-block">
         <h2 class="mt-4 mb-3">2. Détails du ou des produits</h2>
-        
-        <div class="quote-items-wrapper" 
+
+        <div class="alert alert-info mb-4">
+            <p class="mb-1">
+                <i class="fas fa-info-circle me-1"></i>
+                Vous ne savez pas encore quel produit choisir ? Allez faire un tour sur
+                <a href="https://www.1688.com/" target="_blank" rel="noopener noreferrer">1688.com</a>
+                et/ou <a href="https://pinduoduo.com/" target="_blank" rel="noopener noreferrer">pinduoduo.com</a>
+                pour voir leurs produits.
+            </p>
+            <p class="mb-0">
+                Une fois vos produits repérés, collez simplement leurs liens dans la description de chaque article ci-dessous.
+            </p>
+        </div>
+
+        <div class="quote-items-wrapper"
              data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
              data-index="{{ form.items|length > 0 ? form.items|last.vars.name + 1 : 0 }}">
             
