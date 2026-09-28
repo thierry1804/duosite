@@ -1,0 +1,238 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tarifs - Duo Import MDG{% endblock %}
+
+{% block body %}
+<section class="page-header bg-primary text-white py-5">
+    <div class="container">
+        <h1 class="display-4">Nos tarifs</h1>
+        <p class="lead">Tout ce que vous payez, en clair. Aucun minimum de commande, aucun minimum de budget.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+
+        <h2 class="tarif-title">1. Demande de devis</h2>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm tarif-box tarif-box--highlight">
+                    <div class="card-body">
+                        <div class="tarif-big">Gratuit</div>
+                        <div class="text-muted">Les 2 premiers articles</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm tarif-box">
+                    <div class="card-body">
+                        <div class="tarif-big">2 500 <small>MGA / article</small></div>
+                        <div class="text-muted">À partir du 3e article</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm tarif-box">
+                    <div class="card-body">
+                        <div class="tarif-big">24–72 <small>heures</small></div>
+                        <div class="text-muted">Selon la recherche et le nombre de devis</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <strong>Tarif sur mesure</strong> pour les véhicules, machines ou recherches qui demandent un déplacement (marché, usine). Précisez votre produit avant de payer&nbsp;: nous vous confirmons le prix.
+        </div>
+
+        <div class="row g-3 mb-4">
+            {% for step in ['Précisez votre produit', 'Nous confirmons le tarif', 'Vous payez par Mobile Money', 'Nous traitons votre devis'] %}
+                <div class="col-6 col-md-3">
+                    <div class="card h-100 border-0 shadow-sm tarif-step">
+                        <div class="card-body d-flex align-items-start gap-2">
+                            <span class="tarif-step-num">{{ loop.index }}</span>
+                            <span>{{ step }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="card border-0 shadow-sm tarif-box mb-3">
+            <div class="card-body">
+                <strong>Paiement du devis : Mobile Money uniquement</strong>
+                <div class="d-flex flex-wrap gap-2 my-2">
+                    <span class="tarif-pill">Thierry · +261 38 42 711 68</span>
+                    <span class="tarif-pill">Thierry · +261 33 64 554 78</span>
+                    <span class="tarif-pill">Thierry · +261 32 22 136 82</span>
+                </div>
+                <div class="text-muted small">Motif à indiquer : <strong>Devis</strong>. Frais de retrait à la charge du client. Le devis payé n'est pas remboursable.</div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm tarif-box tarif-box--highlight mb-5">
+            <div class="card-body">
+                <strong>Avantage client fidèle</strong>
+                <div class="text-muted">Déjà importé avec nous ? Quand vous achetez, 50&nbsp;% du tarif des devis payants concernés est déduit de votre commission (jamais plus que la commission).</div>
+            </div>
+        </div>
+
+        <h2 class="tarif-title">2. Commission</h2>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm tarif-box">
+                    <div class="card-body">
+                        <div class="tarif-big">15 à 25 %</div>
+                        <div class="text-muted">Selon l'article et la difficulté de la recherche. Le taux exact figure dans votre devis.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm tarif-box">
+                    <div class="card-body">
+                        <strong>Calculée sur le prix des articles uniquement</strong>
+                        <div class="text-muted">Aucune commission sur les frais d'envoi.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm tarif-box">
+                    <div class="card-body">
+                        <strong>Payée en une fois</strong>
+                        <div class="text-muted">À la validation du devis, avec le prix d'achat. Aucun achat sans ce paiement.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm tarif-box mb-5">
+            <div class="card-body">
+                <strong>Payer votre achat et la commission</strong>
+                <ul class="text-muted mb-0 mt-2">
+                    <li>Par Mobile Money (frais de retrait à votre charge)</li>
+                    <li>À notre local, sur rendez-vous uniquement</li>
+                    <li>Nous venons chez vous, frais de déplacement en plus</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2 class="tarif-title">3. Prix de l'article</h2>
+        <div class="card border-0 shadow-sm tarif-box mb-5">
+            <div class="card-body">
+                Le prix annoncé comprend l'article en Chine et sa livraison par le fournisseur jusqu'à notre entrepôt. Le transport Chine → Madagascar est à part&nbsp;: il se règle à la réception du colis.
+            </div>
+        </div>
+
+        <h2 class="tarif-title">4. Transport Chine → Madagascar</h2>
+
+        <div class="card border-0 shadow-sm tarif-transport mb-3">
+            <div class="tarif-transport-header bg-primary">Aérien express</div>
+            <div class="tarif-transport-row"><strong>Délai</strong><span>3 à 5 jours</span></div>
+            <div class="tarif-transport-row"><strong>Tarif</strong><span>95 000 MGA / kg</span></div>
+            <div class="tarif-transport-row"><strong>Minimum</strong><span>200 g (en dessous : forfait 200 g)</span></div>
+        </div>
+
+        <div class="card border-0 shadow-sm tarif-transport mb-3">
+            <div class="tarif-transport-header bg-secondary">Aérien normal</div>
+            <div class="tarif-transport-row"><strong>Délai</strong><span>10 à 20 jours</span></div>
+            <div class="tarif-transport-row"><strong>Tarif</strong><span>80 000 MGA / kg</span></div>
+            <div class="tarif-transport-row"><strong>Minimum</strong><span>200 g (en dessous : forfait 200 g)</span></div>
+        </div>
+
+        <div class="card border-0 shadow-sm tarif-transport mb-4">
+            <div class="tarif-transport-header bg-dark">Maritime</div>
+            <div class="tarif-transport-row"><strong>Délai</strong><span>55 à 70 jours</span></div>
+            <div class="tarif-transport-row"><strong>Moins de 0,30 m³</strong><span>420 $ / m³</span></div>
+            <div class="tarif-transport-row"><strong>0,30 m³ et plus</strong><span>400 $ / m³</span></div>
+            <div class="tarif-transport-row"><strong>Calcul</strong><span>Au cubage (dimensions du colis)</span></div>
+        </div>
+
+        <div class="alert alert-warning">
+            Les délais partent du <strong>départ de l'avion ou du bateau</strong>. Ajoutez 3 à 7 jours pour l'envoi du fournisseur jusqu'à notre entrepôt.
+        </div>
+        <div class="alert alert-warning">
+            Le maritime est en dollars, converti en ariary au taux du jour d'arrivée du colis à Madagascar. Tarifs et taux de change non négociables. Tarifs susceptibles de changer à tout moment : validez votre devis rapidement.
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2 mt-4 tarif-cta">
+            <a href="{{ path('app_quote') }}" class="btn btn-primary d-inline-flex align-items-center justify-content-center">Demander un devis</a>
+            <a href="{{ path('app_cgv') }}" class="btn btn-outline-primary d-inline-flex align-items-center justify-content-center">Lire les CGV</a>
+        </div>
+    </div>
+</section>
+
+<style>
+.tarif-title {
+    margin: 2.2rem 0 1.1rem;
+    padding-left: 12px;
+    border-left: 5px solid var(--primary-color, #2b4eff);
+    font-weight: 600;
+}
+.tarif-title:first-of-type {
+    margin-top: 0;
+}
+.tarif-box {
+    border: 1px solid #e5e7eb;
+}
+.tarif-box--highlight {
+    background: rgba(43, 78, 255, 0.06);
+    border-color: var(--primary-color, #2b4eff);
+}
+.tarif-big {
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.15;
+}
+.tarif-big small {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #6c757d;
+}
+.tarif-step {
+    border: 1px solid #e5e7eb;
+}
+.tarif-step-num {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--primary-color, #2b4eff);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.tarif-pill {
+    background: rgba(43, 78, 255, 0.08);
+    color: var(--primary-color, #2b4eff);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.tarif-transport {
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+}
+.tarif-transport-header {
+    padding: 10px 16px;
+    font-weight: 700;
+    color: #fff;
+}
+.tarif-transport-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 16px;
+    padding: 11px 16px;
+    border-top: 1px solid #e5e7eb;
+}
+.tarif-cta .btn {
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+</style>
+{% endblock %}

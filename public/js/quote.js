@@ -1,88 +1,59 @@
 /**
- * Duo Import MDG - Script pour le formulaire de devis
+ * Duo Import MDG - Script pour le formulaire de devis (mise en page "panier")
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    const productTypeSelect = document.querySelector('#quote_productType');
-    const otherProductTypeContainer = document.querySelector('#otherProductTypeContainer');
     const form = document.querySelector('#quoteForm');
     const loader = document.querySelector('#loader');
-    const shippingMethodContainer = document.querySelector('.shipping-method-container');
-    
-    // Fonction simplifiée - les services sont automatiquement pré-sélectionnés
-    function checkServicesSelection() {
-        // Les services sont automatiquement sélectionnés, afficher toujours les choix d'envoi
-        if (shippingMethodContainer) {
-            shippingMethodContainer.style.display = 'block';
-            
-            // Rendre les options d'expédition obligatoires
-            document.querySelectorAll('input[name="quote[shippingMethod][]"]').forEach(function(radio) {
-                radio.required = true;
-            });
-        }
+    const itemsWrapper = document.querySelector('.quote-items-wrapper');
+    const addItemButton = document.querySelector('#quote-add-item-btn');
+    const addHint = document.querySelector('#quoteAddHint');
+    const recapLines = document.querySelector('#quoteRecapLines');
+    const recapTotal = document.querySelector('#quoteRecapTotal');
+    const submitButton = document.querySelector('#submitButton');
+    const inlinePayment = document.querySelector('#quoteInlinePayment');
+    const inlinePaymentTotal = document.querySelector('#quoteInlinePaymentTotal');
+    const paymentReferenceInput = document.querySelector('#quotePaymentReferenceInput');
+    const paymentReferenceError = document.querySelector('#quotePaymentReferenceError');
+    const transactionReferenceInput = document.querySelector('#quote_transactionReference');
+
+    const freeItemsLimit = form ? (parseInt(form.dataset.freeItemsLimit, 10) || 2) : 2;
+    const itemPrice = form ? (parseInt(form.dataset.itemPrice, 10) || 0) : 0;
+
+    function fmt(n) {
+        return Math.max(0, Math.round(n)).toLocaleString('fr-FR') + ' Ar';
     }
-    
-    // Initialiser les options - les services sont automatiquement pré-sélectionnés
-    function initializeServiceOptions() {
-        console.log("initializeServiceOptions called");
-        // Les services sont automatiquement pré-sélectionnés, afficher les choix d'envoi
-        checkServicesSelection();
-    }
-    
-    // Initialiser les options de service au chargement de la page
-    console.log("Document loaded");
-    initializeServiceOptions();
-    
-    // Ajouter des écouteurs d'événements pour les cases à cocher de services
-    document.querySelectorAll('input[name="quote[services][]"]').forEach(function(checkbox) {
-        console.log("Adding event listener to checkbox:", checkbox.value);
-        checkbox.addEventListener('change', function() {
-            console.log("Checkbox changed:", this.value, "checked:", this.checked);
-            checkServicesSelection();
-        });
-    });
-    
-    // Initialiser le conteneur de méthode d'envoi
-    if (shippingMethodContainer) {
-        console.log("Shipping method container found");
-        // Afficher directement le conteneur (services pré-sélectionnés)
-        shippingMethodContainer.style.display = 'block';
-        
-        // Activer l'attribut required des boutons radio
-        document.querySelectorAll('input[name="quote[shippingMethod][]"]').forEach(function(radio) {
-            radio.required = true;
-        });
-    } else {
-        console.log("Shipping method container not found");
-    }
-    
-    // Fonction pour initialiser l'aperçu des photos
+
+    // ---- Aperçu photo ----
     function initPhotoPreview(fileInput) {
         if (!fileInput) return;
-        
         const container = fileInput.closest('.photo-upload-container');
         if (!container) return;
-        
         const preview = container.querySelector('.product-photo-preview');
         if (!preview) return;
-        
+
         fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
                 const reader = new FileReader();
-                
                 reader.onload = function(e) {
                     preview.src = e.target.result;
                     preview.style.display = 'block';
-                }
-                
+                };
                 reader.readAsDataURL(this.files[0]);
             } else {
                 preview.src = '#';
                 preview.style.display = 'none';
             }
+            updateRecap();
         });
     }
-    
+
+    document.querySelectorAll('.form-control-file').forEach(function(fileInput) {
+        fileInput.required = true;
+        initPhotoPreview(fileInput);
+    });
+
+    // ---- Compteur de caractères pour la description ----
     function updateDescriptionCounter(textarea) {
         if (!textarea || !textarea.classList.contains('quote-item-description')) {
             return;
@@ -116,6 +87,8 @@ document.addEventListener('DOMContentLoaded', function() {
         root.querySelectorAll('textarea.quote-item-description').forEach(updateDescriptionCounter);
     }
 
+    initQuoteDescriptionCounters(form);
+
     if (form) {
         form.addEventListener('input', function(e) {
             if (e.target && e.target.classList && e.target.classList.contains('quote-item-description')) {
@@ -124,408 +97,270 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initialiser l'aperçu des photos pour les éléments existants
-    document.querySelectorAll('.form-control-file').forEach(function(fileInput) {
-        fileInput.required = true;
-        initPhotoPreview(fileInput);
-    });
+    // ---- Récapitulatif live (prix, étiquettes, bouton d'envoi, paiement) ----
+    function updateRecap() {
+        const items = document.querySelectorAll('.quote-item');
+        const n = items.length;
+        const extra = Math.max(0, n - freeItemsLimit);
+        const total = extra * itemPrice;
 
-    initQuoteDescriptionCounters(form);
-    
-    // Gestion de l'aperçu des photos pour les éléments dynamiques
-    document.addEventListener('change', function(e) {
-        if (e.target && e.target.type === 'file' && e.target.classList.contains('form-control-file')) {
-            const container = e.target.closest('.photo-upload-container');
-            if (container) {
-                const preview = container.querySelector('.product-photo-preview');
-                if (preview) {
-                    if (e.target.files && e.target.files[0]) {
-                        const reader = new FileReader();
-                        
-                        reader.onload = function(e) {
-                            preview.src = e.target.result;
-                            preview.style.display = 'block';
-                        }
-                        
-                        reader.readAsDataURL(e.target.files[0]);
-                    } else {
-                        preview.src = '#';
-                        preview.style.display = 'none';
-                    }
+        const lines = [];
+        items.forEach(function(item, i) {
+            const typeSelect = item.querySelector('.product-type-select');
+            const qtyInput = item.querySelector('.quote-item-qty');
+            const typeText = (typeSelect && typeSelect.selectedIndex > 0)
+                ? typeSelect.options[typeSelect.selectedIndex].text
+                : 'Article sans type';
+            const qty = qtyInput ? qtyInput.value.trim() : '';
+            const isFree = i < freeItemsLimit;
+
+            const label = document.createElement('span');
+            label.className = 'quote-recap-line-label';
+            label.textContent = (i + 1) + '. ' + typeText + (qty ? ' × ' + qty : '');
+
+            const price = document.createElement('span');
+            price.className = 'quote-recap-line-price' + (isFree ? ' is-free' : '');
+            price.textContent = isFree ? 'gratuit' : fmt(itemPrice);
+
+            const line = document.createElement('div');
+            line.className = 'quote-recap-line';
+            line.appendChild(label);
+            line.appendChild(price);
+            lines.push(line);
+
+            const tag = item.querySelector('.quote-item-tag');
+            if (tag) {
+                tag.textContent = isFree ? 'Gratuit' : ('+' + fmt(itemPrice));
+                tag.classList.toggle('is-paid', !isFree);
+            }
+        });
+
+        if (recapLines) {
+            recapLines.innerHTML = '';
+            lines.forEach(function(line) { recapLines.appendChild(line); });
+        }
+        if (recapTotal) {
+            recapTotal.textContent = total > 0 ? fmt(total) : 'Gratuit';
+        }
+        if (addHint) {
+            addHint.textContent = n < freeItemsLimit ? 'gratuit' : ('+' + fmt(itemPrice));
+            addHint.classList.toggle('is-paid', n >= freeItemsLimit);
+        }
+        if (submitButton) {
+            submitButton.textContent = extra > 0
+                ? ('Envoyer ma demande · ' + fmt(total))
+                : 'Envoyer ma demande · gratuit';
+        }
+        if (inlinePayment) {
+            if (extra > 0) {
+                inlinePayment.classList.remove('d-none');
+                if (inlinePaymentTotal) {
+                    inlinePaymentTotal.textContent = fmt(total);
+                }
+            } else {
+                inlinePayment.classList.add('d-none');
+                if (paymentReferenceInput) {
+                    paymentReferenceInput.value = '';
+                }
+                if (transactionReferenceInput) {
+                    transactionReferenceInput.value = '';
+                }
+                if (paymentReferenceError) {
+                    paymentReferenceError.classList.add('d-none');
                 }
             }
         }
-    });
+    }
 
-    // Gestion du bouton d'ajout d'élément
-    const addItemButton = document.querySelector('.add-item-btn');
-    const itemsWrapper = document.querySelector('.quote-items-wrapper');
-    const paymentModalElement = document.getElementById('quotePaymentModal');
-    const paymentReferenceInput = document.getElementById('quotePaymentReferenceInput');
-    const paymentReferenceError = document.getElementById('quotePaymentReferenceError');
-    const paymentValidateButton = document.getElementById('quotePaymentValidateBtn');
-    const transactionReferenceInput = document.getElementById('quote_transactionReference');
-    const paymentPaidItems = document.getElementById('quotePaymentPaidItems');
-    const paymentTotal = document.getElementById('quotePaymentTotal');
-    const formFreeItemsLimit = form ? parseInt(form.dataset.freeItemsLimit || '2', 10) : 2;
-    const itemPrice = form ? parseInt(form.dataset.itemPrice || '0', 10) : 0;
-    const freeItemsLimit = Number.isNaN(formFreeItemsLimit)
-        ? (addItemButton ? parseInt(addItemButton.dataset.freeItemsLimit || '2', 10) : 2)
-        : formFreeItemsLimit;
-    const paymentModal = paymentModalElement && window.bootstrap ? new window.bootstrap.Modal(paymentModalElement) : null;
-    let isSubmittingAfterPaymentModal = false;
+    if (paymentReferenceInput) {
+        paymentReferenceInput.addEventListener('input', function() {
+            if (transactionReferenceInput) {
+                transactionReferenceInput.value = this.value.trim();
+            }
+            if (this.value.trim() && paymentReferenceError) {
+                paymentReferenceError.classList.add('d-none');
+            }
+        });
+    }
 
+    if (itemsWrapper) {
+        itemsWrapper.addEventListener('change', function(e) {
+            if (e.target && (e.target.classList.contains('product-type-select') || e.target.classList.contains('quote-item-qty'))) {
+                updateRecap();
+            }
+        });
+        itemsWrapper.addEventListener('input', function(e) {
+            if (e.target && e.target.classList.contains('quote-item-qty')) {
+                updateRecap();
+            }
+        });
+    }
+
+    // ---- Ajout d'un article (clone du premier article existant) ----
     function performAddQuoteItem() {
         if (!itemsWrapper) {
             return;
         }
         const existingItems = document.querySelectorAll('.quote-item');
-        if (existingItems.length > 0) {
-            const clone = existingItems[0].cloneNode(true);
-            const index = parseInt(itemsWrapper.dataset.index, 10);
-
-            const inputs = clone.querySelectorAll('input, select, textarea');
-            inputs.forEach(function(input) {
-                const oldId = input.id;
-                const oldName = input.name;
-
-                if (oldId) {
-                    const newId = oldId.replace(/\d+/, index);
-                    input.id = newId;
-                    const labels = clone.querySelectorAll(`label[for="${oldId}"]`);
-                    labels.forEach(function(label) {
-                        label.setAttribute('for', newId);
-                    });
-                }
-
-                if (oldName) {
-                    const newName = oldName.replace(/\[\d+\]/, `[${index}]`);
-                    input.name = newName;
-                }
-
-                if (input.type === 'file') {
-                    input.required = true;
-                    input.value = '';
-                } else if (input.type === 'select-one') {
-                    input.selectedIndex = 0;
-                } else {
-                    input.value = '';
-                }
-            });
-
-            const divs = clone.querySelectorAll('div[id]');
-            divs.forEach(function(div) {
-                const oldId = div.id;
-                if (oldId) {
-                    const newId = oldId.replace(/\d+/, index);
-                    div.id = newId;
-                }
-            });
-
-            const photoPreview = clone.querySelector('.product-photo-preview');
-            if (photoPreview) {
-                photoPreview.src = '#';
-                photoPreview.style.display = 'none';
-            }
-
-            const otherTypeContainer = clone.querySelector('.other-product-type-container');
-            if (otherTypeContainer) {
-                otherTypeContainer.style.display = 'none';
-                const inputOt = otherTypeContainer.querySelector('input');
-                if (inputOt) {
-                    inputOt.required = false;
-                }
-            }
-
-            itemsWrapper.appendChild(clone);
-
-            const fileInput = clone.querySelector('.form-control-file');
-            if (fileInput) {
-                initPhotoPreview(fileInput);
-            }
-
-            initQuoteDescriptionCounters(clone);
-
-            itemsWrapper.dataset.index = index + 1;
-            updateRemoveButtonsVisibility();
-        } else {
-            const prototype = itemsWrapper.dataset.prototype;
-            const index = parseInt(itemsWrapper.dataset.index, 10);
-            const newItem = prototype.replace(/__name__/g, index);
-
-            const container = document.createElement('div');
-            container.classList.add('quote-item');
-
-            const html = `
-                    <span class="remove-item"><i class="fas fa-times-circle"></i></span>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <div class="photo-container">
-                                <div class="photo-upload-container">
-                                    <!-- Le contenu sera ajouté dynamiquement -->
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-8">
-                            <div class="row">
-                                <!-- Le contenu sera ajouté dynamiquement -->
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-            container.innerHTML = html;
-            itemsWrapper.appendChild(container);
-
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = newItem;
-
-            const photoFileDiv = tempDiv.querySelector('div[id$="_photoFile"]');
-            const productTypeDiv = tempDiv.querySelector('div[id$="_productType"]');
-            const quantityDiv = tempDiv.querySelector('div[id$="_quantity"]');
-            const budgetDiv = tempDiv.querySelector('div[id$="_budget"]');
-            const descriptionDiv = tempDiv.querySelector('div[id$="_description"]');
-
-            if (photoFileDiv) {
-                const photoUploadContainer = container.querySelector('.photo-upload-container');
-                if (photoUploadContainer) {
-                    const photoFileInput = photoFileDiv.querySelector('input[type="file"]');
-                    if (photoFileInput) {
-                        photoFileInput.className = 'form-control-file d-none';
-
-                        const label = document.createElement('label');
-                        label.setAttribute('for', photoFileInput.id);
-                        label.className = 'upload-label';
-
-                        const iconDiv = document.createElement('div');
-                        iconDiv.className = 'photo-upload-icon';
-                        iconDiv.innerHTML = '<i class="fas fa-camera"></i>';
-
-                        const span = document.createElement('span');
-                        span.textContent = 'Cliquez pour ajouter une photo (obligatoire)';
-
-                        label.appendChild(iconDiv);
-                        label.appendChild(span);
-
-                        const imgPreview = document.createElement('img');
-                        imgPreview.src = '#';
-                        imgPreview.className = 'product-photo-preview';
-                        imgPreview.alt = 'Aperçu de la photo';
-
-                        photoFileInput.required = true;
-                        photoUploadContainer.appendChild(label);
-                        photoUploadContainer.appendChild(photoFileInput);
-                        photoUploadContainer.appendChild(imgPreview);
-
-                        initPhotoPreview(photoFileInput);
-                    }
-                }
-            }
-
-            const infoRow = container.querySelector('.col-md-8 .row');
-            if (infoRow) {
-                if (productTypeDiv) {
-                    const productTypeCol = document.createElement('div');
-                    productTypeCol.className = 'col-md-4 mb-3';
-                    productTypeCol.appendChild(productTypeDiv);
-                    infoRow.appendChild(productTypeCol);
-                }
-
-                if (quantityDiv) {
-                    const quantityCol = document.createElement('div');
-                    quantityCol.className = 'col-md-4 mb-3';
-                    quantityCol.appendChild(quantityDiv);
-                    infoRow.appendChild(quantityCol);
-                }
-
-                if (budgetDiv) {
-                    const budgetCol = document.createElement('div');
-                    budgetCol.className = 'col-md-4 mb-3';
-                    budgetCol.appendChild(budgetDiv);
-                    infoRow.appendChild(budgetCol);
-                }
-
-                if (descriptionDiv) {
-                    const descriptionCol = document.createElement('div');
-                    descriptionCol.className = 'col-12 mb-3';
-                    descriptionCol.appendChild(descriptionDiv);
-                    infoRow.appendChild(descriptionCol);
-                }
-            }
-
-            itemsWrapper.dataset.index = index + 1;
-            updateRemoveButtonsVisibility();
-            initQuoteDescriptionCounters(container);
+        if (existingItems.length === 0) {
+            return;
         }
-    }
 
-    if (paymentValidateButton && paymentReferenceInput) {
-        paymentValidateButton.addEventListener('click', function() {
-            const reference = paymentReferenceInput.value.trim();
-            if (!reference) {
-                if (paymentReferenceError) {
-                    paymentReferenceError.classList.remove('d-none');
-                }
-                return;
+        const clone = existingItems[0].cloneNode(true);
+        const index = parseInt(itemsWrapper.dataset.index, 10);
+
+        const inputs = clone.querySelectorAll('input, select, textarea');
+        inputs.forEach(function(input) {
+            const oldId = input.id;
+            const oldName = input.name;
+
+            if (oldId) {
+                const newId = oldId.replace(/\d+/, index);
+                input.id = newId;
+                const labels = clone.querySelectorAll(`label[for="${oldId}"]`);
+                labels.forEach(function(label) {
+                    label.setAttribute('for', newId);
+                });
             }
 
-            if (paymentReferenceError) {
-                paymentReferenceError.classList.add('d-none');
+            if (oldName) {
+                const newName = oldName.replace(/\[\d+\]/, `[${index}]`);
+                input.name = newName;
             }
-            if (transactionReferenceInput) {
-                transactionReferenceInput.value = reference;
-            }
-            isSubmittingAfterPaymentModal = true;
-            if (paymentModal) {
-                paymentModal.hide();
-            }
-            if (form) {
-                if (typeof form.requestSubmit === 'function') {
-                    form.requestSubmit();
-                } else {
-                    form.submit();
-                }
+
+            if (input.type === 'file') {
+                input.required = true;
+                input.value = '';
+            } else if (input.type === 'select-one') {
+                input.selectedIndex = 0;
+            } else {
+                input.value = '';
             }
         });
+
+        const photoPreview = clone.querySelector('.product-photo-preview');
+        if (photoPreview) {
+            photoPreview.src = '#';
+            photoPreview.style.display = 'none';
+        }
+
+        const descriptionCounter = clone.querySelector('.quote-description-counter');
+        if (descriptionCounter) {
+            descriptionCounter.remove();
+        }
+
+        if (addItemButton && addItemButton.parentElement === itemsWrapper) {
+            itemsWrapper.insertBefore(clone, addItemButton);
+        } else {
+            itemsWrapper.appendChild(clone);
+        }
+
+        const fileInput = clone.querySelector('.form-control-file');
+        if (fileInput) {
+            initPhotoPreview(fileInput);
+        }
+
+        initQuoteDescriptionCounters(clone);
+
+        itemsWrapper.dataset.index = index + 1;
+        updateRemoveButtonsVisibility();
+        updateRecap();
     }
-    
-    if (addItemButton && itemsWrapper) {
+
+    if (addItemButton) {
         addItemButton.addEventListener('click', function() {
             performAddQuoteItem();
         });
     }
-    
-    // Gestion de la suppression d'élément
+
+    // ---- Suppression d'un article ----
     document.addEventListener('click', function(e) {
         if (e.target && (e.target.classList.contains('remove-item') || e.target.closest('.remove-item'))) {
             const items = document.querySelectorAll('.quote-item');
-            
-            // Empêcher la suppression si c'est le seul produit
+
             if (items.length <= 1) {
                 alert('Vous ne pouvez pas supprimer ce produit car au moins un produit est requis.');
                 return;
             }
-            
+
             const item = e.target.closest('.quote-item');
             if (item) {
                 item.remove();
-                
-                // Réindexer tous les champs pour éviter les trous dans les index
                 reindexItems();
+                updateRecap();
             }
         }
     });
-    
-    // Fonction pour réindexer tous les items
+
     function reindexItems() {
         const items = document.querySelectorAll('.quote-item');
         items.forEach(function(item, index) {
-            // Mettre à jour les IDs et noms des champs
             const inputs = item.querySelectorAll('input, select, textarea');
             inputs.forEach(function(input) {
                 const oldId = input.id;
                 const oldName = input.name;
-                
+
                 if (oldId) {
                     const newId = oldId.replace(/\d+/, index);
                     input.id = newId;
-                    
-                    // Mettre à jour les labels associés
                     const labels = item.querySelectorAll(`label[for="${oldId}"]`);
                     labels.forEach(function(label) {
                         label.setAttribute('for', newId);
                     });
                 }
-                
+
                 if (oldName) {
                     const newName = oldName.replace(/\[\d+\]/, `[${index}]`);
                     input.name = newName;
                 }
             });
-            
-            // Mettre à jour les IDs des divs
-            const divs = item.querySelectorAll('div[id]');
-            divs.forEach(function(div) {
-                const oldId = div.id;
-                if (oldId) {
-                    const newId = oldId.replace(/\d+/, index);
-                    div.id = newId;
-                }
-            });
         });
-        
-        // Mettre à jour l'index pour le prochain item
-        const itemsWrapper = document.querySelector('.quote-items-wrapper');
+
         if (itemsWrapper) {
             itemsWrapper.dataset.index = items.length;
         }
-        
-        // Mettre à jour la visibilité des boutons de suppression
+
         updateRemoveButtonsVisibility();
     }
-    
-    // Fonction pour mettre à jour la visibilité des boutons de suppression
+
     function updateRemoveButtonsVisibility() {
         const items = document.querySelectorAll('.quote-item');
         const removeButtons = document.querySelectorAll('.remove-item');
-        
-        if (items.length <= 1) {
-            // Masquer les boutons de suppression s'il n'y a qu'un seul produit
-            removeButtons.forEach(function(button) {
-                button.style.display = 'none';
-            });
-        } else {
-            // Afficher les boutons de suppression s'il y a plusieurs produits
-            removeButtons.forEach(function(button) {
-                button.style.display = 'block';
-            });
-        }
-    }
-    
-    // Initialiser la visibilité des boutons de suppression au chargement de la page
-    updateRemoveButtonsVisibility();
 
-    // Gestion du loader pendant la soumission
+        removeButtons.forEach(function(button) {
+            button.style.display = items.length <= 1 ? 'none' : 'flex';
+        });
+    }
+
+    updateRemoveButtonsVisibility();
+    updateRecap();
+
+    // ---- Soumission du formulaire ----
     if (form) {
         form.addEventListener('submit', function(event) {
-            if (isSubmittingAfterPaymentModal) {
-                isSubmittingAfterPaymentModal = false;
-                return true;
-            }
-
             const currentItemsCount = document.querySelectorAll('.quote-item').length;
+            const extra = Math.max(0, currentItemsCount - freeItemsLimit);
             const currentReference = transactionReferenceInput ? transactionReferenceInput.value.trim() : '';
 
-            if (currentItemsCount > freeItemsLimit && !currentReference) {
+            if (extra > 0 && !currentReference) {
                 event.preventDefault();
-                const paidItems = currentItemsCount - freeItemsLimit;
-                const totalAmount = Math.max(0, paidItems) * Math.max(0, itemPrice);
-                if (paymentPaidItems) {
-                    paymentPaidItems.textContent = String(Math.max(0, paidItems));
+                if (paymentReferenceError) {
+                    paymentReferenceError.classList.remove('d-none');
                 }
-                if (paymentTotal) {
-                    paymentTotal.textContent = `${totalAmount.toLocaleString('fr-FR')} Ar`;
+                if (inlinePayment) {
+                    inlinePayment.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
-                if (paymentModal) {
-                    paymentModal.show();
-                } else {
-                    alert('Le paiement est requis a partir du 3e article. Veuillez renseigner la reference de paiement.');
+                if (paymentReferenceInput) {
+                    paymentReferenceInput.focus();
                 }
                 return false;
             }
 
-            // Vérifier si le choix d'envoi est visible (maintenant toujours visible)
-            if (shippingMethodContainer && shippingMethodContainer.style.display === 'block') {
-                const shippingMethodSelected = Array.from(
-                    document.querySelectorAll('input[name="quote[shippingMethod][]"]:checked')
-                ).length > 0;
-                
-                if (!shippingMethodSelected) {
-                    // Empêcher la soumission si aucune méthode n'est sélectionnée
-                    event.preventDefault();
-                    alert('Veuillez sélectionner au moins une méthode d\'envoi.');
-                    return false;
-                }
+            const shippingMethodSelected = document.querySelectorAll('input[name="quote[shippingMethod][]"]:checked').length > 0;
+            if (!shippingMethodSelected) {
+                event.preventDefault();
+                alert('Veuillez sélectionner au moins une méthode d\'envoi.');
+                return false;
             }
 
             // Photo obligatoire sur chaque ligne produit (input masqué : validation native peu fiable)
@@ -541,17 +376,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     return false;
                 }
             }
-            
-            // Désactiver le bouton de soumission pour éviter les soumissions multiples
-            const submitButton = document.querySelector('#submitButton');
+
             if (submitButton) {
                 submitButton.disabled = true;
             }
-            
-            // Afficher le loader
+
             if (loader) {
                 loader.style.display = 'flex';
             }
         });
     }
-}); 
+});

@@ -299,6 +299,9 @@
                                 <a class="nav-link {% if app.request.get('_route') == 'app_services' %}active{% endif %}" href="{{ path('app_services') }}">Nos Services</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link {% if app.request.get('_route') == 'app_tarifs' %}active{% endif %}" href="{{ path('app_tarifs') }}">Tarifs</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link {% if app.request.get('_route') == 'app_about' %}active{% endif %}" href="{{ path('app_about') }}">Qui sommes-nous</a>
                             </li>
                             <li class="nav-item">
@@ -368,6 +371,7 @@
                             <ul class="footer-links list-unstyled">
                                 <li><a href="{{ path('app_home') }}">Accueil</a></li>
                                 <li><a href="{{ path('app_services') }}">Nos Services</a></li>
+                                <li><a href="{{ path('app_tarifs') }}">Tarifs</a></li>
                                 <li><a href="{{ path('app_about') }}">Qui sommes-nous</a></li>
                                 <li><a href="{{ path('app_contact') }}">Contact</a></li>
                                 <li><a href="{{ path('app_import_order_new') }}">Passer commande</a></li>

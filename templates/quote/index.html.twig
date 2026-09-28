@@ -19,7 +19,7 @@
         align-items: center;
         flex-direction: column;
     }
-    
+
     .loader {
         border: 5px solid #f3f3f3;
         border-radius: 50%;
@@ -28,106 +28,21 @@
         height: 50px;
         animation: spin 1s linear infinite;
     }
-    
+
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-    
+
     .loader-text {
         margin-top: 20px;
         font-size: 1.2em;
         color: #0d6efd;
     }
-    
-    .quote-item {
-        position: relative;
-        background-color: #f8f9fa;
-        padding: 20px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-        border-left: 4px solid #0d6efd;
-    }
-    
-    .remove-item {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        cursor: pointer;
-        color: #dc3545;
-        font-size: 1.2em;
-    }
-    
-    .product-image {
-        max-width: 100%;
-        height: auto;
-        max-height: 200px;
-        object-fit: contain;
-    }
-
-    /* Required field indicator */
-    label.required::after {
-        content: " *";
-        color: #dc3545;
-    }
 
     /* Make validation errors visible */
     .invalid-feedback {
         display: block;
-    }
-    
-    .add-item-btn {
-        margin-bottom: 20px;
-    }
-    
-    .photo-container {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    
-    .photo-upload-container {
-        border: 2px dashed #ddd;
-        border-radius: 5px;
-        padding: 15px;
-        text-align: center;
-        height: 100%;
-        min-height: 200px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .photo-upload-container label {
-        cursor: pointer;
-        margin-bottom: 10px;
-    }
-    
-    .photo-upload-container input[type="file"] {
-        display: none;
-    }
-    
-    .photo-upload-icon {
-        font-size: 40px;
-        color: #6c757d;
-        margin-bottom: 10px;
-    }
-    
-    .product-photo-preview {
-        max-width: 100%;
-        max-height: 250px;
-        margin-top: 10px;
-        border-radius: 4px;
-        display: none;
-        object-fit: contain;
-    }
-
-    .shipping-method-options .form-check {
-        height: 1px;
-        min-height: 1px;
-        margin: 0;
     }
 
     .quote-page-heading {
@@ -228,39 +143,417 @@
         background: #f3f4f6 !important;
     }
 
-    /* Modale paiement devis : un peu plus large */
-    .quote-payment-modal .modal-dialog {
-        max-width: min(720px, calc(100vw - 2rem));
+    /* ---- Demande de devis : mise en page "panier" ---- */
+    .quote-cart-layout {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        align-items: flex-start;
     }
 
-    /* Bloc « Deux possibilités » — attirer l’œil sans agresser */
-    .quote-payment-two-options {
-        border-radius: 8px;
-        padding: 0.85rem 1rem;
-        margin-bottom: 1rem;
-        background: #f0f7ff;
-        border: 2px solid #0d6efd;
-        animation: quote-payment-two-options-blink 1.4s ease-in-out infinite;
-    }
-    @keyframes quote-payment-two-options-blink {
-        0%, 100% {
-            opacity: 1;
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.25);
-        }
-        50% {
-            opacity: 0.88;
-            border-color: #6ea8fe;
-            box-shadow: 0 0 12px 2px rgba(13, 110, 253, 0.2);
-        }
-    }
-    @media (prefers-reduced-motion: reduce) {
-        .quote-payment-two-options {
-            animation: none;
-            opacity: 1;
-        }
+    .quote-cart-main {
+        flex: 1 1 560px;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
     }
 
+    .quote-cart-main-title {
+        margin: 0 0 6px;
+        font-size: 26px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: #222;
+    }
+
+    .quote-cart-main-sub {
+        margin: 0;
+        color: #6c757d;
+        font-size: 15px;
+        line-height: 1.5;
+        max-width: 560px;
+    }
+
+    .quote-items-wrapper {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 14px;
+    }
+
+    .quote-item {
+        position: relative;
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #dee2e6;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .photo-upload-container {
+        position: relative;
+        aspect-ratio: 4 / 3;
+        background: repeating-linear-gradient(135deg, #f8f9fa 0 8px, #eef0f3 8px 16px);
+    }
+
+    .photo-upload-container .upload-label {
+        position: absolute;
+        inset: 0;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        text-align: center;
+        color: #6c757d;
+        margin: 0;
+        padding: 10px;
+    }
+
+    .photo-upload-icon {
+        font-size: 26px;
+        color: #6c757d;
+    }
+
+    .photo-upload-container .upload-label span {
+        font-size: 12px;
+        line-height: 1.3;
+    }
+
+    .photo-upload-container .upload-label small {
+        font-size: 10px;
+    }
+
+    .product-photo-preview {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+    }
+
+    .quote-item-tag {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 2;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 9px;
+        border-radius: 999px;
+        background: #e6f6ec;
+        color: #198754;
+    }
+
+    .quote-item-tag.is-paid {
+        background: var(--primary-color, #2b4eff);
+        color: #fff;
+    }
+
+    .remove-item {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 2;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(20, 24, 22, .75);
+        color: #fff;
+        cursor: pointer;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .quote-item-body {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .quote-item-body .form-select,
+    .quote-item-body .form-control {
+        border-radius: 10px;
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .quote-item-row2 {
+        display: flex;
+        gap: 8px;
+    }
+
+    .quote-item-row2 > div {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .quote-item-row2 .input-group {
+        flex-wrap: nowrap;
+    }
+
+    .quote-item-row2 .input-group .form-control {
+        border-radius: 0 10px 10px 0;
+        min-width: 0;
+    }
+
+    .quote-item-row2 .input-group-text {
+        border-radius: 10px 0 0 10px;
+        font-size: 12px;
+        padding: 10px 6px;
+    }
+
+    .quote-item-add {
+        min-height: 220px;
+        border-radius: 16px;
+        border: 2px dashed #adb5bd;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        color: #222;
+        width: 100%;
+    }
+
+    .quote-item-add-icon {
+        font-size: 28px;
+        line-height: 1;
+    }
+
+    .quote-item-add-label {
+        font-weight: 700;
+        font-size: 15px;
+    }
+
+    .quote-item-add-hint {
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        color: #198754;
+    }
+
+    .quote-item-add-hint.is-paid {
+        color: #6c757d;
+    }
+
+    /* Sidebar */
+    .quote-cart-sidebar {
+        flex: 1 1 340px;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border-radius: 18px;
+        border: 1px solid #dee2e6;
+        overflow: hidden;
+        position: sticky;
+        top: 16px;
+    }
+
+    .quote-cart-block {
+        padding: 18px 20px;
+        border-bottom: 1px dashed #ced4da;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .quote-cart-sidebar > .quote-cart-block:last-child {
+        border-bottom: none;
+    }
+
+    .quote-cart-block-title {
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .quote-cart-recap-eyebrow {
+        font-family: 'Poppins', sans-serif;
+        font-size: 11px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #6c757d;
+        margin-bottom: 2px;
+    }
+
+    .quote-recap-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 14px;
+    }
+
+    .quote-recap-line-label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .quote-recap-line-price {
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        color: #222;
+        flex: none;
+    }
+
+    .quote-recap-line-price.is-free {
+        color: #198754;
+    }
+
+    .quote-recap-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 6px;
+        padding-top: 12px;
+        border-top: 1px solid #eef0ee;
+    }
+
+    .quote-recap-total span:first-child {
+        font-weight: 700;
+    }
+
+    .quote-recap-total span:last-child {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .quote-shipping-options {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .quote-shipping-options .form-check {
+        margin: 0;
+        padding: 0;
+        min-height: 0;
+        height: 0;
+        overflow: visible;
+    }
+
+    .quote-shipping-options .radio-card-content {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 8px 12px;
+        text-align: left;
+    }
+
+    .quote-shipping-options .shipping-icon {
+        font-size: 16px;
+        margin-bottom: 0;
+        flex: none;
+    }
+
+    .quote-shipping-options .radio-card-label {
+        flex: 1;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .quote-shipping-delay {
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        color: #6c757d;
+        flex: none;
+    }
+
+    .quote-cart-note {
+        font-size: 12px;
+        color: #6c757d;
+        line-height: 1.45;
+        margin: 0;
+    }
+
+    .quote-cart-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .quote-cart-block .form-control,
+    .quote-cart-block .form-select {
+        border-radius: 10px;
+        font-size: 14px;
+        padding: 11px;
+    }
+
+    .quote-cart-payment-box {
+        background: #eef1ff;
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .quote-cart-payment-box input {
+        margin-top: 8px;
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #ced4da;
+        padding: 10px;
+        font-size: 14px;
+        font-family: 'Poppins', sans-serif;
+        background: #fff;
+    }
+
+    .quote-cart-payment.d-none {
+        display: none;
+    }
+
+    .quote-cart-checkbox {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 13px;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .quote-cart-checkbox input {
+        margin-top: 2px;
+    }
+
+    .quote-cart-submit-btn {
+        padding: 15px;
+        border-radius: 12px;
+        border: none;
+        background: var(--primary-color, #2b4eff);
+        color: #fff;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 15px;
+        box-shadow: 0 6px 16px rgba(43, 78, 255, .25);
+        width: 100%;
+    }
+    .quote-cart-submit-btn:hover {
+        background: var(--primary-dark, #1a3dff);
+    }
+    .quote-cart-submit-btn:disabled {
+        opacity: .7;
+        cursor: not-allowed;
+    }
+
+    .quote-cart-footer-note {
+        margin: 0;
+        font-size: 12px;
+        color: #6c757d;
+        text-align: center;
+    }
 </style>
 {% endblock %}
 
@@ -279,12 +572,17 @@
     {% include '_service_suspended_notice.html.twig' %}
 </div>
 {% else %}
+{% set freeLimit = freeItemsLimit|default(2) %}
+{% set priceAr = itemPrice|default(0) %}
+{% set itemCount = form.items|length %}
+{% set extraCount = itemCount > freeLimit ? (itemCount - freeLimit) : 0 %}
+{% set totalAr = extraCount * priceAr %}
 <div class="container py-5">
     <div class="quote-page-heading">
         <h1>Demande de devis</h1>
         <button type="button" class="btn btn-outline-primary btn-sm quote-page-tour-btn" id="quotePageTourBtn">Guide du formulaire</button>
     </div>
-    
+
     <p class="mb-4">
         Veuillez remplir ce formulaire avec les détails de votre projet.
     </p>
@@ -298,7 +596,7 @@
             {% endfor %}
         {% endif %}
     {% endfor %}
-    
+
     {% if form.vars.submitted and not form.vars.valid %}
     <div class="alert alert-warning mb-4">
         <p class="mb-2"><strong>Champs obligatoires pour chaque produit :</strong></p>
@@ -309,268 +607,191 @@
         </ul>
     </div>
     {% endif %}
-    
+
     <!-- Loader -->
     <div id="loader" class="loader-container" style="display: none;">
         <div class="loader"></div>
         <p class="loader-text">Envoi de votre demande en cours...</p>
     </div>
-    
+
     {{ form_start(form, {'attr': {
         'class': 'needs-validation',
         'id': 'quoteForm',
         'novalidate': 'novalidate',
-        'data-free-items-limit': freeItemsLimit|default(2),
-        'data-item-price': itemPrice|default(0)
+        'data-free-items-limit': freeLimit,
+        'data-item-price': priceAr
     }}) }}
         {{ form_errors(form) }}
 
-        <div id="tour-quote-coordinates">
-        <h2 class="mt-4 mb-3">1. Vos coordonnées</h2>
-        
-        <div class="row mb-3">
-            <div class="col-md-6">
-                {{ form_row(form.firstName, {'attr': {'class': 'form-control'}}) }}
-            </div>
-            <div class="col-md-6">
-                {{ form_row(form.lastName, {'attr': {'class': 'form-control'}}) }}
-            </div>
-        </div>
+        <div class="quote-cart-layout">
+            <div class="quote-cart-main">
+                <div id="tour-quote-products-block" class="d-flex flex-column gap-3">
+                    <div>
+                        <h2 class="quote-cart-main-title">Qu'est-ce qu'on vous importe ?</h2>
+                        <p class="quote-cart-main-sub">Ajoutez vos articles comme dans un panier. Le coût de la demande s'affiche à droite en temps réel. Vous ne payez qu'à partir du {{ freeLimit + 1 }}e article.</p>
+                    </div>
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-                {{ form_row(form.email, {'attr': {'class': 'form-control'}}) }}
-            </div>
-            <div class="col-md-6">
-                {{ form_row(form.phone, {'attr': {'class': 'form-control'}}) }}
-            </div>
-        </div>
+                    <div class="alert alert-info mb-0">
+                        <p class="mb-1">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Vous ne savez pas encore quel produit choisir ? Allez faire un tour sur
+                            <a href="https://www.1688.com/" target="_blank" rel="noopener noreferrer">1688.com</a>,
+                            <a href="https://pinduoduo.com/" target="_blank" rel="noopener noreferrer">pinduoduo.com</a>
+                            et/ou <a href="https://www.taobao.com/" target="_blank" rel="noopener noreferrer">taobao.com</a>
+                            pour voir leurs produits.
+                        </p>
+                        <p class="mb-0">
+                            Une fois vos produits repérés, collez simplement leurs liens dans la description de chaque article ci-dessous.
+                        </p>
+                    </div>
 
-        <div class="row mb-3">
-            <div class="col-md-6">
-                {{ form_row(form.company, {'attr': {'class': 'form-control'}}) }}
-            </div>
-            <div class="col-md-6">
-                {{ form_label(form.referralSource) }}
-                {{ form_widget(form.referralSource, {'attr': {'class': 'form-select'}}) }}
-                {{ form_errors(form.referralSource) }}
-            </div>
-        </div>
-        </div>
-        
-        <div id="tour-quote-products-block">
-        <h2 class="mt-4 mb-3">2. Détails du ou des produits</h2>
+                    <div class="quote-items-wrapper"
+                         data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
+                         data-index="{{ form.items|length > 0 ? form.items|last.vars.name + 1 : 0 }}">
 
-        <div class="alert alert-info mb-4">
-            <p class="mb-1">
-                <i class="fas fa-info-circle me-1"></i>
-                Vous ne savez pas encore quel produit choisir ? Allez faire un tour sur
-                <a href="https://www.1688.com/" target="_blank" rel="noopener noreferrer">1688.com</a>,
-                <a href="https://pinduoduo.com/" target="_blank" rel="noopener noreferrer">pinduoduo.com</a>
-                et/ou <a href="https://www.taobao.com/" target="_blank" rel="noopener noreferrer">taobao.com</a>
-                pour voir leurs produits.
-            </p>
-            <p class="mb-0">
-                Une fois vos produits repérés, collez simplement leurs liens dans la description de chaque article ci-dessous.
-            </p>
-        </div>
-
-        <div class="quote-items-wrapper"
-             data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
-             data-index="{{ form.items|length > 0 ? form.items|last.vars.name + 1 : 0 }}">
-            
-            {% for itemForm in form.items %}
-                <div class="quote-item">
-                    <span class="remove-item"><i class="fas fa-times-circle"></i></span>
-                    <div class="row">
-                        <!-- Photo à gauche (1/3) -->
-                        <div class="col-md-4 mb-3">
-                            <div class="photo-container">
+                        {% for itemForm in form.items %}
+                            {% set idx = loop.index0 %}
+                            <div class="quote-item">
                                 <div class="photo-upload-container">
+                                    <span class="quote-item-tag {{ idx < freeLimit ? '' : 'is-paid' }}">{{ idx < freeLimit ? 'Gratuit' : ('+' ~ priceAr|number_format(0, ',', ' ') ~ ' Ar') }}</span>
                                     <label for="{{ itemForm.photoFile.vars.id }}" class="upload-label">
                                         <div class="photo-upload-icon">
                                             <i class="fas fa-camera"></i>
                                         </div>
-                                        <span>Cliquez pour ajouter une photo (obligatoire)</span>
+                                        <span>Ajouter une photo<br><small>(obligatoire)</small></span>
                                     </label>
-                                    {{ form_widget(itemForm.photoFile, {'attr': {'class': 'form-control-file d-none', 'required': 'required'}}) }}
+                                    {{ form_widget(itemForm.photoFile, {'attr': itemForm.photoFile.vars.attr|merge({'class': 'form-control-file d-none', 'required': 'required'})}) }}
                                     <img src="#" class="product-photo-preview" alt="Aperçu de la photo">
+                                    <button type="button" class="remove-item" aria-label="Retirer l'article"><i class="fas fa-times"></i></button>
                                 </div>
                                 {{ form_errors(itemForm.photoFile) }}
-                            </div>
-                        </div>
-                        
-                        <!-- Informations à droite (2/3) -->
-                        <div class="col-md-8">
-                            <div class="row">
-                                <!-- Type, quantité et budget sur la même ligne -->
-                                <div class="col-md-4 mb-3">
-                                    {{ form_row(itemForm.productType, {'attr': {'class': 'form-select product-type-select'}}) }}
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    {{ form_row(itemForm.quantity, {'attr': {'class': 'form-control', 'min': 1}}) }}
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    {{ form_row(itemForm.budget, {'attr': {'class': 'form-control', 'min': 0}}) }}
-                                </div>
-                                
-                                <!-- Description en dessous -->
-                                <div class="col-12 mb-3">
-                                    {{ form_row(itemForm.description) }}
+
+                                <div class="quote-item-body">
+                                    {{ form_widget(itemForm.productType, {'attr': itemForm.productType.vars.attr|merge({'class': 'form-select product-type-select'})}) }}
+                                    {{ form_errors(itemForm.productType) }}
+                                    <div class="quote-item-row2">
+                                        <div>
+                                            {{ form_widget(itemForm.quantity, {'attr': itemForm.quantity.vars.attr|merge({'class': 'form-control quote-item-qty', 'min': 1, 'placeholder': 'Qté'})}) }}
+                                        </div>
+                                        <div>
+                                            {{ form_widget(itemForm.budget, {'attr': itemForm.budget.vars.attr|merge({'class': 'form-control quote-item-budget', 'min': 0, 'placeholder': 'Budget'})}) }}
+                                        </div>
+                                    </div>
+                                    {{ form_errors(itemForm.quantity) }}
+                                    {{ form_errors(itemForm.budget) }}
+                                    {{ form_widget(itemForm.description, {'attr': itemForm.description.vars.attr|merge({'class': 'form-control quote-item-description', 'rows': 2, 'placeholder': 'Description + lien 1688 / Taobao / Pinduoduo'})}) }}
+                                    {{ form_errors(itemForm.description) }}
                                 </div>
                             </div>
-                        </div>
+                        {% endfor %}
+
+                        <button
+                            type="button"
+                            class="quote-item-add"
+                            id="quote-add-item-btn"
+                            data-free-items-limit="{{ freeLimit }}"
+                        >
+                            <span class="quote-item-add-icon"><i class="fas fa-plus-circle"></i></span>
+                            <span class="quote-item-add-label">Ajouter un article</span>
+                            <span class="quote-item-add-hint {{ itemCount < freeLimit ? '' : 'is-paid' }}" id="quoteAddHint">{{ itemCount < freeLimit ? 'gratuit' : ('+' ~ priceAr|number_format(0, ',', ' ') ~ ' Ar') }}</span>
+                        </button>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-        
-        <button
-            type="button"
-            class="btn btn-outline-primary add-item-btn"
-            id="quote-add-item-btn"
-            data-free-items-limit="{{ freeItemsLimit|default(2) }}"
-        >
-            <i class="fas fa-plus-circle me-2"></i> Ajouter un produit
-        </button>
-        <p class="small text-muted mb-4">
-            Les {{ freeItemsLimit|default(2) }} premiers articles sont gratuits. À partir du {{ (freeItemsLimit|default(2)) + 1 }}e article, chaque article supplémentaire est facturé {{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar.
-        </p>
-        <div class="alert alert-light border mb-4" id="tour-quote-payment-modalities">
-            <h3 class="h6 mb-2">Modalités de paiement</h3>
-            <p class="small mb-0">Le paiement s'effectue par Mobile Money. Les frais de retrait sont entièrement à la charge du client. Le traitement du devis ne débutera qu'à réception du paiement.</p>
-        </div>
-        </div>
-        
-        <div id="tour-quote-shipping">
-        <h2 class="mt-4">3. Choix de l'envoi</h2>
-        <div class="row mb-4">
-            <!-- Services masqués (pré-sélectionnés automatiquement) -->
-            <div style="display: none;">
-                {{ form_row(form.services) }}
             </div>
-            <div class="col-12">
-                <div class="alert alert-light border d-flex align-items-start gap-3">
-                    <i class="fas fa-check-circle text-primary mt-1"></i>
-                    <p class="mb-0">
-                        Nous gérons le sourcing, la négociation fournisseurs et toute la logistique
-                        (transport, dédouanement, livraison) pour une réception simple et sans stress.<br/>
-                        Vous devez juste définir le mode d'envoi. <strong>Cliquez donc sur le ou les modes d'envoi qui vous conviennent et nous nous occuperons du reste.</strong>
-                    </p>
-                </div>
-            </div>
-            <!-- Choix de l'envoi (pleine largeur) -->
-            <div class="col-12">
-                <div class="mb-3 shipping-method-container">
-                    {{ form_label(form.shippingMethod, null, {'label_attr': {'class': 'd-none'}}) }}
-                    <div class="shipping-method-options row px-2">
-                        {% for choice in form.shippingMethod %}
-                            <div class="col-4 col-sm-4 col-md-4 col-lg-4 mb-2">
-                                <label class="radio-card h-100">
-                                    {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}, 'label': false, 'label_attr': {'class': 'd-none'}}) }}
-                                    <div class="radio-card-content">
-                                        <div class="shipping-icon">
-                                            {% if choice.vars.value == 'maritime' %}
-                                                <i class="fas fa-ship"></i>
-                                            {% elseif choice.vars.value == 'aerien_express' %}
-                                                <i class="fas fa-plane-departure"></i>
-                                            {% elseif choice.vars.value == 'aerien_normal' %}
-                                                <i class="fas fa-plane"></i>
-                                            {% endif %}
-                                        </div>
-                                        <span class="radio-card-label">{{ choice.vars.label }}</span>
-                                    </div>
-                                </label>
+
+            <aside class="quote-cart-sidebar">
+                <div class="quote-cart-block quote-cart-recap">
+                    <div class="quote-cart-recap-eyebrow">Récapitulatif</div>
+                    <div id="quoteRecapLines" class="d-flex flex-column gap-2">
+                        {% for itemForm in form.items %}
+                            {% set idx = loop.index0 %}
+                            {% set typeVal = itemForm.productType.vars.value %}
+                            {% set qtyVal = itemForm.quantity.vars.value %}
+                            <div class="quote-recap-line">
+                                <span class="quote-recap-line-label">{{ loop.index }}. {{ typeVal ?: 'Article sans type' }}{{ qtyVal ? ' × ' ~ qtyVal : '' }}</span>
+                                <span class="quote-recap-line-price {{ idx < freeLimit ? 'is-free' : '' }}">{{ idx < freeLimit ? 'gratuit' : (priceAr|number_format(0, ',', ' ') ~ ' Ar') }}</span>
                             </div>
                         {% endfor %}
                     </div>
-                    {{ form_errors(form.shippingMethod) }}
-                    <p class="small text-muted mt-2 fst-italic">
-                        <strong>Les envois aériens</strong> ont un départ hebdomadaire. Les délais de <strong>3 à 5 jours</strong> et <strong>10 à 20 jours</strong> <u>commencent uniquement à partir du départ de l’avion</u>, après réception des marchandises auprès des fournisseurs.
-                    </p>
+                    <div class="quote-recap-total">
+                        <span>Frais de demande</span>
+                        <span id="quoteRecapTotal">{{ totalAr > 0 ? (totalAr|number_format(0, ',', ' ') ~ ' Ar') : 'Gratuit' }}</span>
+                    </div>
                 </div>
-            </div>
-        </div>
-        </div>
-        
-        <div id="tour-quote-additional">
-        <h2 class="pt-5 mt-5 mb-4">4. Informations complémentaires</h2>
-        <div class="mb-4">
-            {{ form_widget(form.additionalInfo, {'attr': {'class': 'form-control', 'rows': 3}}) }}
-            {{ form_errors(form.additionalInfo) }}
-        </div>
-        </div>
 
-        <div class="mb-3" style="padding-left: 0 !important;" id="tour-quote-privacy">
-            <label for="{{ form.privacyPolicy.vars.id }}" class="form-check-label" style="display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;">
-                {{ form_widget(form.privacyPolicy, {'attr': {'class': 'form-check-input', 'style': 'margin: 0; margin-top: 2px; margin-left: -24px;'}}) }}
-                J'accepte la <a href="{{ path('app_privacy_policy') }}" target="_blank">politique de confidentialité</a>
-            </label>
-            {{ form_errors(form.privacyPolicy) }}
-        </div>
+                <div class="quote-cart-block" id="tour-quote-shipping">
+                    <div class="quote-cart-block-title">Envoi <span class="fw-normal text-muted">(un ou plusieurs)</span></div>
+                    <div style="display: none;">
+                        {{ form_row(form.services) }}
+                    </div>
+                    <div class="quote-shipping-options">
+                        {% for choice in form.shippingMethod %}
+                            <label class="radio-card">
+                                {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}, 'label': false}) }}
+                                <span class="radio-card-content">
+                                    <i class="fas shipping-icon
+                                        {%- if choice.vars.value == 'maritime' %} fa-ship
+                                        {%- elseif choice.vars.value == 'aerien_express' %} fa-plane-departure
+                                        {%- elseif choice.vars.value == 'aerien_normal' %} fa-plane
+                                        {%- endif %}"></i>
+                                    <span class="radio-card-label">{{ choice.vars.label }}</span>
+                                    <span class="quote-shipping-delay">
+                                        {%- if choice.vars.value == 'maritime' %}50–70 j
+                                        {%- elseif choice.vars.value == 'aerien_express' %}3–5 j
+                                        {%- elseif choice.vars.value == 'aerien_normal' %}10–20 j
+                                        {%- endif %}
+                                    </span>
+                                </span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    {{ form_errors(form.shippingMethod) }}
+                    <p class="quote-cart-note">Sourcing, négociation fournisseurs, transport, dédouanement et livraison inclus. Départs aériens hebdomadaires.</p>
+                </div>
 
-        <p class="mb-4">
-            Notre équipe vous contactera dans les 24 à 72 heures avec un devis personnalisé.
-        </p>
+                <div class="quote-cart-block" id="tour-quote-coordinates">
+                    <div class="quote-cart-block-title">Vos coordonnées</div>
+                    <div class="quote-cart-grid-2">
+                        {{ form_widget(form.firstName, {'attr': form.firstName.vars.attr|merge({'class': 'form-control', 'placeholder': 'Prénom'})}) }}
+                        {{ form_widget(form.lastName, {'attr': form.lastName.vars.attr|merge({'class': 'form-control', 'placeholder': 'Nom'})}) }}
+                    </div>
+                    {{ form_errors(form.firstName) }}
+                    {{ form_errors(form.lastName) }}
+                    {{ form_widget(form.email, {'attr': form.email.vars.attr|merge({'class': 'form-control', 'placeholder': 'Email'})}) }}
+                    {{ form_errors(form.email) }}
+                    {{ form_widget(form.phone, {'attr': form.phone.vars.attr|merge({'class': 'form-control', 'placeholder': 'Téléphone'})}) }}
+                    {{ form_errors(form.phone) }}
+                    {{ form_widget(form.company, {'attr': form.company.vars.attr|merge({'class': 'form-control', 'placeholder': 'Entreprise (optionnel)'})}) }}
+                    {{ form_widget(form.referralSource, {'attr': form.referralSource.vars.attr|merge({'class': 'form-select'})}) }}
+                    {{ form_errors(form.referralSource) }}
 
-        <div class="" id="tour-quote-submit">
-            <button type="submit" class="btn btn-primary" id="submitButton">Soumettre ma demande de devis</button>
+                    <div id="tour-quote-additional">
+                        {{ form_widget(form.additionalInfo, {'attr': form.additionalInfo.vars.attr|merge({'class': 'form-control', 'rows': 2, 'placeholder': 'Informations complémentaires (optionnel)'})}) }}
+                        {{ form_errors(form.additionalInfo) }}
+                    </div>
+
+                    <div class="quote-cart-payment {{ extraCount > 0 ? '' : 'd-none' }}" id="quoteInlinePayment">
+                        <div class="quote-cart-payment-box">
+                            <p class="mb-0">Réglez <strong id="quoteInlinePaymentTotal">{{ totalAr|number_format(0, ',', ' ') }} Ar</strong> par Mobile Money au <strong>{{ primaryContactPhone }}</strong> (frais de retrait à votre charge), puis indiquez la référence. Le devis sera traité 24 à 72 h après confirmation du paiement.</p>
+                            <input type="text" id="quotePaymentReferenceInput" placeholder="Référence de paiement (ex: TXN-123456)" value="{{ form.transactionReference.vars.value }}">
+                            <div id="quotePaymentReferenceError" class="text-danger small mt-2 d-none">Veuillez renseigner la référence de paiement.</div>
+                        </div>
+                    </div>
+
+                    <label class="quote-cart-checkbox" for="{{ form.privacyPolicy.vars.id }}" id="tour-quote-privacy">
+                        {{ form_widget(form.privacyPolicy, {'attr': {'class': 'form-check-input'}}) }}
+                        <span>J'accepte la <a href="{{ path('app_privacy_policy') }}" target="_blank">politique de confidentialité</a></span>
+                    </label>
+                    {{ form_errors(form.privacyPolicy) }}
+
+                    <div id="tour-quote-submit" class="d-flex flex-column gap-2">
+                        <button type="submit" class="quote-cart-submit-btn" id="submitButton">{{ extraCount > 0 ? ('Envoyer ma demande · ' ~ totalAr|number_format(0, ',', ' ') ~ ' Ar') : 'Envoyer ma demande · gratuit' }}</button>
+                        <p class="quote-cart-footer-note">Réponse sous 24 à 72 h · <a href="https://wa.me/261384271168?text=Bonjour%20Duo%20Import%20MDG,%20" target="_blank" rel="noopener noreferrer">Une question ? WhatsApp</a></p>
+                    </div>
+                </div>
+            </aside>
         </div>
     {{ form_end(form) }}
-</div>
-
-<div class="modal fade quote-payment-modal" id="quotePaymentModal" tabindex="-1" aria-labelledby="quotePaymentModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="quotePaymentModalLabel">Paiement — au-delà de {{ freeItemsLimit|default(2) }} articles</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-2">Vous avez atteint la limite des {{ freeItemsLimit|default(2) }} articles gratuits.</p>
-                <div class="quote-payment-two-options small mb-3" role="status" aria-live="polite">
-                    <p class="mb-0">
-                        <strong>Deux possibilités :</strong> fermez cette fenêtre avec « Annuler », supprimez les lignes produits en trop (croix rouge) pour ne garder que {{ freeItemsLimit|default(2) }} articles au maximum, puis renvoyez votre demande sans frais.
-                        Sinon, effectuez le paiement indiqué ci-dessous pour envoyer votre demande avec plus de {{ freeItemsLimit|default(2) }} articles.
-                    </p>
-                </div>
-                <p class="mb-2">À partir du {{ (freeItemsLimit|default(2)) + 1 }}e article, chaque article supplémentaire est facturé <strong>{{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar</strong>.</p>
-                <div class="alert alert-light border mb-3">
-                    <div class="d-flex justify-content-between">
-                        <span>Articles payants</span>
-                        <strong id="quotePaymentPaidItems">0</strong>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span>Prix unitaire</span>
-                        <strong id="quotePaymentItemPrice">{{ itemPrice|default(0)|number_format(0, ',', ' ') }} Ar</strong>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span>Montant total à payer</span>
-                        <strong id="quotePaymentTotal">0 Ar</strong>
-                    </div>
-                </div>
-                <p class="mb-2">
-                    Veuillez effectuer le paiement au numéro suivant :
-                    <strong id="quotePaymentPhone">{{ primaryContactPhone }}</strong>
-                    <span class="text-muted"> (il est préférable de confirmer le paiement par appel, s'il vous plaît)</span>
-                </p>
-                <p class="mb-2 small text-muted">
-                    <strong>Important :</strong> le paiement ne signifie pas un traitement immédiat de votre demande.
-                    Le devis sera traité dans un délai de <strong>24 h à 72 h après confirmation du paiement</strong> par notre équipe.
-                </p>
-                <p class="mb-3">Ensuite, indiquez la référence de votre paiement ci-dessous pour envoyer votre demande.</p>
-                <label for="quotePaymentReferenceInput" class="form-label">Référence de paiement</label>
-                <input type="text" id="quotePaymentReferenceInput" class="form-control" placeholder="Ex: TXN-123456" />
-                <div id="quotePaymentReferenceError" class="text-danger small mt-2 d-none">
-                    Veuillez renseigner la référence de paiement.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" id="quotePaymentValidateBtn">Valider et envoyer</button>
-            </div>
-        </div>
-    </div>
 </div>
 {% endif %}
 {% endblock %}
@@ -593,24 +814,16 @@
             {
                 popover: {
                     title: "Demande de devis",
-                    description: "Ce guide présente les sections du formulaire : vos coordonnées, les produits, le mode d'envoi, les informations complémentaires et l'envoi.",
+                    description: "Ce guide présente les sections du formulaire : les produits, le mode d'envoi, vos coordonnées et l'envoi de la demande.",
                     side: "over",
                     align: "center"
-                }
-            },
-            {
-                element: "#tour-quote-coordinates",
-                popover: {
-                    title: "Vos coordonnées",
-                    description: "Indiquez votre identité, vos moyens de contact et, si vous le souhaitez, comment vous nous avez connus.",
-                    side: "bottom"
                 }
             },
             {
                 element: "#tour-quote-products-block",
                 popover: {
                     title: "Produits",
-                    description: "Pour chaque ligne : photo obligatoire, type, quantité, budget et description. Ajoutez des lignes si vous avez plusieurs produits.",
+                    description: "Pour chaque article : photo obligatoire, type, quantité, budget et description. Le récapitulatif à droite se met à jour en temps réel.",
                     side: "bottom"
                 }
             },
@@ -618,7 +831,7 @@
                 element: "#quote-add-item-btn",
                 popover: {
                     title: "Plusieurs produits",
-                    description: "Utilisez ce bouton pour ajouter un bloc produit supplémentaire à votre demande.",
+                    description: "Utilisez ce bouton pour ajouter un article supplémentaire à votre demande.",
                     side: "bottom"
                 }
             },
@@ -627,15 +840,15 @@
                 popover: {
                     title: "Choix de l'envoi",
                     description: "Sélectionnez un ou plusieurs modes d'expédition (maritime ou aérien). Les délais indiqués sont donnés à titre indicatif.",
-                    side: "top"
+                    side: "left"
                 }
             },
             {
-                element: "#tour-quote-additional",
+                element: "#tour-quote-coordinates",
                 popover: {
-                    title: "Informations complémentaires",
-                    description: "Champ libre pour préciser des contraintes, délais ou tout élément utile à l'étude de votre dossier.",
-                    side: "top"
+                    title: "Vos coordonnées",
+                    description: "Indiquez votre identité et vos moyens de contact pour que notre équipe puisse vous recontacter.",
+                    side: "left"
                 }
             },
             {
@@ -714,4 +927,4 @@
 })();
 </script>
 {% endif %}
-{% endblock %} 
+{% endblock %}
