@@ -3,12 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Quote;
+use App\Entity\QuoteOffer;
 use App\Repository\QuoteRepository;
 use App\Service\QuoteTrackerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
 
 class TrackingController extends AbstractController
@@ -35,14 +38,81 @@ class TrackingController extends AbstractController
         
         // Récupérer les offres associées au devis
         $offers = $quote->getOffers();
+        $downloadableOffer = $this->findDownloadableOffer($quote);
 
         return $this->render('tracking/show.html.twig', [
             'quote' => $quote,
             'statusHistory' => $statusHistory,
             'offers' => $offers,
             'trackingToken' => $token,
-            'quoteTrackerService' => $this->quoteTrackerService
+            'quoteTrackerService' => $this->quoteTrackerService,
+            'downloadableOffer' => $downloadableOffer,
         ]);
+    }
+
+    /**
+     * Téléchargement public de l'offre PDF via le token de suivi (devis traité uniquement).
+     */
+    #[Route('/tracking/{token}/offer-pdf', name: 'app_tracking_offer_pdf', methods: ['GET'])]
+    public function downloadOfferPdf(string $token): Response
+    {
+        $quote = $this->quoteRepository->findOneBy(['trackingToken' => $token]);
+
+        if (!$quote) {
+            throw $this->createNotFoundException('Token de suivi invalide ou devis introuvable.');
+        }
+
+        $offer = $this->findDownloadableOffer($quote);
+        if (!$offer) {
+            throw $this->createNotFoundException('Le PDF de l\'offre n\'est pas disponible pour ce devis.');
+        }
+
+        $pdfPath = $this->resolveOfferPdfAbsolutePath($offer);
+        if ($pdfPath === null) {
+            throw $this->createNotFoundException('Le fichier PDF de l\'offre est introuvable.');
+        }
+
+        $response = new BinaryFileResponse($pdfPath);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'offre-' . $quote->getQuoteNumber() . '.pdf'
+        );
+
+        return $response;
+    }
+
+    /**
+     * Offre PDF téléchargeable uniquement si le devis est traité (terminé / accepté / suite).
+     */
+    private function findDownloadableOffer(Quote $quote): ?QuoteOffer
+    {
+        $allowedStatuses = ['completed', 'accepted', 'converted', 'shipped', 'delivered'];
+        if (!in_array($quote->getStatus(), $allowedStatuses, true)) {
+            return null;
+        }
+
+        foreach (array_reverse($quote->getOffers()->toArray()) as $offer) {
+            if ($offer instanceof QuoteOffer && $this->resolveOfferPdfAbsolutePath($offer) !== null) {
+                return $offer;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveOfferPdfAbsolutePath(QuoteOffer $offer): ?string
+    {
+        $relative = $offer->getPdfFilePath();
+        if (!$relative) {
+            return null;
+        }
+
+        $pdfPath = $this->getParameter('kernel.project_dir') . '/public/' . ltrim($relative, '/');
+        if (!is_file($pdfPath) || !is_readable($pdfPath)) {
+            return null;
+        }
+
+        return $pdfPath;
     }
 
     /**

@@ -16,33 +16,58 @@
     </div>
     
     <div class="admin-card">
-        <div class="admin-card-header">
-            <h5 class="mb-0">Liste des devis</h5>
+        <div class="admin-card-header d-flex justify-content-between align-items-center gap-3">
+            <h5 class="mb-0 text-nowrap">Liste des devis</h5>
+            <form method="get" action="{{ path('app_quote_dashboard') }}" class="d-flex align-items-center gap-2 ms-auto" style="max-width:420px;width:100%;">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white">
+                        <i data-lucide="search" style="width:14px;height:14px;"></i>
+                    </span>
+                    <input type="search"
+                           name="q"
+                           value="{{ search|default('') }}"
+                           class="form-control"
+                           placeholder="Nom, email, produit, n° devis…"
+                           aria-label="Rechercher un devis">
+                    {% if search|default('') %}
+                        <a href="{{ path('app_quote_dashboard') }}" class="btn btn-outline-secondary" title="Effacer la recherche" aria-label="Effacer la recherche">
+                            <i data-lucide="x" style="width:14px;height:14px;"></i>
+                        </a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-dark">Rechercher</button>
+                </div>
+            </form>
         </div>
         <div class="admin-card-body">
+            {% set activeTab = activeTab|default('pending') %}
+            {% if search|default('') and pendingQuotes is empty and inProgressQuotes is empty and waitingCustomerQuotes is empty and completedQuotes is empty and rejectedQuotes is empty %}
+                <div class="alert alert-warning">
+                    <i data-lucide="search-x"></i> Aucun devis ne correspond à « {{ search }} ».
+                </div>
+            {% endif %}
             <ul class="nav nav-tabs mb-4" id="quotesTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
+                    <button class="nav-link{% if activeTab == 'pending' %} active{% endif %}" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="{{ activeTab == 'pending' ? 'true' : 'false' }}">
                         <i data-lucide="clock"></i> En attente <span class="badge bg-warning text-dark ms-1">{{ pendingQuotes|length }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="in-progress-tab" data-bs-toggle="tab" data-bs-target="#in-progress" type="button" role="tab" aria-controls="in-progress" aria-selected="false">
+                    <button class="nav-link{% if activeTab == 'in-progress' %} active{% endif %}" id="in-progress-tab" data-bs-toggle="tab" data-bs-target="#in-progress" type="button" role="tab" aria-controls="in-progress" aria-selected="{{ activeTab == 'in-progress' ? 'true' : 'false' }}">
                         <i data-lucide="rotate-cw"></i> En cours <span class="badge bg-info ms-1">{{ inProgressQuotes|length }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="waiting-customer-tab" data-bs-toggle="tab" data-bs-target="#waiting-customer" type="button" role="tab" aria-controls="waiting-customer" aria-selected="false">
+                    <button class="nav-link{% if activeTab == 'waiting-customer' %} active{% endif %}" id="waiting-customer-tab" data-bs-toggle="tab" data-bs-target="#waiting-customer" type="button" role="tab" aria-controls="waiting-customer" aria-selected="{{ activeTab == 'waiting-customer' ? 'true' : 'false' }}">
                         <i data-lucide="timer"></i> En attente du client <span class="badge bg-secondary ms-1">{{ waitingCustomerQuotes|length }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="false">
+                    <button class="nav-link{% if activeTab == 'completed' %} active{% endif %}" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="{{ activeTab == 'completed' ? 'true' : 'false' }}">
                         <i data-lucide="check-circle"></i> Complétés <span class="badge bg-success ms-1">{{ completedQuotes|length }}</span>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab" aria-controls="rejected" aria-selected="false">
+                    <button class="nav-link{% if activeTab == 'rejected' %} active{% endif %}" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab" aria-controls="rejected" aria-selected="{{ activeTab == 'rejected' ? 'true' : 'false' }}">
                         <i data-lucide="x-circle"></i> Rejetés <span class="badge bg-danger ms-1">{{ rejectedQuotes|length }}</span>
                     </button>
                 </li>
@@ -50,7 +75,7 @@
             
             <div class="tab-content" id="quotesTabsContent">
                 <!-- Devis en attente -->
-                <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                <div class="tab-pane fade{% if activeTab == 'pending' %} show active{% endif %}" id="pending" role="tabpanel" aria-labelledby="pending-tab">
                     {% if pendingQuotes is empty %}
                         <div class="alert alert-info">
                             <i data-lucide="info"></i> Aucun devis en attente.
@@ -85,7 +110,7 @@
                                             </td>
                                             <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
                                             <td>
-                                                {{ quote.items|length }} produit(s)
+                                                {{ quote.items|length }} produit{{ quote.items|length > 1 ? 's' : '' }}
                                                 {% if quote.isPaymentRequired %}
                                                     <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
                                                           title="Ce devis contient des produits payants">
@@ -151,7 +176,7 @@
                 </div>
                 
                 <!-- Devis en cours -->
-                <div class="tab-pane fade" id="in-progress" role="tabpanel" aria-labelledby="in-progress-tab">
+                <div class="tab-pane fade{% if activeTab == 'in-progress' %} show active{% endif %}" id="in-progress" role="tabpanel" aria-labelledby="in-progress-tab">
                     {% if inProgressQuotes is empty %}
                         <div class="alert alert-info">
                             <i data-lucide="info"></i> Aucun devis en cours de traitement.
@@ -185,7 +210,7 @@
                                             </td>
                                             <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
                                             <td>
-                                                {{ quote.items|length }} produit(s)
+                                                {{ quote.items|length }} produit{{ quote.items|length > 1 ? 's' : '' }}
                                                 {% if quote.isPaymentRequired %}
                                                     <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
                                                           title="Ce devis contient des produits payants">
@@ -227,7 +252,7 @@
                 </div>
                 
                 <!-- Devis en attente du client -->
-                <div class="tab-pane fade" id="waiting-customer" role="tabpanel" aria-labelledby="waiting-customer-tab">
+                <div class="tab-pane fade{% if activeTab == 'waiting-customer' %} show active{% endif %}" id="waiting-customer" role="tabpanel" aria-labelledby="waiting-customer-tab">
                     {% if waitingCustomerQuotes is empty %}
                         <div class="alert alert-info">
                             <i data-lucide="info"></i> Aucun devis en attente de réponse client.
@@ -261,7 +286,7 @@
                                             </td>
                                             <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
                                             <td>
-                                                {{ quote.items|length }} produit(s)
+                                                {{ quote.items|length }} produit{{ quote.items|length > 1 ? 's' : '' }}
                                                 {% if quote.isPaymentRequired %}
                                                     <span class="badge bg-warning text-dark" data-bs-toggle="tooltip"
                                                           title="Ce devis contient des produits payants">
@@ -316,7 +341,7 @@
                 </div>
                 
                 <!-- Devis complétés -->
-                <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                <div class="tab-pane fade{% if activeTab == 'completed' %} show active{% endif %}" id="completed" role="tabpanel" aria-labelledby="completed-tab">
                     {% if completedQuotes is empty %}
                         <div class="alert alert-info">
                             <i data-lucide="info"></i> Aucun devis complété.
@@ -350,7 +375,7 @@
                                             </td>
                                             <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
                                             <td>
-                                                {{ quote.items|length }} produit(s)
+                                                {{ quote.items|length }} produit{{ quote.items|length > 1 ? 's' : '' }}
                                                 {% if quote.isPaymentRequired %}
                                                     <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
                                                           title="Ce devis contient des produits payants">
@@ -389,7 +414,7 @@
                 </div>
                 
                 <!-- Devis rejetés -->
-                <div class="tab-pane fade" id="rejected" role="tabpanel" aria-labelledby="rejected-tab">
+                <div class="tab-pane fade{% if activeTab == 'rejected' %} show active{% endif %}" id="rejected" role="tabpanel" aria-labelledby="rejected-tab">
                     {% if rejectedQuotes is empty %}
                         <div class="alert alert-info">
                             <i data-lucide="info"></i> Aucun devis rejeté.
@@ -423,7 +448,7 @@
                                             </td>
                                             <td>{{ quote.createdAt|date('d/m/Y H:i') }}</td>
                                             <td>
-                                                {{ quote.items|length }} produit(s)
+                                                {{ quote.items|length }} produit{{ quote.items|length > 1 ? 's' : '' }}
                                                 {% if quote.isPaymentRequired %}
                                                     <span class="badge bg-warning text-dark" data-bs-toggle="tooltip" 
                                                           title="Ce devis contient des produits payants">

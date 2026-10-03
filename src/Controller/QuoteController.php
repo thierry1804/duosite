@@ -743,18 +743,20 @@ class QuoteController extends AbstractController
     }
 
     #[Route('/quote/dashboard', name: 'app_quote_dashboard')]
-    public function dashboard(EntityManagerInterface $entityManager, QuoteFeeCalculator $feeCalculator): Response
+    public function dashboard(Request $request, EntityManagerInterface $entityManager, QuoteFeeCalculator $feeCalculator): Response
     {
         // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $search = trim((string) $request->query->get('q', ''));
         
         // Récupération des devis avec items et user pré-chargés (une requête par statut, sans N+1)
         $quoteRepository = $entityManager->getRepository(Quote::class);
-        $pendingQuotes = $quoteRepository->findForDashboard(['pending']);
-        $inProgressQuotes = $quoteRepository->findForDashboard(['in_progress']);
-        $waitingCustomerQuotes = $quoteRepository->findForDashboard(['waiting_customer']);
-        $completedQuotes = $quoteRepository->findForDashboard(['completed', 'accepted', 'converted', 'shipped', 'delivered']);
-        $rejectedQuotes = $quoteRepository->findForDashboard(['rejected']);
+        $pendingQuotes = $quoteRepository->findForDashboard(['pending'], 'DESC', $search);
+        $inProgressQuotes = $quoteRepository->findForDashboard(['in_progress'], 'DESC', $search);
+        $waitingCustomerQuotes = $quoteRepository->findForDashboard(['waiting_customer'], 'DESC', $search);
+        $completedQuotes = $quoteRepository->findForDashboard(['completed', 'accepted', 'converted', 'shipped', 'delivered'], 'DESC', $search);
+        $rejectedQuotes = $quoteRepository->findForDashboard(['rejected'], 'DESC', $search);
 
         $allQuotes = array_merge($pendingQuotes, $inProgressQuotes, $waitingCustomerQuotes, $completedQuotes, $rejectedQuotes);
 
@@ -778,6 +780,22 @@ class QuoteController extends AbstractController
             }
         }
 
+        $activeTab = 'pending';
+        if ($search !== '') {
+            foreach ([
+                'pending' => $pendingQuotes,
+                'in-progress' => $inProgressQuotes,
+                'waiting-customer' => $waitingCustomerQuotes,
+                'completed' => $completedQuotes,
+                'rejected' => $rejectedQuotes,
+            ] as $tab => $quotes) {
+                if (count($quotes) > 0) {
+                    $activeTab = $tab;
+                    break;
+                }
+            }
+        }
+
         return $this->render('quote/dashboard.html.twig', [
             'pendingQuotes' => $pendingQuotes,
             'inProgressQuotes' => $inProgressQuotes,
@@ -787,6 +805,8 @@ class QuoteController extends AbstractController
             'processedQuotes' => array_merge($completedQuotes, $rejectedQuotes),
             'freeItemsLimit' => $freeItemsLimit,
             'firstQuoteQuoteIds' => $firstQuoteQuoteIds,
+            'search' => $search,
+            'activeTab' => $activeTab,
         ]);
     }
 

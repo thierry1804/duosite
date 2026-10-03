@@ -140,21 +140,49 @@ class QuoteRepository extends ServiceEntityRepository
      * @param string[] $statuses un ou plusieurs statuts (ex. ['pending'], ['completed','accepted',...])
      * @return Quote[]
      */
-    public function findForDashboard(array $statuses, string $order = 'DESC'): array
+    public function findForDashboard(array $statuses, string $order = 'DESC', ?string $search = null): array
     {
         if (empty($statuses)) {
             return [];
         }
-        return $this->createQueryBuilder('q')
+
+        $qb = $this->createQueryBuilder('q')
             ->leftJoin('q.items', 'i')
             ->addSelect('i')
             ->leftJoin('q.user', 'u')
             ->addSelect('u')
             ->where('q.status IN (:statuses)')
             ->setParameter('statuses', $statuses)
-            ->orderBy('q.createdAt', $order)
-            ->getQuery()
-            ->getResult();
+            ->orderBy('q.createdAt', $order);
+
+        $search = $search !== null ? trim($search) : '';
+        if ($search !== '') {
+            $qb->distinct();
+
+            $orX = $qb->expr()->orX(
+                $qb->expr()->like('LOWER(q.quoteNumber)', ':search'),
+                $qb->expr()->like('LOWER(q.firstName)', ':search'),
+                $qb->expr()->like('LOWER(q.lastName)', ':search'),
+                $qb->expr()->like("LOWER(CONCAT(q.firstName, ' ', q.lastName))", ':search'),
+                $qb->expr()->like('LOWER(q.email)', ':search'),
+                $qb->expr()->like('LOWER(q.phone)', ':search'),
+                $qb->expr()->like('LOWER(q.company)', ':search'),
+                $qb->expr()->like('LOWER(i.productType)', ':search'),
+                $qb->expr()->like('LOWER(i.otherProductType)', ':search'),
+                $qb->expr()->like('LOWER(i.description)', ':search')
+            );
+
+            $idCandidate = ltrim($search, '#');
+            if (ctype_digit($idCandidate)) {
+                $orX->add($qb->expr()->eq('q.id', ':searchId'));
+                $qb->setParameter('searchId', (int) $idCandidate);
+            }
+
+            $qb->andWhere($orX)
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
     /**
