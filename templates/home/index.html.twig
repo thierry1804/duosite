@@ -8,7 +8,7 @@
 
 {% block body %}
 <!-- Hero Section -->
-<section class="hero-section">
+<section class="hero-section hero-section--image">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6 fade-up">
@@ -453,6 +453,7 @@
 </section>
 
 {% block stylesheets %}
+<link rel="preload" href="{{ asset('images/hero-port-bg.webp') }}" as="image" fetchpriority="high">
 <style>
 /* Process Steps */
 .process-steps {
