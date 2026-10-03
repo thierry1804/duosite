@@ -718,7 +718,8 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="post" action="{{ path('app_quote_status_update', {'id': quote.id}) }}">
+                <form method="post" action="{{ path('app_quote_change_status', {'id': quote.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('change_status' ~ quote.id) }}">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="status" class="form-label">Nouveau statut</label>
@@ -727,7 +728,7 @@
                                     {{ quoteTrackerService.getStatusLabels()[quote.status] ?? quote.status }} (actuel)
                                 </option>
                                 {% for status, label in quoteTrackerService.getValidStatuses() %}
-                                    {% if status != quote.status and status in quoteTrackerService.getAllowedTransitions()[quote.status] %}
+                                    {% if status != quote.status and status in quoteTrackerService.getAllowedTransitions()[quote.status]|default([]) %}
                                         <option value="{{ status }}">{{ label }}</option>
                                     {% endif %}
                                 {% endfor %}

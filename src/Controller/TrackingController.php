@@ -5,7 +5,9 @@ namespace App\Controller;
 use App\Entity\Quote;
 use App\Entity\QuoteOffer;
 use App\Repository\QuoteRepository;
+use App\Service\PdfGenerator;
 use App\Service\QuoteTrackerService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,7 +20,9 @@ class TrackingController extends AbstractController
 {
     public function __construct(
         private QuoteRepository $quoteRepository,
-        private QuoteTrackerService $quoteTrackerService
+        private QuoteTrackerService $quoteTrackerService,
+        private PdfGenerator $pdfGenerator,
+        private EntityManagerInterface $entityManager,
     ) {}
 
     /**
@@ -39,6 +43,7 @@ class TrackingController extends AbstractController
         // Récupérer les offres associées au devis
         $offers = $quote->getOffers();
         $downloadableOffer = $this->findDownloadableOffer($quote);
+        $offerIdsWithPdf = $this->getOfferIdsWithPdf($quote);
 
         return $this->render('tracking/show.html.twig', [
             'quote' => $quote,
@@ -47,14 +52,15 @@ class TrackingController extends AbstractController
             'trackingToken' => $token,
             'quoteTrackerService' => $this->quoteTrackerService,
             'downloadableOffer' => $downloadableOffer,
+            'offerIdsWithPdf' => $offerIdsWithPdf,
         ]);
     }
 
     /**
-     * Téléchargement public de l'offre PDF via le token de suivi (devis traité uniquement).
+     * Téléchargement public de l'offre PDF via le token de suivi.
      */
-    #[Route('/tracking/{token}/offer-pdf', name: 'app_tracking_offer_pdf', methods: ['GET'])]
-    public function downloadOfferPdf(string $token): Response
+    #[Route('/tracking/{token}/offer-pdf/{offerId}', name: 'app_tracking_offer_pdf', methods: ['GET'], defaults: ['offerId' => null])]
+    public function downloadOfferPdf(string $token, ?int $offerId = null): Response
     {
         $quote = $this->quoteRepository->findOneBy(['trackingToken' => $token]);
 
@@ -62,13 +68,29 @@ class TrackingController extends AbstractController
             throw $this->createNotFoundException('Token de suivi invalide ou devis introuvable.');
         }
 
-        $offer = $this->findDownloadableOffer($quote);
-        if (!$offer) {
+        if (!$this->canDownloadOfferPdf($quote)) {
             throw $this->createNotFoundException('Le PDF de l\'offre n\'est pas disponible pour ce devis.');
         }
 
-        $pdfPath = $this->resolveOfferPdfAbsolutePath($offer);
-        if ($pdfPath === null) {
+        $offer = null;
+        if ($offerId !== null) {
+            foreach ($quote->getOffers() as $candidate) {
+                if ($candidate->getId() === $offerId) {
+                    $offer = $candidate;
+                    break;
+                }
+            }
+        } else {
+            $offer = $this->findDownloadableOffer($quote);
+        }
+
+        if (!$offer instanceof QuoteOffer || !$this->isOfferDownloadable($offer)) {
+            throw $this->createNotFoundException('Le PDF de l\'offre n\'est pas disponible pour ce devis.');
+        }
+
+        try {
+            $pdfPath = $this->ensureOfferPdfAbsolutePath($offer);
+        } catch (\Throwable $e) {
             throw $this->createNotFoundException('Le fichier PDF de l\'offre est introuvable.');
         }
 
@@ -82,22 +104,58 @@ class TrackingController extends AbstractController
     }
 
     /**
-     * Offre PDF téléchargeable uniquement si le devis est traité (terminé / accepté / suite).
+     * PDF téléchargeable dès que l'offre a été envoyée / le devis traité.
      */
+    private function canDownloadOfferPdf(Quote $quote): bool
+    {
+        return in_array($quote->getStatus(), [
+            'waiting_customer',
+            'completed',
+            'accepted',
+            'converted',
+            'shipped',
+            'delivered',
+        ], true);
+    }
+
+    private function isOfferDownloadable(QuoteOffer $offer): bool
+    {
+        return in_array($offer->getStatus(), ['sent', 'accepted', 'declined', 'pending'], true)
+            || ($offer->getPdfFilePath() !== null && $offer->getPdfFilePath() !== '');
+    }
+
     private function findDownloadableOffer(Quote $quote): ?QuoteOffer
     {
-        $allowedStatuses = ['completed', 'accepted', 'converted', 'shipped', 'delivered'];
-        if (!in_array($quote->getStatus(), $allowedStatuses, true)) {
+        if (!$this->canDownloadOfferPdf($quote)) {
             return null;
         }
 
         foreach (array_reverse($quote->getOffers()->toArray()) as $offer) {
-            if ($offer instanceof QuoteOffer && $this->resolveOfferPdfAbsolutePath($offer) !== null) {
+            if ($offer instanceof QuoteOffer && $this->isOfferDownloadable($offer)) {
                 return $offer;
             }
         }
 
         return null;
+    }
+
+    /**
+     * @return array<int, true>
+     */
+    private function getOfferIdsWithPdf(Quote $quote): array
+    {
+        if (!$this->canDownloadOfferPdf($quote)) {
+            return [];
+        }
+
+        $ids = [];
+        foreach ($quote->getOffers() as $offer) {
+            if ($this->isOfferDownloadable($offer)) {
+                $ids[$offer->getId()] = true;
+            }
+        }
+
+        return $ids;
     }
 
     private function resolveOfferPdfAbsolutePath(QuoteOffer $offer): ?string
@@ -113,6 +171,25 @@ class TrackingController extends AbstractController
         }
 
         return $pdfPath;
+    }
+
+    private function ensureOfferPdfAbsolutePath(QuoteOffer $offer): string
+    {
+        $existing = $this->resolveOfferPdfAbsolutePath($offer);
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $relativePdfPath = $this->pdfGenerator->generateQuoteOfferPdf($offer);
+        $offer->setPdfFilePath($relativePdfPath);
+        $this->entityManager->flush();
+
+        $pdfAbsolutePath = $this->getParameter('kernel.project_dir') . '/public/' . ltrim($relativePdfPath, '/');
+        if (!is_file($pdfAbsolutePath) || !is_readable($pdfAbsolutePath)) {
+            throw new \RuntimeException('Le fichier PDF généré est introuvable.');
+        }
+
+        return $pdfAbsolutePath;
     }
 
     /**

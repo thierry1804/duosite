@@ -368,7 +368,7 @@
         </div>
     {% endif %}
 
-    <!-- Téléchargement PDF (devis traité) -->
+    <!-- Téléchargement PDF -->
     {% if downloadableOffer %}
         <div class="tracking-card">
             <div class="tracking-card-header">
@@ -381,9 +381,15 @@
                 <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
                     <div>
                         <p class="mb-1 fw-semibold">{{ downloadableOffer.title }}</p>
-                        <p class="text-muted mb-0">Votre devis a été traité. Vous pouvez télécharger l'offre au format PDF.</p>
+                        <p class="text-muted mb-0">
+                            {% if quote.status == 'waiting_customer' %}
+                                Votre offre est disponible. Vous pouvez la télécharger au format PDF.
+                            {% else %}
+                                Votre devis a été traité. Vous pouvez télécharger l'offre au format PDF.
+                            {% endif %}
+                        </p>
                     </div>
-                    <a href="{{ path('app_tracking_offer_pdf', {'token': trackingToken}) }}" class="btn btn-success btn-lg text-nowrap">
+                    <a href="{{ path('app_tracking_offer_pdf', {'token': trackingToken, 'offerId': downloadableOffer.id}) }}" class="btn btn-success btn-lg text-nowrap">
                         <i class="fas fa-download me-2"></i>
                         Télécharger l'offre PDF
                     </a>
@@ -404,18 +410,20 @@
             <div class="tracking-card-body">
                 {% for offer in offers %}
                     <div class="offer-card">
-                        <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
                             <div>
                                 <h5 class="mb-1">{{ offer.title }}</h5>
-                                <p class="text-muted mb-2">{{ offer.description|slice(0, 100) }}{% if offer.description|length > 100 %}...{% endif %}</p>
+                                {% if offer.description %}
+                                    <p class="text-muted mb-2">{{ offer.description|slice(0, 100) }}{% if offer.description|length > 100 %}...{% endif %}</p>
+                                {% endif %}
                                 <small class="text-muted">
                                     Créée le {{ offer.createdAt|date('d/m/Y à H:i') }}
                                 </small>
-                                {% if downloadableOffer and offer.id == downloadableOffer.id %}
+                                {% if offerIdsWithPdf[offer.id]|default(false) %}
                                     <div class="mt-2">
-                                        <a href="{{ path('app_tracking_offer_pdf', {'token': trackingToken}) }}" class="btn btn-sm btn-outline-success">
-                                            <i class="fas fa-file-pdf me-1"></i>
-                                            Télécharger PDF
+                                        <a href="{{ path('app_tracking_offer_pdf', {'token': trackingToken, 'offerId': offer.id}) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-download me-1"></i>
+                                            Télécharger l'offre PDF
                                         </a>
                                     </div>
                                 {% endif %}

@@ -890,17 +890,65 @@ class QuoteController extends AbstractController
         return $this->redirectToRoute('app_quote_dashboard');
     }
 
+    /**
+     * Changement de statut depuis le modal de la fiche devis (POST direct).
+     */
+    #[Route('/quote/{id}/change-status', name: 'app_quote_change_status', methods: ['POST'])]
+    public function changeStatusFromModal(Request $request, Quote $quote, QuoteTrackerService $quoteTrackerService): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (!$this->isCsrfTokenValid('change_status' . $quote->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Jeton de sécurité invalide.');
+
+            return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+        }
+
+        $newStatus = trim((string) $request->request->get('status', ''));
+        $commentRaw = $request->request->get('comment');
+        $comment = is_string($commentRaw) && trim($commentRaw) !== '' ? trim($commentRaw) : null;
+
+        if ($newStatus === '' || $newStatus === $quote->getStatus()) {
+            $this->addFlash('info', 'Aucun changement de statut.');
+
+            return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+        }
+
+        try {
+            $quoteTrackerService->changeStatus(
+                $quote,
+                $newStatus,
+                $comment,
+                $this->getUser()?->getEmail()
+            );
+
+            if ($newStatus === 'completed') {
+                $quote->setProcessed(true);
+                $quoteTrackerService->getEntityManager()->flush();
+            }
+
+            $this->addFlash('success', 'Le statut du devis a été mis à jour.');
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', 'Erreur lors de la mise à jour du statut : ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+    }
+
     #[Route('/quote/{id}/status-update', name: 'app_quote_status_update', methods: ['GET', 'POST'])]
     public function updateStatusWithComment(Request $request, Quote $quote, QuoteTrackerService $quoteTrackerService): Response
     {
         // Vérifier que l'utilisateur a le rôle ROLE_ADMIN
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        // ChoiceType attend label => value
+        $statusChoices = array_flip($quoteTrackerService->getValidStatuses());
         
         // Créer un formulaire pour le changement de statut avec commentaire
         $form = $this->createFormBuilder()
             ->add('status', \Symfony\Component\Form\Extension\Core\Type\ChoiceType::class, [
                 'label' => 'Nouveau statut',
-                'choices' => $quoteTrackerService->getValidStatuses(),
+                'choices' => $statusChoices,
                 'data' => $quote->getStatus(),
                 'attr' => ['class' => 'form-control']
             ])
