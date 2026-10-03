@@ -207,33 +207,34 @@
                 align-items: center;
                 justify-content: center;
             }
-            
-            .navbar-toggler-icon {
-                width: 24px;
-                height: 24px;
+
+            .navbar-toggler-bars {
+                position: relative;
+                display: block;
+                width: 22px;
+                height: 14px;
             }
+
+            .navbar-toggler-bars span {
+                position: absolute;
+                left: 0;
+                display: block;
+                width: 100%;
+                height: 2px;
+                background: #222;
+                border-radius: 1px;
+            }
+
+            .navbar-toggler-bars span:nth-child(1) { top: 0; }
+            .navbar-toggler-bars span:nth-child(2) { top: 6px; }
+            .navbar-toggler-bars span:nth-child(3) { top: 12px; }
             
             /* Navbar collapse */
             #navbarNav {
                 transition: height 0.3s ease;
             }
             
-            /* Fix for mobile navbar */
-            @media (max-width: 991px) {
-                .navbar-collapse {
-                    position: absolute;
-                    top: var(--navbar-height);
-                    left: 0;
-                    right: 0;
-                    background: white;
-                    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-                    z-index: 1000;
-                    padding: 1rem;
-                    height: auto;
-                    max-height: calc(100vh - var(--navbar-height));
-                    overflow-y: auto;
-                }
-            }
+            /* Menu mobile : réservé au CSS principal */
             
             /* Styles pour éviter les décalages dans le footer */
             .footer-widget h5 {
@@ -285,56 +286,106 @@
                 <div class="container">
                     <a class="navbar-brand" href="{{ path('app_home') }}">
                         <img src="{{ asset('images/logo.webp') }}" alt="Logo" height="40" width="40" class="d-inline-block align-text-top" fetchpriority="high">
-                        Duo Import MDG
+                        <span class="navbar-brand-text">Duo Import MDG</span>
                     </a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Ouvrir le menu">
+                        <span class="navbar-toggler-bars" aria-hidden="true">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav ms-auto">
-                            <li class="nav-item">
-                                <a class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}" href="{{ path('app_home') }}">Accueil</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if app.request.get('_route') == 'app_services' %}active{% endif %}" href="{{ path('app_services') }}">Nos Services</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if app.request.get('_route') == 'app_tarifs' %}active{% endif %}" href="{{ path('app_tarifs') }}">Tarifs</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if app.request.get('_route') == 'app_about' %}active{% endif %}" href="{{ path('app_about') }}">Qui sommes-nous</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if app.request.get('_route') == 'app_contact' %}active{% endif %}" href="{{ path('app_contact') }}">Contact</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-primary {% if app.request.get('_route') == 'app_import_order_new' %}active{% endif %}" href="{{ path('app_import_order_new') }}">Passer commande</a>
-                            </li>
-                            {% if app.user %}
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i data-lucide="user" class="user-icon-active me-1"></i> {{ app.user.firstName }}
+                        <div class="mobile-menu-shell">
+                            <div class="mobile-menu-panel">
+                                <div class="mobile-menu-panel-top">
+                                    <a class="mobile-menu-brand" href="{{ path('app_home') }}">
+                                        <img src="{{ asset('images/logo.webp') }}" alt="" width="40" height="40">
+                                        <span>Duo Import MDG</span>
                                     </a>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                        <li><a class="dropdown-item" href="{{ path('app_user_profile') }}">Mon profil</a></li>
-                                        <li><a class="dropdown-item" href="{{ path('app_user_quotes') }}">Mes devis</a></li>
-                                        {% if is_granted('ROLE_ADMIN') %}
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item" href="{{ path('app_admin_dashboard') }}">Tableau de bord admin</a></li>
-                                        {% endif %}
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a></li>
-                                    </ul>
-                                </li>
-                            {% else %}
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link" href="{{ path('app_login') }}" id="navbarUserIcon" aria-label="Connexion à votre compte">
-                                        <i data-lucide="user" class="user-icon-inactive fs-5" aria-hidden="true"></i>
-                                        <span class="visually-hidden">Connexion</span>
+                                    <button type="button" class="mobile-menu-close mobile-menu-close--panel" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Fermer le menu">
+                                        Fermer <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <ul class="navbar-nav ms-auto">
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}" href="{{ path('app_home') }}">Accueil</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if app.request.get('_route') == 'app_services' %}active{% endif %}" href="{{ path('app_services') }}">Nos Services</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if app.request.get('_route') == 'app_tarifs' %}active{% endif %}" href="{{ path('app_tarifs') }}">Tarifs</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if app.request.get('_route') == 'app_about' %}active{% endif %}" href="{{ path('app_about') }}">Qui sommes-nous</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if app.request.get('_route') == 'app_contact' %}active{% endif %}" href="{{ path('app_contact') }}">Contact</a>
+                                    </li>
+                                    <li class="nav-item nav-item-cta d-none d-lg-flex">
+                                        <a class="btn btn-primary {% if app.request.get('_route') == 'app_import_order_new' %}active{% endif %}" href="{{ path('app_import_order_new') }}">Passer commande</a>
+                                    </li>
+                                    {% if app.user %}
+                                        <li class="nav-item nav-item-account dropdown d-none d-lg-flex">
+                                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i data-lucide="user" class="user-icon-active me-1"></i> {{ app.user.firstName }}
+                                            </a>
+                                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                                <li><a class="dropdown-item" href="{{ path('app_user_profile') }}">Mon profil</a></li>
+                                                <li><a class="dropdown-item" href="{{ path('app_user_quotes') }}">Mes devis</a></li>
+                                                {% if is_granted('ROLE_ADMIN') %}
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ path('app_admin_dashboard') }}">Tableau de bord admin</a></li>
+                                                {% endif %}
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a></li>
+                                            </ul>
+                                        </li>
+                                    {% else %}
+                                        <li class="nav-item nav-item-account d-none d-lg-flex">
+                                            <a class="nav-link navbar-login-link" href="{{ path('app_login') }}" id="navbarUserIcon" aria-label="Connexion à votre compte">
+                                                <i data-lucide="user" class="user-icon-inactive" aria-hidden="true"></i>
+                                                <span class="navbar-login-label">Connexion</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                                <div class="mobile-menu-actions d-lg-none">
+                                    <a class="btn btn-primary mobile-menu-cta {% if app.request.get('_route') == 'app_import_order_new' %}active{% endif %}" href="{{ path('app_import_order_new') }}">
+                                        Passer commande <span class="mobile-menu-cta-arrow" aria-hidden="true">→</span>
                                     </a>
-                                </li>
-                            {% endif %}
-                        </ul>
+                                    {% if app.user %}
+                                        <div class="dropdown mobile-menu-account">
+                                            <a class="nav-link dropdown-toggle navbar-login-link" href="#" id="navbarDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i data-lucide="user" class="user-icon-active me-1"></i> {{ app.user.firstName }}
+                                            </a>
+                                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMobile">
+                                                <li><a class="dropdown-item" href="{{ path('app_user_profile') }}">Mon profil</a></li>
+                                                <li><a class="dropdown-item" href="{{ path('app_user_quotes') }}">Mes devis</a></li>
+                                                {% if is_granted('ROLE_ADMIN') %}
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item" href="{{ path('app_admin_dashboard') }}">Tableau de bord admin</a></li>
+                                                {% endif %}
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" href="{{ path('app_logout') }}">Déconnexion</a></li>
+                                            </ul>
+                                        </div>
+                                    {% else %}
+                                        <a class="navbar-login-link" href="{{ path('app_login') }}" aria-label="Connexion à votre compte">
+                                            <span class="navbar-login-label">Connexion</span>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <aside class="mobile-menu-visual">
+                                <button type="button" class="mobile-menu-close mobile-menu-close--visual" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Fermer le menu">
+                                    Fermer <span aria-hidden="true">&times;</span>
+                                </button>
+                                <img src="{{ asset('images/hero-image.webp') }}" alt="" width="800" height="1200" loading="lazy">
+                                <a class="mobile-menu-discover" href="{{ path('app_about') }}">Découvrir Duo Import</a>
+                            </aside>
+                        </div>
                     </div>
                 </div>
             </nav>

@@ -82,4 +82,54 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Menu burger mobile plein écran
+    (function initMobileNav() {
+        const navCollapse = document.getElementById('navbarNav');
+        const toggler = document.querySelector('.navbar-toggler');
+        if (!navCollapse || !toggler) return;
+
+        const setOpenState = function (isOpen) {
+            document.body.classList.toggle('nav-open', isOpen);
+            toggler.setAttribute('aria-label', isOpen ? 'Fermer le menu' : 'Ouvrir le menu');
+            toggler.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        };
+
+        const closeNav = function () {
+            if (!navCollapse.classList.contains('show')) return;
+            if (window.bootstrap && bootstrap.Collapse) {
+                bootstrap.Collapse.getOrCreateInstance(navCollapse, { toggle: false }).hide();
+            } else {
+                navCollapse.classList.remove('show');
+                toggler.classList.add('collapsed');
+                setOpenState(false);
+            }
+        };
+
+        navCollapse.addEventListener('show.bs.collapse', function () {
+            setOpenState(true);
+        });
+        navCollapse.addEventListener('hide.bs.collapse', function () {
+            setOpenState(false);
+        });
+
+        navCollapse.querySelectorAll('a.nav-link:not(.dropdown-toggle), a.btn, a.mobile-menu-cta, a.mobile-menu-discover, .dropdown-item').forEach(function (link) {
+            link.addEventListener('click', function () {
+                if (window.matchMedia('(max-width: 991.98px)').matches) {
+                    closeNav();
+                }
+            });
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeNav();
+        });
+
+        window.addEventListener('resize', function () {
+            if (window.matchMedia('(min-width: 992px)').matches) {
+                closeNav();
+                setOpenState(false);
+            }
+        });
+    })();
 }); 
