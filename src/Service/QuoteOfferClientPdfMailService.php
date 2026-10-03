@@ -13,10 +13,13 @@ use Symfony\Component\Mime\Email;
 use Twig\Environment;
 
 /**
- * Envoie au client un email avec le PDF de l'offre (ex. après acceptation).
+ * Envoie au client un email avec le PDF de l'offre (envoi, renvoi, acceptation).
+ * Une copie est toujours adressée à contact@duoimport.mg.
  */
 class QuoteOfferClientPdfMailService
 {
+    public const CONTACT_COPY_EMAIL = 'contact@duoimport.mg';
+
     public function __construct(
         private MailerInterface $mailer,
         private Environment $twig,
@@ -26,6 +29,35 @@ class QuoteOfferClientPdfMailService
         #[Autowire('%kernel.project_dir%')]
         private string $projectDir,
     ) {
+    }
+
+    /**
+     * Envoie l'offre PDF au client (template devis) + copie à contact@duoimport.mg.
+     * Génère le PDF s'il est manquant.
+     */
+    public function sendOfferPdfToClient(Quote $quote, QuoteOffer $offer): void
+    {
+        $pdfAbsolutePath = $this->ensureOfferPdfAbsolutePath($offer);
+
+        $email = (new Email())
+            ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG'))
+            ->to((string) $quote->getEmail())
+            ->bcc(self::CONTACT_COPY_EMAIL)
+            ->subject('Votre devis #' . $quote->getQuoteNumber())
+            ->html($this->twig->render('emails/quote_offer.html.twig', [
+                'quote' => $quote,
+                'offer' => $offer,
+            ]))
+            ->attachFromPath($pdfAbsolutePath, 'devis.pdf', 'application/pdf');
+
+        $this->mailer->send($email);
+
+        $this->logger->info('Email offre PDF envoyé au client (copie contact)', [
+            'quote_id' => $quote->getId(),
+            'offer_id' => $offer->getId(),
+            'to' => $quote->getEmail(),
+            'bcc' => self::CONTACT_COPY_EMAIL,
+        ]);
     }
 
     public function sendClientAcceptedOfferEmail(Quote $quote): void
@@ -42,6 +74,7 @@ class QuoteOfferClientPdfMailService
             $email = (new Email())
                 ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG'))
                 ->to((string) $quote->getEmail())
+                ->bcc(self::CONTACT_COPY_EMAIL)
                 ->subject(sprintf('Devis #%s - Confirmation de votre acceptation', $quote->getQuoteNumber()))
                 ->html($this->twig->render('emails/quote_offer_accepted_client.html.twig', [
                     'quote' => $quote,

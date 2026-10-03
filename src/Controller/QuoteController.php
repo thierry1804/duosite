@@ -30,6 +30,7 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Address;
 use App\Service\PdfGenerator;
 use App\Service\QuoteFeeCalculator;
+use App\Service\QuoteOfferClientPdfMailService;
 use App\Service\UserIdentityTracker;
 use App\Service\QuoteTrackerService;
 use App\Event\QuoteCreatedEvent;
@@ -336,6 +337,7 @@ class QuoteController extends AbstractController
         QuoteTrackerService $quoteTrackerService,
         ExchangeRateService $exchangeRateService,
         PdfGenerator $pdfGenerator,
+        QuoteOfferClientPdfMailService $offerMailService,
         MailerInterface $mailer,
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -601,23 +603,7 @@ class QuoteController extends AbstractController
 
                 if ($action === 'send') {
                     try {
-                        $email = (new Email())
-                            ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG'))
-                            ->to($quote->getEmail())
-                            ->subject('Votre devis #' . $quote->getQuoteNumber())
-                            ->html($this->renderView('emails/quote_offer.html.twig', [
-                                'quote' => $quote,
-                                'offer' => $offer,
-                            ]));
-
-                        if ($offer->getPdfFilePath()) {
-                            $pdfFullPath = $this->getParameter('kernel.project_dir') . '/public' . $offer->getPdfFilePath();
-                            if (file_exists($pdfFullPath)) {
-                                $email->attachFromPath($pdfFullPath, 'devis.pdf', 'application/pdf');
-                            }
-                        }
-
-                        $mailer->send($email);
+                        $offerMailService->sendOfferPdfToClient($quote, $offer);
 
                         $offer->setStatus('sent');
                         if ($quoteTrackerService->isTransitionAllowed($quote->getStatus(), 'waiting_customer')) {
@@ -632,9 +618,10 @@ class QuoteController extends AbstractController
                         $this->addFlash(
                             'success',
                             sprintf(
-                                'Devis %s créé et email envoyé à %s (offre marquée comme envoyée).',
+                                'Devis %s créé et email envoyé à %s (copie à %s).',
                                 $quote->getQuoteNumber(),
-                                $quote->getEmail()
+                                $quote->getEmail(),
+                                QuoteOfferClientPdfMailService::CONTACT_COPY_EMAIL
                             )
                         );
                     } catch (\Exception $e) {
@@ -796,6 +783,8 @@ class QuoteController extends AbstractController
             }
         }
 
+        $quotesCompletedWithoutOfferPdf = $quoteRepository->findCompletedWithoutOfferPdf();
+
         return $this->render('quote/dashboard.html.twig', [
             'pendingQuotes' => $pendingQuotes,
             'inProgressQuotes' => $inProgressQuotes,
@@ -807,6 +796,7 @@ class QuoteController extends AbstractController
             'firstQuoteQuoteIds' => $firstQuoteQuoteIds,
             'search' => $search,
             'activeTab' => $activeTab,
+            'quotesCompletedWithoutOfferPdf' => $quotesCompletedWithoutOfferPdf,
         ]);
     }
 
@@ -814,8 +804,7 @@ class QuoteController extends AbstractController
     public function resendOfferEmail(
         Request $request,
         Quote $quote,
-        MailerInterface $mailer,
-        PdfGenerator $pdfGenerator,
+        QuoteOfferClientPdfMailService $offerMailService,
         EntityManagerInterface $entityManager,
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -840,47 +829,24 @@ class QuoteController extends AbstractController
             return $this->redirectToRoute('app_quote_dashboard');
         }
 
-        $projectDir = (string) $this->getParameter('kernel.project_dir');
-        $resend = $this->findOfferAndPdfForResend($quote, $projectDir);
-        if ($resend === null) {
-            $offerToGenerate = $this->findOfferToGeneratePdf($quote, $projectDir);
-            if ($offerToGenerate === null) {
-                $this->addFlash('error', 'Aucune offre n\'est associée à ce devis.');
+        $offer = $this->findLatestOffer($quote);
+        if ($offer === null) {
+            $this->addFlash('error', 'Aucune offre n\'est associée à ce devis.');
 
-                return $this->redirectToRoute('app_quote_dashboard');
-            }
-            try {
-                $relativePdfPath = $pdfGenerator->generateQuoteOfferPdf($offerToGenerate);
-                $offerToGenerate->setPdfFilePath($relativePdfPath);
-                $entityManager->flush();
-                $pdfAbsolutePath = $projectDir.'/public'.$relativePdfPath;
-                if (!is_file($pdfAbsolutePath) || !is_readable($pdfAbsolutePath)) {
-                    throw new \RuntimeException('Le fichier PDF généré est introuvable.');
-                }
-                $resend = ['offer' => $offerToGenerate, 'pdfPath' => $pdfAbsolutePath];
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Impossible de générer le PDF : '.$e->getMessage());
-
-                return $this->redirectToRoute('app_quote_dashboard');
-            }
+            return $this->redirectToRoute('app_quote_dashboard');
         }
 
-        $offer = $resend['offer'];
-        $pdfAbsolutePath = $resend['pdfPath'];
-
         try {
-            $email = (new Email())
-                ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG'))
-                ->to((string) $quote->getEmail())
-                ->subject('Votre devis #'.$quote->getQuoteNumber())
-                ->html($this->renderView('emails/quote_offer.html.twig', [
-                    'quote' => $quote,
-                    'offer' => $offer,
-                ]))
-                ->attachFromPath($pdfAbsolutePath, 'devis.pdf', 'application/pdf');
-
-            $mailer->send($email);
-            $this->addFlash('success', 'L\'offre a été renvoyée par email au client.');
+            $offerMailService->sendOfferPdfToClient($quote, $offer);
+            $entityManager->flush();
+            $this->addFlash(
+                'success',
+                sprintf(
+                    'L\'offre a été renvoyée à %s (copie à %s).',
+                    $quote->getEmail(),
+                    QuoteOfferClientPdfMailService::CONTACT_COPY_EMAIL
+                )
+            );
         } catch (\Exception $e) {
             $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi de l\'email : '.$e->getMessage());
         }
@@ -888,65 +854,13 @@ class QuoteController extends AbstractController
         return $this->redirectToRoute('app_quote_dashboard');
     }
 
-    /**
-     * @return array{offer: QuoteOffer, pdfPath: string}|null
-     */
-    private function findOfferAndPdfForResend(Quote $quote, string $projectDir): ?array
-    {
-        $offers = $quote->getOffers()->toArray();
-        usort($offers, fn (QuoteOffer $a, QuoteOffer $b) => $b->getId() <=> $a->getId());
-
-        foreach ($offers as $offer) {
-            $relative = $offer->getPdfFilePath();
-            if ($relative === null || $relative === '') {
-                continue;
-            }
-            $pdfPath = $projectDir.'/public'.$relative;
-            if (is_file($pdfPath) && is_readable($pdfPath)) {
-                return ['offer' => $offer, 'pdfPath' => $pdfPath];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Offre pour laquelle générer un PDF : d'abord une offre dont le chemin en base ne pointe plus vers un fichier,
-     * sinon la plus récente « pertinente » (statut envoyée / acceptée / etc.) ou la toute dernière offre.
-     */
-    private function findOfferToGeneratePdf(Quote $quote, string $projectDir): ?QuoteOffer
+    private function findLatestOffer(Quote $quote): ?QuoteOffer
     {
         $offers = $quote->getOffers()->toArray();
         if ($offers === []) {
             return null;
         }
         usort($offers, fn (QuoteOffer $a, QuoteOffer $b) => $b->getId() <=> $a->getId());
-        foreach ($offers as $offer) {
-            $relative = $offer->getPdfFilePath();
-            if ($relative !== null && $relative !== '') {
-                $full = $projectDir.'/public'.$relative;
-                if (!is_file($full) || !is_readable($full)) {
-                    return $offer;
-                }
-            }
-        }
-
-        return $this->pickOfferForResendPdf($quote);
-    }
-
-    private function pickOfferForResendPdf(Quote $quote): ?QuoteOffer
-    {
-        $offers = $quote->getOffers()->toArray();
-        if ($offers === []) {
-            return null;
-        }
-        usort($offers, fn (QuoteOffer $a, QuoteOffer $b) => $b->getId() <=> $a->getId());
-        $preferredStatuses = ['sent', 'accepted', 'declined', 'pending'];
-        foreach ($offers as $offer) {
-            if (in_array($offer->getStatus(), $preferredStatuses, true)) {
-                return $offer;
-            }
-        }
 
         return $offers[0];
     }
@@ -1069,14 +983,71 @@ class QuoteController extends AbstractController
         
         // Sauvegarder les changements potentiels de statut de paiement
         $entityManager->flush();
+
+        $hasOfferPdf = false;
+        foreach ($offers as $offer) {
+            if ($offer->getPdfFilePath()) {
+                $hasOfferPdf = true;
+                break;
+            }
+        }
+        $treatedStatuses = ['completed', 'accepted', 'converted', 'shipped', 'delivered'];
+        $canReopenForOffer = $this->isGranted('ROLE_ADMIN')
+            && in_array($quote->getStatus(), $treatedStatuses, true)
+            && !$hasOfferPdf;
         
         return $this->render('quote/view.html.twig', [
             'quote' => $quote,
             'feeDetails' => $feeDetails,
             'offers' => $offers,
             'statusHistory' => $statusHistory,
-            'quoteTrackerService' => $quoteTrackerService
+            'quoteTrackerService' => $quoteTrackerService,
+            'canReopenForOffer' => $canReopenForOffer,
         ]);
+    }
+
+    /**
+     * Remet un devis traité sans PDF en cours, puis ouvre la création d'offre.
+     */
+    #[Route('/quote/{id}/reopen-for-offer', name: 'app_quote_reopen_for_offer', methods: ['POST'])]
+    public function reopenForOffer(Request $request, Quote $quote, QuoteTrackerService $quoteTrackerService): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (!$this->isCsrfTokenValid('reopen_for_offer' . $quote->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $treatedStatuses = ['completed', 'accepted', 'converted', 'shipped', 'delivered'];
+        if (!in_array($quote->getStatus(), $treatedStatuses, true)) {
+            $this->addFlash('error', 'Seuls les devis traités peuvent être remis en cours pour générer une offre.');
+            return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+        }
+
+        foreach ($quote->getOffers() as $offer) {
+            if ($offer->getPdfFilePath()) {
+                $this->addFlash('info', 'Ce devis a déjà une offre PDF. Vous pouvez la consulter depuis le suivi ou l’édition de l’offre.');
+                return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+            }
+        }
+
+        try {
+            if ($quote->getStatus() !== 'in_progress') {
+                $quoteTrackerService->changeStatus(
+                    $quote,
+                    'in_progress',
+                    'Remis en cours pour générer l\'offre PDF manquante',
+                    $this->getUser()?->getEmail() ?? 'admin'
+                );
+            }
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', 'Impossible de remettre le devis en cours : ' . $e->getMessage());
+            return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
+        }
+
+        $this->addFlash('success', 'Le devis a été remis en cours. Vous pouvez maintenant créer l\'offre.');
+
+        return $this->redirectToRoute('app_quote_offer_create', ['id' => $quote->getId()]);
     }
 
     #[Route('/quote/{id}/process', name: 'app_quote_process')]

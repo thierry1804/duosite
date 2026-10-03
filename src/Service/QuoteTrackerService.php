@@ -36,11 +36,12 @@ class QuoteTrackerService
         'waiting_customer' => ['accepted', 'declined', 'in_progress', 'canceled'],
         'accepted' => ['converted', 'in_progress', 'canceled'],
         'declined' => ['in_progress', 'canceled'],
-        'completed' => ['converted', 'shipped', 'canceled'],
+        // in_progress autorisé pour corriger un devis terminé sans offre PDF
+        'completed' => ['converted', 'shipped', 'canceled', 'in_progress'],
         'rejected' => ['in_progress', 'canceled'],
-        'converted' => ['shipped', 'delivered', 'canceled'],
-        'shipped' => ['delivered', 'canceled'],
-        'delivered' => [],
+        'converted' => ['shipped', 'delivered', 'canceled', 'in_progress'],
+        'shipped' => ['delivered', 'canceled', 'in_progress'],
+        'delivered' => ['in_progress'],
         'canceled' => ['pending', 'in_progress']
     ];
 

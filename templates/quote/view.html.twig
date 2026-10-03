@@ -53,6 +53,15 @@
                             <i data-lucide="package-check" class="me-2"></i> Marquer comme livré
                         </a>
                     {% endif %}
+
+                    {% if canReopenForOffer|default(false) %}
+                        <form method="post" action="{{ path('app_quote_reopen_for_offer', {'id': quote.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('reopen_for_offer' ~ quote.id) }}">
+                            <button type="submit" class="btn btn-primary" onclick="return confirm('Remettre ce devis en cours pour créer l\'offre PDF manquante ?');">
+                                <i data-lucide="file-plus" class="me-2"></i> Remettre en cours et créer l'offre
+                            </button>
+                        </form>
+                    {% endif %}
                     
                     <!-- Bouton de changement de statut général -->
                     <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#statusModal">
@@ -78,6 +87,22 @@
                 </div>
             </div>
             
+            {% if canReopenForOffer|default(false) %}
+                <div class="alert alert-warning d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-4">
+                    <div>
+                        <strong>Offre PDF manquante</strong>
+                        <div class="small mb-0">Ce devis est marqué comme traité mais aucune offre PDF n’a été générée.</div>
+                    </div>
+                    <form method="post" action="{{ path('app_quote_reopen_for_offer', {'id': quote.id}) }}" class="m-0">
+                        <input type="hidden" name="_token" value="{{ csrf_token('reopen_for_offer' ~ quote.id) }}">
+                        <button type="submit" class="btn btn-sm btn-dark text-nowrap" onclick="return confirm('Remettre ce devis en cours pour créer l\'offre PDF manquante ?');">
+                            <i data-lucide="file-plus" class="me-1" style="width:14px;height:14px;"></i>
+                            Créer l'offre
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+
             <div class="row">
                 <div class="col-md-8">
                     <div class="admin-card mb-4">

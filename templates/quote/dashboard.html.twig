@@ -40,6 +40,34 @@
         </div>
         <div class="admin-card-body">
             {% set activeTab = activeTab|default('pending') %}
+            {% set quotesCompletedWithoutOfferPdf = quotesCompletedWithoutOfferPdf|default([]) %}
+            {% if quotesCompletedWithoutOfferPdf is not empty %}
+                <div class="alert alert-warning d-flex flex-column gap-2 mb-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <i data-lucide="alert-triangle" style="width:18px;height:18px;"></i>
+                        <strong>
+                            {{ quotesCompletedWithoutOfferPdf|length }} devis terminé{{ quotesCompletedWithoutOfferPdf|length > 1 ? 's' : '' }}
+                            sans offre PDF
+                        </strong>
+                    </div>
+                    <p class="mb-0 small">
+                        Ces devis sont marqués comme traités/complétés mais n’ont aucune offre PDF générée.
+                    </p>
+                    <ul class="mb-0 small">
+                        {% for quote in quotesCompletedWithoutOfferPdf|slice(0, 10) %}
+                            <li>
+                                <a href="{{ path('app_quote_view', {id: quote.id}) }}" class="alert-link">
+                                    #{{ quote.id }} — {{ quote.quoteNumber }}
+                                </a>
+                                <span class="text-muted">({{ quote.email }})</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% if quotesCompletedWithoutOfferPdf|length > 10 %}
+                        <div class="small text-muted">… et {{ quotesCompletedWithoutOfferPdf|length - 10 }} autre(s)</div>
+                    {% endif %}
+                </div>
+            {% endif %}
             {% if search|default('') and pendingQuotes is empty and inProgressQuotes is empty and waitingCustomerQuotes is empty and completedQuotes is empty and rejectedQuotes is empty %}
                 <div class="alert alert-warning">
                     <i data-lucide="search-x"></i> Aucun devis ne correspond à « {{ search }} ».
@@ -64,6 +92,9 @@
                 <li class="nav-item" role="presentation">
                     <button class="nav-link{% if activeTab == 'completed' %} active{% endif %}" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="{{ activeTab == 'completed' ? 'true' : 'false' }}">
                         <i data-lucide="check-circle"></i> Complétés <span class="badge bg-success ms-1">{{ completedQuotes|length }}</span>
+                        {% if quotesCompletedWithoutOfferPdf is not empty %}
+                            <span class="badge bg-warning text-dark ms-1" title="Sans offre PDF">{{ quotesCompletedWithoutOfferPdf|length }} sans PDF</span>
+                        {% endif %}
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">

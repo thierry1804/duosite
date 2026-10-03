@@ -186,6 +186,30 @@ class QuoteRepository extends ServiceEntityRepository
     }
 
     /**
+     * Devis marqués comme traités/complétés sans aucune offre PDF générée.
+     *
+     * @return Quote[]
+     */
+    public function findCompletedWithoutOfferPdf(): array
+    {
+        return $this->createQueryBuilder('q')
+            ->where('q.status IN (:statuses)')
+            ->andWhere(
+                'NOT EXISTS (
+                    SELECT 1 FROM App\Entity\QuoteOffer o2
+                    WHERE o2.quote = q
+                    AND o2.pdfFilePath IS NOT NULL
+                    AND o2.pdfFilePath != :empty
+                )'
+            )
+            ->setParameter('statuses', ['completed', 'accepted', 'converted', 'shipped', 'delivered'])
+            ->setParameter('empty', '')
+            ->orderBy('q.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Compte les devis par user_id pour une liste d'ids (une seule requête).
      *
      * @param int[] $userIds

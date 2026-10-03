@@ -20,9 +20,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Shipping\ShippingOptionChoices;
 use App\Service\ExchangeRateService;
 use App\Service\PdfGenerator;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
-use Symfony\Component\Mime\Address;
+use App\Service\QuoteOfferClientPdfMailService;
 
 #[Route('/admin/quote-offer')]
 class QuoteOfferController extends AbstractController
@@ -277,7 +275,7 @@ class QuoteOfferController extends AbstractController
         Request $request,
         QuoteOffer $offer,
         EntityManagerInterface $entityManager,
-        PdfGenerator $pdfGenerator,
+        QuoteOfferClientPdfMailService $offerMailService,
         \App\Service\QuoteTrackerService $quoteTrackerService
     ): Response
     {
@@ -295,15 +293,12 @@ class QuoteOfferController extends AbstractController
         
         // Vérifier le token CSRF
         if ($this->isCsrfTokenValid('send'.$offer->getId(), $request->request->get('_token'))) {
-            // Mettre à jour le statut de l'offre
-            $offer->setStatus('sent');
-            
-            // Générer le PDF et l'attacher à l'offre
             try {
-                $pdfPath = $pdfGenerator->generateQuoteOfferPdf($offer);
-                $offer->setPdfFilePath($pdfPath);
+                $offerMailService->sendOfferPdfToClient($quote, $offer);
 
-                // Changer le statut du devis vers waiting_customer uniquement si la transition est autorisée (ex. in_progress → waiting_customer)
+                $offer->setStatus('sent');
+
+                // Changer le statut du devis vers waiting_customer uniquement si la transition est autorisée
                 if ($quoteTrackerService->isTransitionAllowed($quote->getStatus(), 'waiting_customer')) {
                     $quoteTrackerService->changeStatus(
                         $quote,
@@ -314,10 +309,16 @@ class QuoteOfferController extends AbstractController
                 }
                 $entityManager->flush();
                 
-                $this->addFlash('success', 'L\'offre a été envoyée au client avec succès et le PDF a été généré.');
+                $this->addFlash(
+                    'success',
+                    sprintf(
+                        'L\'offre a été envoyée à %s (copie à %s).',
+                        $quote->getEmail(),
+                        QuoteOfferClientPdfMailService::CONTACT_COPY_EMAIL
+                    )
+                );
             } catch (\Exception $e) {
-                // En cas d'erreur avec la génération du PDF
-                $this->addFlash('error', 'Erreur lors de la génération du PDF: ' . $e->getMessage());
+                $this->addFlash('error', 'Erreur lors de l\'envoi de l\'offre : ' . $e->getMessage());
                 return $this->redirectToRoute('app_quote_view', ['id' => $quote->getId()]);
             }
         }
@@ -393,7 +394,7 @@ class QuoteOfferController extends AbstractController
         Request $request,
         QuoteOffer $offer,
         EntityManagerInterface $entityManager,
-        MailerInterface $mailer,
+        QuoteOfferClientPdfMailService $offerMailService,
         \App\Service\QuoteTrackerService $quoteTrackerService
     ): Response
     {
@@ -412,29 +413,7 @@ class QuoteOfferController extends AbstractController
         // Vérifier le token CSRF
         if ($this->isCsrfTokenValid('send_pdf'.$offer->getId(), $request->request->get('_token'))) {
             try {
-                // Créer l'email
-                $email = (new Email())
-                    ->from(new Address('commercial@duoimport.mg', 'Duo Import MDG'))
-                    ->to($quote->getEmail())
-                    ->subject('Votre devis #' . $quote->getQuoteNumber())
-                    ->html($this->renderView(
-                        'emails/quote_offer.html.twig',
-                        [
-                            'quote' => $quote,
-                            'offer' => $offer
-                        ]
-                    ));
-
-                // Ajouter le PDF en pièce jointe
-                if ($offer->getPdfFilePath()) {
-                    $pdfPath = $this->getParameter('kernel.project_dir') . '/public' . $offer->getPdfFilePath();
-                    if (file_exists($pdfPath)) {
-                        $email->attachFromPath($pdfPath, 'devis.pdf', 'application/pdf');
-                    }
-                }
-
-                // Envoyer l'email
-                $mailer->send($email);
+                $offerMailService->sendOfferPdfToClient($quote, $offer);
 
                 // Mettre à jour le statut de l'offre
                 $offer->setStatus('sent');
@@ -450,7 +429,14 @@ class QuoteOfferController extends AbstractController
                 }
                 $entityManager->flush();
 
-                $this->addFlash('success', 'Le devis a été envoyé par email avec succès.');
+                $this->addFlash(
+                    'success',
+                    sprintf(
+                        'Le devis a été envoyé à %s (copie à %s).',
+                        $quote->getEmail(),
+                        QuoteOfferClientPdfMailService::CONTACT_COPY_EMAIL
+                    )
+                );
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Une erreur est survenue lors de l\'envoi de l\'email : ' . $e->getMessage());
             }
