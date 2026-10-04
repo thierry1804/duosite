@@ -91,6 +91,68 @@
         return passwords;
     }
 
+    function scorePassword(value) {
+        if (!value) {
+            return { score: 0, percent: 0, label: '', level: 'empty' };
+        }
+
+        var score = 0;
+        if (value.length >= 8) score += 1;
+        if (value.length >= 12) score += 1;
+        if (value.length >= 16) score += 1;
+        if (/[a-z]/.test(value)) score += 1;
+        if (/[A-Z]/.test(value)) score += 1;
+        if (/[0-9]/.test(value)) score += 1;
+        if (/[^A-Za-z0-9]/.test(value)) score += 1;
+
+        if (score <= 2) {
+            return { score: score, percent: 25, label: 'Faible', level: 'weak' };
+        }
+        if (score <= 4) {
+            return { score: score, percent: 50, label: 'Moyen', level: 'fair' };
+        }
+        if (score <= 6) {
+            return { score: score, percent: 75, label: 'Fort', level: 'good' };
+        }
+        return { score: score, percent: 100, label: 'Très fort', level: 'strong' };
+    }
+
+    function insertAfter(reference, node) {
+        if (!reference || !reference.parentNode) {
+            return;
+        }
+        reference.parentNode.insertBefore(node, reference.nextSibling);
+    }
+
+    function createStrengthMeter() {
+        var meter = document.createElement('div');
+        meter.className = 'password-strength d-none';
+        meter.setAttribute('aria-live', 'polite');
+        meter.innerHTML =
+            '<div class="password-strength-track">' +
+            '<div class="password-strength-bar"></div>' +
+            '</div>' +
+            '<div class="password-strength-label"></div>';
+        return meter;
+    }
+
+    function updateStrengthMeter(meter, value) {
+        var result = scorePassword(value);
+        var bar = meter.querySelector('.password-strength-bar');
+        var label = meter.querySelector('.password-strength-label');
+
+        if (!value) {
+            meter.classList.add('d-none');
+            meter.classList.remove('is-weak', 'is-fair', 'is-good', 'is-strong');
+            return;
+        }
+
+        meter.classList.remove('d-none', 'is-weak', 'is-fair', 'is-good', 'is-strong');
+        meter.classList.add('is-' + result.level);
+        bar.style.width = result.percent + '%';
+        label.textContent = 'Force : ' + result.label;
+    }
+
     function addGenerateControl(root, targets) {
         if (!targets.length || root.querySelector('[data-password-generate]')) {
             return;
@@ -113,25 +175,35 @@
         hint.className = 'form-text password-generate-hint d-none';
         hint.setAttribute('role', 'status');
 
+        var meter = createStrengthMeter();
+
         if (label && !label.closest('.form-floating')) {
             var labelRow = document.createElement('div');
             labelRow.className = 'password-field-label-row d-flex justify-content-between align-items-center gap-2';
             label.parentNode.insertBefore(labelRow, label);
             labelRow.appendChild(label);
             labelRow.appendChild(button);
-            if (fieldParent && fieldParent.parentNode) {
-                fieldParent.parentNode.insertBefore(hint, fieldParent.nextSibling);
+            if (fieldParent) {
+                insertAfter(fieldParent, meter);
+                insertAfter(meter, hint);
             }
         } else if (fieldBlock && fieldBlock.classList.contains('form-floating')) {
             var floatingHeader = document.createElement('div');
             floatingHeader.className = 'password-field-label-row d-flex justify-content-end mb-1';
             floatingHeader.appendChild(button);
             fieldBlock.parentNode.insertBefore(floatingHeader, fieldBlock);
-            fieldBlock.parentNode.insertBefore(hint, fieldBlock.nextSibling);
+            insertAfter(fieldBlock, meter);
+            insertAfter(meter, hint);
         } else if (fieldParent && fieldParent.parentNode) {
             fieldParent.parentNode.insertBefore(button, fieldParent);
-            fieldParent.parentNode.insertBefore(hint, fieldParent.nextSibling);
+            insertAfter(fieldParent, meter);
+            insertAfter(meter, hint);
         }
+
+        first.addEventListener('input', function () {
+            updateStrengthMeter(meter, first.value);
+        });
+        updateStrengthMeter(meter, first.value);
 
         button.addEventListener('click', function () {
             var password = generateStrongPassword(16);
@@ -146,6 +218,7 @@
                     input.type = 'text';
                 }
             });
+            updateStrengthMeter(meter, password);
             hint.textContent = 'Mot de passe généré et affiché. Copiez-le avant de continuer.';
             hint.classList.remove('d-none');
         });
