@@ -1,0 +1,180 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set day_labels = {
+    1: 'Lundi',
+    2: 'Mardi',
+    3: 'Mercredi',
+    4: 'Jeudi',
+    5: 'Vendredi',
+    6: 'Samedi',
+    7: 'Dimanche'
+} %}
+
+{% block title %}Coordonnées du site - Administration{% endblock %}
+
+{% block breadcrumb %}
+    <li><span class="dropdown-item disabled" aria-current="page">Coordonnées du site</span></li>
+{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Coordonnées du site</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {{ form_start(form) }}
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h5 class="mb-0">Identité</h5>
+            </div>
+            <div class="admin-card-body">
+                <div class="mb-3">
+                    {{ form_label(form.addressLines) }}
+                    {{ form_widget(form.addressLines) }}
+                    {{ form_errors(form.addressLines) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.email) }}
+                    {{ form_widget(form.email) }}
+                    {{ form_errors(form.email) }}
+                </div>
+                <div class="mb-3">
+                    {{ form_label(form.whatsappDefaultMessage) }}
+                    {{ form_widget(form.whatsappDefaultMessage) }}
+                    {{ form_errors(form.whatsappDefaultMessage) }}
+                </div>
+                <div class="mb-0">
+                    {{ form_label(form.mapEmbedUrl) }}
+                    {{ form_widget(form.mapEmbedUrl) }}
+                    <div class="form-text">URL de l’attribut src de l’iframe Google Maps (page contact).</div>
+                    {{ form_errors(form.mapEmbedUrl) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-card mb-4">
+            <div class="admin-card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Téléphones</h5>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-collection-add="phones">Ajouter</button>
+            </div>
+            <div class="admin-card-body">
+                {{ form_errors(form.phones) }}
+                <div id="phones-collection"
+                     data-prototype="{{ form_widget(form.phones.vars.prototype)|e('html_attr') }}"
+                     data-index="{{ form.phones|length }}">
+                    {% for phoneForm in form.phones %}
+                        <div class="border rounded p-3 mb-3 collection-item">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-3">{{ form_row(phoneForm.label) }}</div>
+                                <div class="col-md-4">{{ form_row(phoneForm.number) }}</div>
+                                <div class="col-md-2">{{ form_row(phoneForm.isWhatsapp) }}</div>
+                                <div class="col-md-2">{{ form_row(phoneForm.isPrimary) }}</div>
+                                <div class="col-md-1 text-end">
+                                    {{ form_widget(phoneForm.position) }}
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-collection-remove>&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-card mb-4">
+            <div class="admin-card-header">
+                <h5 class="mb-0">Horaires</h5>
+            </div>
+            <div class="admin-card-body">
+                {% for hourForm in form.openingHours %}
+                    {% set day = hourForm.dayOfWeek.vars.value %}
+                    <div class="row g-3 align-items-end border-bottom py-3">
+                        <div class="col-md-2 fw-semibold">{{ day_labels[day]|default('Jour '~day) }}</div>
+                        <div class="col-md-2">{{ form_row(hourForm.isClosed) }}</div>
+                        <div class="col-md-3">{{ form_row(hourForm.openTime) }}</div>
+                        <div class="col-md-3">{{ form_row(hourForm.closeTime) }}</div>
+                        <div class="d-none">{{ form_widget(hourForm.dayOfWeek) }}</div>
+                        <div class="col-md-2">{{ form_errors(hourForm) }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="admin-card mb-4">
+            <div class="admin-card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Réseaux sociaux</h5>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-collection-add="social">Ajouter</button>
+            </div>
+            <div class="admin-card-body">
+                <div id="social-collection"
+                     data-prototype="{{ form_widget(form.socialLinks.vars.prototype)|e('html_attr') }}"
+                     data-index="{{ form.socialLinks|length }}">
+                    {% for linkForm in form.socialLinks %}
+                        <div class="border rounded p-3 mb-3 collection-item">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-3">{{ form_row(linkForm.network) }}</div>
+                                <div class="col-md-7">{{ form_row(linkForm.url) }}</div>
+                                <div class="col-md-2 text-end">
+                                    {{ form_widget(linkForm.position) }}
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-collection-remove>&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function () {
+    function addItem(collectionId, namePrefix) {
+        var collection = document.getElementById(collectionId);
+        if (!collection) return;
+        var index = parseInt(collection.dataset.index || '0', 10);
+        var prototype = collection.dataset.prototype || '';
+        var html = prototype.replace(new RegExp(namePrefix + '__name__', 'g'), namePrefix + index)
+                            .replace(/__name__/g, String(index));
+        var wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        var item = document.createElement('div');
+        item.className = 'border rounded p-3 mb-3 collection-item';
+        while (wrapper.firstChild) {
+            item.appendChild(wrapper.firstChild);
+        }
+        var removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-sm btn-outline-danger mt-2';
+        removeBtn.setAttribute('data-collection-remove', '');
+        removeBtn.textContent = 'Supprimer';
+        item.appendChild(removeBtn);
+        collection.appendChild(item);
+        collection.dataset.index = String(index + 1);
+    }
+
+    document.querySelectorAll('[data-collection-add]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (btn.getAttribute('data-collection-add') === 'phones') {
+                addItem('phones-collection', 'phones');
+            } else {
+                addItem('social-collection', 'socialLinks');
+            }
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        var target = e.target;
+        if (target && target.matches('[data-collection-remove]')) {
+            var item = target.closest('.collection-item');
+            if (item) item.remove();
+        }
+    });
+})();
+</script>
+{% endblock %}

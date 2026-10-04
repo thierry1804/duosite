@@ -47,6 +47,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ path('app_admin_site_contact') }}" class="{{ app.request.get('_route') == 'app_admin_site_contact' ? 'active' : '' }}">
+                        <i data-lucide="contact"></i> <span>Coordonnées du site</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ path('app_admin_legal_pages') }}" class="{{ app.request.get('_route') == 'app_admin_legal_pages' ? 'active' : '' }}">
                         <i data-lucide="scale"></i> <span>Pages légales</span>
                     </a>
