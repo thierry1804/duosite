@@ -62,9 +62,9 @@
             <div class="card-body">
                 <strong>Paiement du devis : Mobile Money uniquement</strong>
                 <div class="d-flex flex-wrap gap-2 my-2">
-                    <span class="tarif-pill">Thierry · +261 38 42 711 68</span>
-                    <span class="tarif-pill">Thierry · +261 33 64 554 78</span>
-                    <span class="tarif-pill">Thierry · +261 32 22 136 82</span>
+                    {% for phone in site_contact.phones %}
+                        <span class="tarif-pill">{% if phone.label %}{{ phone.label }} · {% endif %}{{ phone.number }}</span>
+                    {% endfor %}
                 </div>
                 <div class="text-muted small">Motif à indiquer : <strong>Devis</strong>. Frais de retrait à la charge du client. Le devis payé n'est pas remboursable.</div>
             </div>

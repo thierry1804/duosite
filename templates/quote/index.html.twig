@@ -786,7 +786,12 @@
 
                     <div id="tour-quote-submit" class="d-flex flex-column gap-2">
                         <button type="submit" class="quote-cart-submit-btn" id="submitButton">{{ extraCount > 0 ? ('Envoyer ma demande · ' ~ totalAr|number_format(0, ',', ' ') ~ ' Ar') : 'Envoyer ma demande · gratuit' }}</button>
-                        <p class="quote-cart-footer-note">Réponse sous 24 à 72 h · <a href="https://wa.me/261384271168?text=Bonjour%20Duo%20Import%20MDG,%20" target="_blank" rel="noopener noreferrer">Une question ? WhatsApp</a></p>
+                        <p class="quote-cart-footer-note">
+                            Réponse sous 24 à 72 h
+                            {% if site_contact.whatsappUrl %}
+                                · <a href="{{ site_contact.whatsappUrl }}" target="_blank" rel="noopener noreferrer">Une question ? WhatsApp</a>
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
             </aside>

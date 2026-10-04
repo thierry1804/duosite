@@ -31,6 +31,7 @@ use Symfony\Component\Mime\Address;
 use App\Service\PdfGenerator;
 use App\Service\QuoteFeeCalculator;
 use App\Service\QuoteOfferClientPdfMailService;
+use App\Service\SiteContactProvider;
 use App\Service\UserIdentityTracker;
 use App\Service\QuoteTrackerService;
 use App\Event\QuoteCreatedEvent;
@@ -58,8 +59,7 @@ class QuoteController extends AbstractController
         UserIdentityTracker $identityTracker,
         QuoteTrackerService $quoteTrackerService,
         EventDispatcherInterface $eventDispatcher,
-        #[Autowire('%app.primary_contact_phone%')]
-        string $primaryContactPhone
+        SiteContactProvider $siteContactProvider
     ): Response
     {
         $quote = new Quote();
@@ -322,7 +322,7 @@ class QuoteController extends AbstractController
             'form' => $form->createView(),
             'freeItemsLimit' => $freeItemsLimit,
             'itemPrice' => $itemPrice,
-            'primaryContactPhone' => $primaryContactPhone,
+            'primaryContactPhone' => $siteContactProvider->getPrimaryPhone()?->getNumber() ?? '',
         ]);
     }
     

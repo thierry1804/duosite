@@ -415,14 +415,12 @@
                             <h5>À propos de nous</h5>
                             <p>Duo Import MDG est votre partenaire de confiance pour l'importation de produits depuis la Chine. Nous vous accompagnons dans toutes les étapes de votre projet d'importation.</p>
                             <div class="social-icons mt-4">
-                                <a href="https://www.facebook.com/duoimportmdg" target="_blank" aria-label="Suivez-nous sur Facebook">
-                                    <i class="fab fa-facebook-f" aria-hidden="true"></i>
-                                    <span class="visually-hidden">Facebook</span>
-                                </a>
-                                <a href="#" target="_blank" aria-label="Suivez-nous sur TikTok">
-                                    <i class="fab fa-tiktok" aria-hidden="true"></i>
-                                    <span class="visually-hidden">TikTok</span>
-                                </a>
+                                {% for link in site_contact.socialLinks %}
+                                    <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" aria-label="Suivez-nous sur {{ link.network }}">
+                                        <i class="fab fa-{{ site_contact.socialIconClass(link.network) }}" aria-hidden="true"></i>
+                                        <span class="visually-hidden">{{ link.network }}</span>
+                                    </a>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
@@ -453,28 +451,24 @@
                             <ul class="footer-contact list-unstyled">
                                 <li>
                                     <i data-lucide="map-pin" class="me-2"></i>
-                                    Antsakambahiny<br>Antananarivo - Madagascar
+                                    {{ site_contact.addressLinesList|join('<br>')|raw }}
                                 </li>
-                                <li>
-                                    <i data-lucide="phone" class="me-2"></i>
-                                    <a href="tel:+261384271168">+261 38 42 711 68</a>
-                                </li>
-                                <li>
-                                    <i data-lucide="phone" class="me-2"></i>
-                                    <a href="tel:+261336455478">+261 33 64 554 78</a>
-                                </li>
-                                <li>
-                                    <i data-lucide="phone" class="me-2"></i>
-                                    <a href="tel:+261322213682">+261 32 22 136 82</a>
-                                </li>
+                                {% for phone in site_contact.phones %}
+                                    <li>
+                                        <i data-lucide="phone" class="me-2"></i>
+                                        <a href="{{ site_contact.toTelHref(phone.number) }}">{{ phone.number }}</a>
+                                    </li>
+                                {% endfor %}
                                 <li>
                                     <i data-lucide="mail" class="me-2"></i>
-                                    <a href="mailto:contact@duoimport.mg">contact@duoimport.mg</a>
+                                    <a href="mailto:{{ site_contact.settings.email }}">{{ site_contact.settings.email }}</a>
                                 </li>
-                                <li>
-                                    <i data-lucide="clock" class="me-2"></i>
-                                    Lun - Ven: 8h00 - 17h00
-                                </li>
+                                {% if site_contact.formatFooterHours %}
+                                    <li>
+                                        <i data-lucide="clock" class="me-2"></i>
+                                        {{ site_contact.formatFooterHours }}
+                                    </li>
+                                {% endif %}
                             </ul>
                         </div>
                     </div>
@@ -501,11 +495,14 @@
         </a>
 
         <!-- WhatsApp Button -->
+        {% set waUrl = site_contact.whatsappUrl %}
+        {% if waUrl %}
         <div class="whatsapp-button">
-            <a href="https://wa.me/261384271168?text=Bonjour%20Duo%20Import%20MDG,%20" target="_blank" rel="noopener noreferrer">
+            <a href="{{ waUrl }}" target="_blank" rel="noopener noreferrer">
                 <i data-lucide="message-circle" aria-hidden="true"></i>
             </a>
         </div>
+        {% endif %}
 
         <!-- Chargement différé des ressources non critiques -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" media="print" onload="this.media='all'">
