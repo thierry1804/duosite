@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\SiteContactSettingsRepository;
+use App\Validator\Constraints\UniquePhoneFlags;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -10,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SiteContactSettingsRepository::class)]
 #[ORM\Table(name: 'site_contact_settings')]
+#[UniquePhoneFlags]
 class SiteContactSettings
 {
     public const DEFAULT_MAP_EMBED_URL = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15103.66132288122!2d47.4960002156964!3d-18.829813907803317!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x21f08167b8dda017%3A0x3494ab1afb7a0b7a!2sAntsakambahiny%2C%20Antananarivo!5e0!3m2!1sen!2smg!4v1768666799526!5m2!1sen!2smg';
