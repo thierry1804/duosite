@@ -66,7 +66,7 @@
     </div>
 
     <div class="row g-3 align-items-start">
-        <div class="col-12 col-md-7">
+        <div class="col-12 col-xl-7">
             <div class="admin-card">
                 <div class="admin-card-header">
                     <h5 class="mb-0">Téléphones</h5>
@@ -74,49 +74,42 @@
                 </div>
                 <div class="admin-card-body">
                     {{ form_errors(form.phones) }}
-                    <div class="table-responsive">
-                        <table class="site-contact-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:22%">Libellé</th>
-                                    <th style="width:34%">Numéro</th>
-                                    <th style="width:16%">WhatsApp</th>
-                                    <th style="width:16%">Principal</th>
-                                    <th style="width:12%"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="phones-collection"
-                                   data-prototype="{{ form_widget(form.phones.vars.prototype)|e('html_attr') }}"
-                                   data-index="{{ form.phones|length }}"
-                                   data-row-type="phone">
-                                {% for phoneForm in form.phones %}
-                                    <tr class="collection-item">
-                                        <td>
-                                            {{ form_widget(phoneForm.label) }}
-                                            {{ form_errors(phoneForm.label) }}
-                                        </td>
-                                        <td>
-                                            {{ form_widget(phoneForm.number) }}
-                                            {{ form_errors(phoneForm.number) }}
-                                        </td>
-                                        <td class="text-center">
-                                            {{ form_widget(phoneForm.isWhatsapp) }}
-                                        </td>
-                                        <td class="text-center">
-                                            {{ form_widget(phoneForm.isPrimary) }}
-                                        </td>
-                                        <td class="text-end">
-                                            {{ form_widget(phoneForm.position) }}
-                                            <button type="button" class="btn btn-sm btn-outline-danger" data-collection-remove aria-label="Supprimer">×</button>
-                                        </td>
-                                    </tr>
-                                {% else %}
-                                    <tr class="site-contact-empty-row">
-                                        <td colspan="5" class="site-contact-empty">Aucun numéro. Cliquez sur « Ajouter ».</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="phone-list-head d-none d-sm-grid">
+                        <span>Libellé</span>
+                        <span>Numéro</span>
+                        <span class="text-center" title="WhatsApp">WA</span>
+                        <span class="text-center" title="Principal / Mobile Money">Princ.</span>
+                        <span></span>
+                    </div>
+                    <div id="phones-collection"
+                         class="phone-list"
+                         data-prototype="{{ form_widget(form.phones.vars.prototype)|e('html_attr') }}"
+                         data-index="{{ form.phones|length }}"
+                         data-row-type="phone">
+                        {% for phoneForm in form.phones %}
+                            <div class="phone-row collection-item">
+                                <div class="phone-row__label">
+                                    {{ form_widget(phoneForm.label) }}
+                                    {{ form_errors(phoneForm.label) }}
+                                </div>
+                                <div class="phone-row__number">
+                                    {{ form_widget(phoneForm.number) }}
+                                    {{ form_errors(phoneForm.number) }}
+                                </div>
+                                <div class="phone-row__flag">
+                                    {{ form_widget(phoneForm.isWhatsapp) }}
+                                </div>
+                                <div class="phone-row__flag">
+                                    {{ form_widget(phoneForm.isPrimary) }}
+                                </div>
+                                <div class="phone-row__actions">
+                                    {{ form_widget(phoneForm.position) }}
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-collection-remove aria-label="Supprimer">×</button>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="site-contact-empty-row site-contact-empty">Aucun numéro. Cliquez sur « Ajouter ».</div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -167,7 +160,7 @@
             </div>
         </div>
 
-        <div class="col-12 col-md-5">
+        <div class="col-12 col-xl-5">
             <div class="admin-card">
                 <div class="admin-card-header">
                     <h5 class="mb-0">Horaires</h5>
@@ -242,20 +235,31 @@
             primary: tmp.querySelector('[name*="[isPrimary]"]'),
             position: tmp.querySelector('[name*="[position]"]')
         };
-        var tr = document.createElement('tr');
-        tr.className = 'collection-item';
-        tr.innerHTML =
-            '<td></td><td></td><td></td><td></td><td class="text-end"></td>';
-        if (inputs.label) tr.cells[0].appendChild(inputs.label);
-        if (inputs.number) tr.cells[1].appendChild(inputs.number);
-        tr.cells[2].className = 'text-center';
-        tr.cells[3].className = 'text-center';
-        if (inputs.wa) tr.cells[2].appendChild(inputs.wa);
-        if (inputs.primary) tr.cells[3].appendChild(inputs.primary);
-        if (inputs.position) tr.cells[4].appendChild(inputs.position);
-        tr.cells[4].insertAdjacentHTML('beforeend',
+        var row = document.createElement('div');
+        row.className = 'phone-row collection-item';
+        var label = document.createElement('div');
+        label.className = 'phone-row__label';
+        var number = document.createElement('div');
+        number.className = 'phone-row__number';
+        var wa = document.createElement('div');
+        wa.className = 'phone-row__flag';
+        var primary = document.createElement('div');
+        primary.className = 'phone-row__flag';
+        var actions = document.createElement('div');
+        actions.className = 'phone-row__actions';
+        if (inputs.label) label.appendChild(inputs.label);
+        if (inputs.number) number.appendChild(inputs.number);
+        if (inputs.wa) wa.appendChild(inputs.wa);
+        if (inputs.primary) primary.appendChild(inputs.primary);
+        if (inputs.position) actions.appendChild(inputs.position);
+        actions.insertAdjacentHTML('beforeend',
             '<button type="button" class="btn btn-sm btn-outline-danger" data-collection-remove aria-label="Supprimer">×</button>');
-        return tr;
+        row.appendChild(label);
+        row.appendChild(number);
+        row.appendChild(wa);
+        row.appendChild(primary);
+        row.appendChild(actions);
+        return row;
     }
 
     function wrapSocialRow(fieldsHtml) {

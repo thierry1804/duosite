@@ -556,22 +556,86 @@ body.admin-sidebar-open .admin-sidebar-backdrop {
     padding: 0.4rem 0.65rem;
 }
 
-.site-contact-grid {
+.phone-list-head,
+.phone-row {
     display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
-    gap: 16px;
-    align-items: start;
+    grid-template-columns: minmax(90px, 0.9fr) minmax(140px, 1.4fr) 44px 44px 36px;
+    gap: 8px;
+    align-items: center;
 }
 
-@media (max-width: 991px) {
-    .site-contact-grid {
-        grid-template-columns: 1fr;
+.phone-list-head {
+    margin-bottom: 6px;
+    padding: 0 2px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.phone-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.phone-row {
+    padding: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.phone-row__flag,
+.phone-row__actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.phone-row__flag .form-check,
+.phone-row__actions .form-check {
+    margin: 0;
+    min-height: 0;
+    padding-left: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.phone-row__flag .form-check-input,
+.phone-row__actions .form-check-input {
+    margin: 0;
+    float: none;
+    position: static;
+}
+
+.phone-row .form-control {
+    width: 100%;
+}
+
+@media (max-width: 575px) {
+    .phone-list-head {
+        display: none !important;
     }
+
+    .phone-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "label number"
+            "wa primary"
+            "actions actions";
+    }
+
+    .phone-row__label { grid-area: label; }
+    .phone-row__number { grid-area: number; }
+    .phone-row__flag:nth-child(3) { grid-area: wa; justify-content: flex-start; }
+    .phone-row__flag:nth-child(4) { grid-area: primary; justify-content: flex-start; }
+    .phone-row__actions { grid-area: actions; justify-content: flex-end; }
 }
 
 .site-contact-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .site-contact-table th {
