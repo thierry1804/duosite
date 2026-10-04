@@ -55,4 +55,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% include '_password_field_assets.html.twig' %}
 {% endblock %} 
