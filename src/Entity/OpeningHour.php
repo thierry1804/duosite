@@ -54,9 +54,9 @@ class OpeningHour
         return $this->dayOfWeek;
     }
 
-    public function setDayOfWeek(int $dayOfWeek): self
+    public function setDayOfWeek(int|string $dayOfWeek): self
     {
-        $this->dayOfWeek = $dayOfWeek;
+        $this->dayOfWeek = (int) $dayOfWeek;
 
         return $this;
     }

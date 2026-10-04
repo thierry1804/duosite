@@ -5,7 +5,7 @@ namespace App\Form;
 use App\Entity\OpeningHour;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TimeType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormError;
@@ -18,7 +18,10 @@ class OpeningHourType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('dayOfWeek', HiddenType::class)
+            ->add('dayOfWeek', IntegerType::class, [
+                'label' => false,
+                'attr' => ['class' => 'd-none'],
+            ])
             ->add('isClosed', CheckboxType::class, [
                 'label' => false,
                 'required' => false,
