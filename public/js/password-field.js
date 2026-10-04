@@ -188,12 +188,21 @@
                 insertAfter(meter, hint);
             }
         } else if (fieldBlock && fieldBlock.classList.contains('form-floating')) {
-            var floatingHeader = document.createElement('div');
-            floatingHeader.className = 'password-field-label-row d-flex justify-content-end mb-1';
-            floatingHeader.appendChild(button);
-            fieldBlock.parentNode.insertBefore(floatingHeader, fieldBlock);
-            insertAfter(fieldBlock, meter);
-            insertAfter(meter, hint);
+            // Keep columns aligned: controls inside the field, meter under the whole row.
+            fieldBlock.classList.add('has-password-generate');
+            first.classList.add('password-field-input--with-generate');
+            button.className = 'btn btn-link password-generate-btn password-generate-btn--icon';
+            button.innerHTML = '<i class="fas fa-key" aria-hidden="true"></i>';
+            fieldBlock.appendChild(button);
+
+            var row = fieldBlock.closest('.row');
+            if (row) {
+                insertAfter(row, meter);
+                insertAfter(meter, hint);
+            } else {
+                insertAfter(fieldBlock, meter);
+                insertAfter(meter, hint);
+            }
         } else if (fieldParent && fieldParent.parentNode) {
             fieldParent.parentNode.insertBefore(button, fieldParent);
             insertAfter(fieldParent, meter);
