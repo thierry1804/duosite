@@ -1,7 +1,7 @@
 # Design — Coordonnées du site paramétrables (backoffice)
 
 Date : 2026-10-04  
-Statut : validé (en attente d’implémentation)
+Statut : validé / implémenté
 
 ## Contexte
 
