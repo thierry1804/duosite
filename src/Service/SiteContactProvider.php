@@ -122,7 +122,7 @@ class SiteContactProvider
     public function formatFooterHours(): string
     {
         $parts = [];
-        foreach ($this->groupAllDays() as $g) {
+        foreach ($this->groupOpenDays() as $g) {
             $parts[] = sprintf('%s: %s', $g['label_short'], $g['hours']);
         }
 
@@ -133,13 +133,20 @@ class SiteContactProvider
     public function formatContactHoursLines(): array
     {
         $lines = [];
-        foreach ($this->groupAllDays() as $g) {
-            $lines[] = $g['is_closed']
-                ? sprintf('%s: Fermé', $g['label_long'])
-                : sprintf('%s: %s', $g['label_long'], $g['hours']);
+        foreach ($this->groupOpenDays() as $g) {
+            $lines[] = sprintf('%s: %s', $g['label_long'], $g['hours']);
         }
 
         return $lines;
+    }
+
+    /** @return list<array{label_short: string, label_long: string, hours: string, is_closed: bool}> */
+    private function groupOpenDays(): array
+    {
+        return array_values(array_filter(
+            $this->groupAllDays(),
+            static fn (array $g) => !$g['is_closed']
+        ));
     }
 
     public function socialIconClass(string $network): string
