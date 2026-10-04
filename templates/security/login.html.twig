@@ -11,6 +11,15 @@
                     <h2 class="mb-0 fs-4">Connexion</h2>
                 </div>
                 <div class="card-body p-4">
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">{{ message }}</div>
+                    {% endfor %}
+                    {% for message in app.flashes('info') %}
+                        <div class="alert alert-info">{{ message }}</div>
+                    {% endfor %}
+                    {% for message in app.flashes('danger') %}
+                        <div class="alert alert-danger">{{ message }}</div>
+                    {% endfor %}
                     {% if error %}
                         <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
                     {% endif %}
@@ -23,6 +32,9 @@
                         <div class="mb-3">
                             <label for="inputPassword" class="form-label">Mot de passe</label>
                             <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+                        </div>
+                        <div class="mb-3 text-end">
+                            <a href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a>
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="rememberMe" name="_remember_me">

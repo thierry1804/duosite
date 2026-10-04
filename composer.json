@@ -79,8 +79,10 @@
         }
     },
     "require-dev": {
+        "phpunit/phpunit": "^11.5",
         "symfony/debug-bundle": "7.2.*",
         "symfony/maker-bundle": "^1.62",
+        "symfony/phpunit-bridge": "^8.1",
         "symfony/web-profiler-bundle": "7.2.*"
     }
 }

@@ -42,6 +42,7 @@ security:
         - { path: ^/quote/dashboard, roles: ROLE_ADMIN }
         - { path: ^/quote/[0-9]+/resend-offer-email, roles: ROLE_ADMIN }
         - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: PUBLIC_ACCESS }
 
