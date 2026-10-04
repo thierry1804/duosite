@@ -119,34 +119,43 @@ class SiteContactProvider
         return 'https://wa.me/' . $digits . $query;
     }
 
-    public function formatFooterHours(): string
+    /** @return list<string> Une ligne par jour ouvré (libellé court) */
+    public function formatFooterHoursLines(): array
     {
-        $parts = [];
-        foreach ($this->groupOpenDays() as $g) {
-            $parts[] = sprintf('%s: %s', $g['label_short'], $g['hours']);
-        }
-
-        return implode(' · ', $parts);
+        return $this->formatOpenDayLines(true);
     }
 
-    /** @return list<string> */
+    /** @return list<string> Une ligne par jour ouvré (libellé long) */
     public function formatContactHoursLines(): array
     {
+        return $this->formatOpenDayLines(false);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function formatOpenDayLines(bool $short): array
+    {
+        $hours = $this->getOpeningHours();
+        usort($hours, static fn (OpeningHour $a, OpeningHour $b) => $a->getDayOfWeek() <=> $b->getDayOfWeek());
+
         $lines = [];
-        foreach ($this->groupOpenDays() as $g) {
-            $lines[] = sprintf('%s: %s', $g['label_long'], $g['hours']);
+        foreach ($hours as $hour) {
+            if ($hour->isClosed()) {
+                continue;
+            }
+            $range = $this->formatTimeRange($hour);
+            if ($range === '') {
+                continue;
+            }
+            $day = $hour->getDayOfWeek();
+            $label = $short
+                ? (self::DAY_SHORT[$day] ?? (string) $day)
+                : (self::DAY_LONG[$day] ?? (string) $day);
+            $lines[] = sprintf('%s: %s', $label, $range);
         }
 
         return $lines;
-    }
-
-    /** @return list<array{label_short: string, label_long: string, hours: string, is_closed: bool}> */
-    private function groupOpenDays(): array
-    {
-        return array_values(array_filter(
-            $this->groupAllDays(),
-            static fn (array $g) => !$g['is_closed']
-        ));
     }
 
     public function socialIconClass(string $network): string
@@ -157,59 +166,6 @@ class SiteContactProvider
             SocialLink::NETWORK_OTHER => 'link',
             default => $network,
         };
-    }
-
-    /**
-     * @return list<array{label_short: string, label_long: string, hours: string, is_closed: bool}>
-     */
-    private function groupAllDays(): array
-    {
-        $hours = $this->getOpeningHours();
-        usort($hours, static fn (OpeningHour $a, OpeningHour $b) => $a->getDayOfWeek() <=> $b->getDayOfWeek());
-
-        $groups = [];
-        $i = 0;
-        $n = count($hours);
-        while ($i < $n) {
-            $start = $hours[$i];
-            $j = $i;
-            while (
-                $j + 1 < $n
-                && $this->sameSlot($hours[$j + 1], $start)
-                && $hours[$j + 1]->getDayOfWeek() === $hours[$j]->getDayOfWeek() + 1
-            ) {
-                ++$j;
-            }
-            $end = $hours[$j];
-            $labelShort = $start->getDayOfWeek() === $end->getDayOfWeek()
-                ? self::DAY_SHORT[$start->getDayOfWeek()]
-                : self::DAY_SHORT[$start->getDayOfWeek()] . ' - ' . self::DAY_SHORT[$end->getDayOfWeek()];
-            $labelLong = $start->getDayOfWeek() === $end->getDayOfWeek()
-                ? self::DAY_LONG[$start->getDayOfWeek()]
-                : self::DAY_LONG[$start->getDayOfWeek()] . ' - ' . self::DAY_LONG[$end->getDayOfWeek()];
-            $groups[] = [
-                'label_short' => $labelShort,
-                'label_long' => $labelLong,
-                'hours' => $start->isClosed() ? 'Fermé' : $this->formatTimeRange($start),
-                'is_closed' => $start->isClosed(),
-            ];
-            $i = $j + 1;
-        }
-
-        return $groups;
-    }
-
-    private function sameSlot(OpeningHour $a, OpeningHour $b): bool
-    {
-        if ($a->isClosed() && $b->isClosed()) {
-            return true;
-        }
-        if ($a->isClosed() || $b->isClosed()) {
-            return false;
-        }
-
-        return $this->normalizeTime($a->getOpenTime()) === $this->normalizeTime($b->getOpenTime())
-            && $this->normalizeTime($a->getCloseTime()) === $this->normalizeTime($b->getCloseTime());
     }
 
     private function formatTimeRange(OpeningHour $h): string
