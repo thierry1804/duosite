@@ -22,7 +22,11 @@ class AdminSiteContactController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $settings = $repository->getSettings();
+        $hoursBefore = $settings->getOpeningHours()->count();
         $settings->ensureDefaultOpeningHours();
+        if ($settings->getOpeningHours()->count() > $hoursBefore) {
+            $entityManager->flush();
+        }
 
         $form = $this->createForm(SiteContactSettingsType::class, $settings);
         $form->handleRequest($request);
