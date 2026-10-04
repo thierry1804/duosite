@@ -463,13 +463,12 @@
                                     <i data-lucide="mail" class="me-2"></i>
                                     <a href="mailto:{{ site_contact.settings.email }}">{{ site_contact.settings.email }}</a>
                                 </li>
-                                {% set footerHours = site_contact.formatFooterHoursLines %}
-                                {% if footerHours is not empty %}
+                                {% for line in site_contact.formatFooterHoursLines() %}
                                     <li>
-                                        <i data-lucide="clock" class="me-2"></i>
-                                        {{ footerHours|join('<br>')|raw }}
+                                        <i data-lucide="clock" class="me-2{% if not loop.first %} invisible{% endif %}" aria-hidden="true"></i>
+                                        {{ line }}
                                     </li>
-                                {% endif %}
+                                {% endfor %}
                             </ul>
                         </div>
                     </div>
