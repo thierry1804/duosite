@@ -85,16 +85,15 @@ class SiteContactProviderTest extends TestCase
     {
         $s = SiteContactSettings::createWithDefaults();
         $this->repository->method('getSettings')->willReturn($s);
-        $this->assertSame('Lun - Ven: 8h00 - 17h00 · Sam - Dim: Fermé', $this->provider->formatFooterHours());
+        $this->assertSame('Lun - Ven: 8h00 - 17h00', $this->provider->formatFooterHours());
     }
 
-    public function testFormatContactHoursLinesIncludesClosedDays(): void
+    public function testFormatContactHoursLinesOnlyOpenDays(): void
     {
         $s = SiteContactSettings::createWithDefaults();
         $this->repository->method('getSettings')->willReturn($s);
         $this->assertSame([
             'Lundi - Vendredi: 8h00 - 17h00',
-            'Samedi - Dimanche: Fermé',
         ], $this->provider->formatContactHoursLines());
     }
 
