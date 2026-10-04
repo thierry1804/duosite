@@ -18,23 +18,22 @@ class SiteContactSettingsRepository extends ServiceEntityRepository
 
     public function getSettings(): SiteContactSettings
     {
-        // Ne pas utiliser setMaxResults() avec des JOINs : LIMIT 1 coupe les collections
-        // (téléphones / horaires / réseaux) et provoque des doublons à la sauvegarde.
-        $rows = $this->createQueryBuilder('s')
-            ->leftJoin('s.phones', 'p')->addSelect('p')
-            ->leftJoin('s.openingHours', 'h')->addSelect('h')
-            ->leftJoin('s.socialLinks', 'l')->addSelect('l')
-            ->getQuery()
-            ->getResult();
-
-        /** @var SiteContactSettings|null $settings */
-        $settings = $rows[0] ?? null;
+        // findOneBy + lazy-load : évite les JOINs qui tronquent les collections
+        // (setMaxResults / produit cartésien) et les doublons à la sauvegarde.
+        $settings = $this->findOneBy([]);
 
         if (!$settings) {
             $settings = SiteContactSettings::createWithDefaults();
             $this->getEntityManager()->persist($settings);
             $this->getEntityManager()->flush();
+
+            return $settings;
         }
+
+        // Force le chargement complet des collections
+        $settings->getPhones()->toArray();
+        $settings->getOpeningHours()->toArray();
+        $settings->getSocialLinks()->toArray();
 
         return $settings;
     }

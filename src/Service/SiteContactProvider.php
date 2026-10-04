@@ -121,14 +121,12 @@ class SiteContactProvider
 
     public function formatFooterHours(): string
     {
-        $groups = $this->groupOpenDays();
-        if ($groups === []) {
-            return '';
+        $parts = [];
+        foreach ($this->groupAllDays() as $g) {
+            $parts[] = sprintf('%s: %s', $g['label_short'], $g['hours']);
         }
 
-        $g = $groups[0];
-
-        return sprintf('%s: %s', $g['label_short'], $g['hours']);
+        return implode(' · ', $parts);
     }
 
     /** @return list<string> */
@@ -152,12 +150,6 @@ class SiteContactProvider
             SocialLink::NETWORK_OTHER => 'link',
             default => $network,
         };
-    }
-
-    /** @return list<array{label_short: string, label_long: string, hours: string, is_closed: bool}> */
-    private function groupOpenDays(): array
-    {
-        return array_values(array_filter($this->groupAllDays(), static fn ($g) => !$g['is_closed']));
     }
 
     /**
@@ -209,19 +201,30 @@ class SiteContactProvider
             return false;
         }
 
-        return $this->formatTimeRange($a) === $this->formatTimeRange($b);
+        return $this->normalizeTime($a->getOpenTime()) === $this->normalizeTime($b->getOpenTime())
+            && $this->normalizeTime($a->getCloseTime()) === $this->normalizeTime($b->getCloseTime());
     }
 
     private function formatTimeRange(OpeningHour $h): string
     {
-        $fmt = static function (?\DateTimeInterface $t): string {
-            if (!$t) {
-                return '';
-            }
+        $open = $this->normalizeTime($h->getOpenTime());
+        $close = $this->normalizeTime($h->getCloseTime());
+        if ($open === null || $close === null) {
+            return '';
+        }
 
-            return ((int) $t->format('G')) . 'h' . $t->format('i');
-        };
+        return $this->formatHi($open) . ' - ' . $this->formatHi($close);
+    }
 
-        return $fmt($h->getOpenTime()) . ' - ' . $fmt($h->getCloseTime());
+    private function normalizeTime(?\DateTimeInterface $t): ?string
+    {
+        return $t?->format('H:i');
+    }
+
+    private function formatHi(string $hi): string
+    {
+        [$h, $m] = array_pad(explode(':', $hi, 2), 2, '00');
+
+        return ((int) $h) . 'h' . $m;
     }
 }
