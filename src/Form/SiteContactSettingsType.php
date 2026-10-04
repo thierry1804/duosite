@@ -21,14 +21,15 @@ class SiteContactSettingsType extends AbstractType
     {
         $builder
             ->add('addressLines', TextareaType::class, [
-                'label' => 'Adresse (une ligne par ligne)',
+                'label' => 'Adresse',
+                'help' => 'Une ligne d’adresse par ligne',
                 'constraints' => [
                     new NotBlank(['message' => 'L\'adresse est obligatoire.']),
                 ],
-                'attr' => ['class' => 'form-control', 'rows' => 4],
+                'attr' => ['class' => 'form-control', 'rows' => 3],
             ])
             ->add('email', EmailType::class, [
-                'label' => 'Email public',
+                'label' => 'Email',
                 'constraints' => [
                     new NotBlank(['message' => 'L\'email est obligatoire.']),
                     new Email(['message' => 'Email invalide.']),
@@ -36,19 +37,19 @@ class SiteContactSettingsType extends AbstractType
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('whatsappDefaultMessage', TextType::class, [
-                'label' => 'Message WhatsApp par défaut',
+                'label' => 'Message WhatsApp',
                 'required' => false,
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Bonjour Duo Import MDG, '],
             ])
             ->add('mapEmbedUrl', UrlType::class, [
-                'label' => 'URL iframe Google Maps',
+                'label' => 'Carte (URL embed)',
                 'required' => false,
                 'default_protocol' => 'https',
                 'empty_data' => null,
                 'constraints' => [
                     new Url(['message' => 'URL de carte invalide.']),
                 ],
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control', 'placeholder' => 'https://www.google.com/maps/embed?...'],
             ])
             ->add('phones', CollectionType::class, [
                 'entry_type' => ContactPhoneType::class,

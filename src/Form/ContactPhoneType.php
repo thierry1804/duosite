@@ -17,26 +17,26 @@ class ContactPhoneType extends AbstractType
     {
         $builder
             ->add('label', TextType::class, [
-                'label' => 'Libellé',
+                'label' => false,
                 'required' => false,
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Ex. Thierry'],
+                'attr' => ['class' => 'form-control form-control-sm', 'placeholder' => 'Ex. Thierry'],
             ])
             ->add('number', TextType::class, [
-                'label' => 'Numéro',
+                'label' => false,
                 'constraints' => [
                     new NotBlank(['message' => 'Le numéro est obligatoire.']),
                 ],
-                'attr' => ['class' => 'form-control', 'placeholder' => '+261 XX XX XXX XX'],
+                'attr' => ['class' => 'form-control form-control-sm', 'placeholder' => '+261 XX XX XXX XX'],
             ])
             ->add('isWhatsapp', CheckboxType::class, [
-                'label' => 'WhatsApp',
+                'label' => false,
                 'required' => false,
-                'attr' => ['class' => 'form-check-input'],
+                'attr' => ['class' => 'form-check-input', 'title' => 'WhatsApp'],
             ])
             ->add('isPrimary', CheckboxType::class, [
-                'label' => 'Principal (Mobile Money)',
+                'label' => false,
                 'required' => false,
-                'attr' => ['class' => 'form-check-input'],
+                'attr' => ['class' => 'form-check-input', 'title' => 'Principal (Mobile Money)'],
             ])
             ->add('position', HiddenType::class);
     }

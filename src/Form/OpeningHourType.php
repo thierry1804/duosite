@@ -20,21 +20,21 @@ class OpeningHourType extends AbstractType
         $builder
             ->add('dayOfWeek', HiddenType::class)
             ->add('isClosed', CheckboxType::class, [
-                'label' => 'Fermé',
+                'label' => false,
                 'required' => false,
-                'attr' => ['class' => 'form-check-input'],
+                'attr' => ['class' => 'form-check-input js-closed-toggle', 'title' => 'Fermé'],
             ])
             ->add('openTime', TimeType::class, [
-                'label' => 'Ouverture',
+                'label' => false,
                 'required' => false,
                 'widget' => 'single_text',
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control form-control-sm', 'title' => 'Ouverture'],
             ])
             ->add('closeTime', TimeType::class, [
-                'label' => 'Fermeture',
+                'label' => false,
                 'required' => false,
                 'widget' => 'single_text',
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control form-control-sm', 'title' => 'Fermeture'],
             ]);
 
         $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) {

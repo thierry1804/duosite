@@ -18,18 +18,18 @@ class SocialLinkType extends AbstractType
     {
         $builder
             ->add('network', ChoiceType::class, [
-                'label' => 'Réseau',
+                'label' => false,
                 'choices' => array_flip(SocialLink::NETWORKS),
-                'attr' => ['class' => 'form-select'],
+                'attr' => ['class' => 'form-select form-select-sm'],
             ])
             ->add('url', UrlType::class, [
-                'label' => 'URL',
+                'label' => false,
                 'default_protocol' => 'https',
                 'constraints' => [
                     new NotBlank(['message' => 'L\'URL est obligatoire.']),
                     new Url(['message' => 'URL invalide.']),
                 ],
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control form-control-sm', 'placeholder' => 'https://...'],
             ])
             ->add('position', HiddenType::class);
     }
