@@ -96,28 +96,42 @@
             return;
         }
 
-        var last = targets[targets.length - 1];
-        var row = last.closest('.row');
-        var block = last.closest('.mb-3, .col-md-6, .form-floating') || last.parentElement;
-        var anchor = row || block;
-        var host = anchor && anchor.parentElement ? anchor.parentElement : root;
+        var first = targets[0];
+        var fieldParent = first.closest('.password-field-parent') || first.parentElement;
+        var fieldBlock = first.closest('.mb-3, .col-md-6, .form-floating') || fieldParent;
+        var label = first.id ? root.querySelector('label[for="' + first.id + '"]') : null;
 
-        var wrap = document.createElement('div');
-        wrap.className = 'password-generate-wrap mb-3';
-        wrap.innerHTML =
-            '<button type="button" class="btn btn-outline-secondary btn-sm" data-password-generate>' +
-            '<i class="fas fa-key me-1" aria-hidden="true"></i>Générer un mot de passe fort' +
-            '</button>' +
-            '<div class="form-text password-generate-hint d-none" role="status"></div>';
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-link btn-sm password-generate-btn';
+        button.setAttribute('data-password-generate', '1');
+        button.innerHTML = '<i class="fas fa-key me-1" aria-hidden="true"></i>Générer';
+        button.setAttribute('title', 'Générer un mot de passe fort');
+        button.setAttribute('aria-label', 'Générer un mot de passe fort');
 
-        if (anchor && anchor.parentNode === host) {
-            host.insertBefore(wrap, anchor.nextSibling);
-        } else {
-            host.appendChild(wrap);
+        var hint = document.createElement('div');
+        hint.className = 'form-text password-generate-hint d-none';
+        hint.setAttribute('role', 'status');
+
+        if (label && !label.closest('.form-floating')) {
+            var labelRow = document.createElement('div');
+            labelRow.className = 'password-field-label-row d-flex justify-content-between align-items-center gap-2';
+            label.parentNode.insertBefore(labelRow, label);
+            labelRow.appendChild(label);
+            labelRow.appendChild(button);
+            if (fieldParent && fieldParent.parentNode) {
+                fieldParent.parentNode.insertBefore(hint, fieldParent.nextSibling);
+            }
+        } else if (fieldBlock && fieldBlock.classList.contains('form-floating')) {
+            var floatingHeader = document.createElement('div');
+            floatingHeader.className = 'password-field-label-row d-flex justify-content-end mb-1';
+            floatingHeader.appendChild(button);
+            fieldBlock.parentNode.insertBefore(floatingHeader, fieldBlock);
+            fieldBlock.parentNode.insertBefore(hint, fieldBlock.nextSibling);
+        } else if (fieldParent && fieldParent.parentNode) {
+            fieldParent.parentNode.insertBefore(button, fieldParent);
+            fieldParent.parentNode.insertBefore(hint, fieldParent.nextSibling);
         }
-
-        var button = wrap.querySelector('[data-password-generate]');
-        var hint = wrap.querySelector('.password-generate-hint');
 
         button.addEventListener('click', function () {
             var password = generateStrongPassword(16);
@@ -132,10 +146,8 @@
                     input.type = 'text';
                 }
             });
-            if (hint) {
-                hint.textContent = 'Mot de passe généré et affiché dans les deux champs. Copiez-le avant de continuer.';
-                hint.classList.remove('d-none');
-            }
+            hint.textContent = 'Mot de passe généré et affiché. Copiez-le avant de continuer.';
+            hint.classList.remove('d-none');
         });
     }
 
