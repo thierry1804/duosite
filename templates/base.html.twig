@@ -463,10 +463,11 @@
                                     <i data-lucide="mail" class="me-2"></i>
                                     <a href="mailto:{{ site_contact.settings.email }}">{{ site_contact.settings.email }}</a>
                                 </li>
-                                {% if site_contact.formatFooterHours %}
+                                {% set footerHours = site_contact.formatFooterHoursLines %}
+                                {% if footerHours is not empty %}
                                     <li>
                                         <i data-lucide="clock" class="me-2"></i>
-                                        {{ site_contact.formatFooterHours }}
+                                        {{ footerHours|join('<br>')|raw }}
                                     </li>
                                 {% endif %}
                             </ul>

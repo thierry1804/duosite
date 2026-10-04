@@ -81,19 +81,29 @@ class SiteContactProviderTest extends TestCase
         $this->assertNull($this->provider->getWhatsappUrl());
     }
 
-    public function testFormatFooterHoursGroupsWeekdays(): void
-    {
-        $s = SiteContactSettings::createWithDefaults();
-        $this->repository->method('getSettings')->willReturn($s);
-        $this->assertSame('Lun - Ven: 8h00 - 17h00', $this->provider->formatFooterHours());
-    }
-
-    public function testFormatContactHoursLinesOnlyOpenDays(): void
+    public function testFormatFooterHoursOneLinePerOpenDay(): void
     {
         $s = SiteContactSettings::createWithDefaults();
         $this->repository->method('getSettings')->willReturn($s);
         $this->assertSame([
-            'Lundi - Vendredi: 8h00 - 17h00',
+            'Lun: 8h00 - 17h00',
+            'Mar: 8h00 - 17h00',
+            'Mer: 8h00 - 17h00',
+            'Jeu: 8h00 - 17h00',
+            'Ven: 8h00 - 17h00',
+        ], $this->provider->formatFooterHoursLines());
+    }
+
+    public function testFormatContactHoursLinesOneLinePerOpenDay(): void
+    {
+        $s = SiteContactSettings::createWithDefaults();
+        $this->repository->method('getSettings')->willReturn($s);
+        $this->assertSame([
+            'Lundi: 8h00 - 17h00',
+            'Mardi: 8h00 - 17h00',
+            'Mercredi: 8h00 - 17h00',
+            'Jeudi: 8h00 - 17h00',
+            'Vendredi: 8h00 - 17h00',
         ], $this->provider->formatContactHoursLines());
     }
 
