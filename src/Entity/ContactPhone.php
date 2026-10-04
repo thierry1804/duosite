@@ -102,9 +102,9 @@ class ContactPhone
         return $this->position;
     }
 
-    public function setPosition(int $position): self
+    public function setPosition(int|string|null $position): self
     {
-        $this->position = $position;
+        $this->position = (int) ($position ?? 0);
 
         return $this;
     }

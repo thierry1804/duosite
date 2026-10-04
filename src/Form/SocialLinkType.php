@@ -31,7 +31,10 @@ class SocialLinkType extends AbstractType
                 ],
                 'attr' => ['class' => 'form-control form-control-sm', 'placeholder' => 'https://...'],
             ])
-            ->add('position', HiddenType::class);
+            ->add('position', HiddenType::class, [
+                'required' => false,
+                'empty_data' => '0',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

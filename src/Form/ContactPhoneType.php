@@ -38,7 +38,10 @@ class ContactPhoneType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-check-input', 'title' => 'Principal (Mobile Money)'],
             ])
-            ->add('position', HiddenType::class);
+            ->add('position', HiddenType::class, [
+                'required' => false,
+                'empty_data' => '0',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
