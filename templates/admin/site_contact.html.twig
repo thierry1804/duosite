@@ -249,7 +249,10 @@
         if (inputs.number) number.appendChild(inputs.number);
         if (inputs.wa) wa.appendChild(inputs.wa);
         if (inputs.primary) primary.appendChild(inputs.primary);
-        if (inputs.position) actions.appendChild(inputs.position);
+        if (inputs.position) {
+            if (inputs.position.value === '') inputs.position.value = '0';
+            actions.appendChild(inputs.position);
+        }
         actions.insertAdjacentHTML('beforeend',
             '<button type="button" class="btn btn-sm btn-outline-danger" data-collection-remove aria-label="Supprimer">×</button>');
         row.appendChild(label);
@@ -271,7 +274,10 @@
         tr.innerHTML = '<td></td><td></td><td class="text-end"></td>';
         if (network) tr.cells[0].appendChild(network);
         if (url) tr.cells[1].appendChild(url);
-        if (position) tr.cells[2].appendChild(position);
+        if (position) {
+            if (position.value === '') position.value = '0';
+            tr.cells[2].appendChild(position);
+        }
         tr.cells[2].insertAdjacentHTML('beforeend',
             '<button type="button" class="btn btn-sm btn-outline-danger" data-collection-remove aria-label="Supprimer">×</button>');
         return tr;
@@ -289,6 +295,10 @@
         var row = collection.dataset.rowType === 'phone'
             ? wrapPhoneRow(html)
             : wrapSocialRow(html);
+        var positionInput = row.querySelector('[name*="[position]"]');
+        if (positionInput && positionInput.value === '') {
+            positionInput.value = String(index);
+        }
         collection.appendChild(row);
         collection.dataset.index = String(index + 1);
     }
