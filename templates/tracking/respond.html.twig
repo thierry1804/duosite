@@ -324,10 +324,11 @@
                                                     <label class="offer-line-figure-label" for="line-qty-{{ proposal.id }}">Quantité</label>
                                                     <input type="number" class="form-control form-control-sm offer-line-qty"
                                                            id="line-qty-{{ proposal.id }}"
-                                                           name="lines[{{ proposal.id }}][quantity]"
+                                                           data-proposal-id="{{ proposal.id }}"
                                                            form="accept-offer-form"
                                                            value="{{ quantity }}"
-                                                           min="1" max="10000" step="1" required>
+                                                           min="1" max="10000" step="1" required
+                                                           inputmode="numeric">
                                                 </div>
                                                 <div>
                                                     <span class="offer-line-figure-label">Prix unitaire</span>
@@ -387,12 +388,10 @@
                                 
                                 <!-- PDF de l'offre -->
                                 <div class="mt-3">
-                                    <button type="submit"
+                                    <button type="button"
                                             id="download-offer-pdf"
                                             class="btn btn-outline-primary w-100"
-                                            form="accept-offer-form"
-                                            formaction="{{ path('app_tracking_respond_pdf', {token: trackingToken}) }}"
-                                            formtarget="_blank">
+                                            data-url="{{ path('app_tracking_respond_pdf', {token: trackingToken}) }}">
                                         <i class="fas fa-file-pdf me-2"></i>
                                         Télécharger l'offre PDF
                                     </button>
@@ -426,6 +425,9 @@
                 <div class="d-flex gap-3 justify-content-center">
                     <form method="post" id="accept-offer-form" action="{{ path('app_tracking_accept', {'token': trackingToken}) }}" class="d-inline">
                         <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ offer.id) }}">
+                        {% for proposal in offer.productProposals %}
+                            <input type="hidden" name="lines[{{ proposal.id }}][quantity]" id="line-qty-posted-{{ proposal.id }}" value="{{ proposal.quoteItem.quantity ?: 1 }}">
+                        {% endfor %}
                         <button type="submit" id="accept-offer-button" class="btn btn-success btn-lg px-5">
                             <i class="fas fa-check me-2"></i>
                             Accepter l'offre
@@ -474,6 +476,27 @@
                 return document.querySelectorAll('.offer-line-selected:checked').length;
             }
 
+            function writePostedQuantity(qtyInput) {
+                const hidden = document.getElementById('line-qty-posted-' + qtyInput.dataset.proposalId);
+                if (hidden) {
+                    hidden.value = qtyInput.value;
+                }
+            }
+
+            function syncQuantities() {
+                document.querySelectorAll('.offer-line-qty').forEach(function(qtyInput) {
+                    let qty = parseInt(qtyInput.value, 10);
+                    if (!Number.isFinite(qty) || qty < 1) {
+                        qty = 1;
+                    } else if (qty > 10000) {
+                        qty = 10000;
+                    }
+                    qtyInput.value = String(qty);
+                    writePostedQuantity(qtyInput);
+                });
+                recalc();
+            }
+
             function recalc() {
                 let totalMga = 0;
                 let totalRmb = 0;
@@ -519,7 +542,10 @@
             lines.forEach(function(line) {
                 line.querySelector('.offer-line-selected').addEventListener('change', recalc);
                 const qtyInput = line.querySelector('.offer-line-qty');
-                qtyInput.addEventListener('input', recalc);
+                qtyInput.addEventListener('input', function() {
+                    writePostedQuantity(qtyInput);
+                    recalc();
+                });
                 qtyInput.addEventListener('change', function() {
                     let qty = parseInt(qtyInput.value, 10);
                     if (!Number.isFinite(qty) || qty < 1) {
@@ -527,19 +553,55 @@
                     } else if (qty > 10000) {
                         qtyInput.value = '10000';
                     }
+                    writePostedQuantity(qtyInput);
                     recalc();
                 });
             });
             recalc();
 
-            if (acceptForm) {
-                acceptForm.addEventListener('submit', function(event) {
+            const pdfButton = document.getElementById('download-offer-pdf');
+            if (pdfButton && acceptForm) {
+                pdfButton.addEventListener('click', function() {
                     if (selectedCount() === 0) {
-                        event.preventDefault();
                         window.alert('Sélectionnez au moins une ligne.');
                         return;
                     }
-                    if (event.submitter && event.submitter.id === 'download-offer-pdf') {
+                    syncQuantities();
+                    pdfButton.disabled = true;
+                    fetch(pdfButton.dataset.url, {
+                        method: 'POST',
+                        body: new FormData(acceptForm),
+                        credentials: 'same-origin'
+                    }).then(function(response) {
+                        const type = response.headers.get('Content-Type') || '';
+                        if (!response.ok || type.indexOf('pdf') === -1) {
+                            throw new Error('pdf');
+                        }
+                        const match = /filename="([^"]+)"/.exec(response.headers.get('Content-Disposition') || '');
+                        return response.blob().then(function(blob) {
+                            return { blob: blob, name: match ? match[1] : 'offre.pdf' };
+                        });
+                    }).then(function(file) {
+                        const url = URL.createObjectURL(file.blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = file.name;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                    }).catch(function() {
+                        window.alert('Le PDF n\'a pas pu être généré.');
+                    }).finally(function() {
+                        pdfButton.disabled = false;
+                    });
+                });
+            }
+
+            if (acceptForm) {
+                acceptForm.addEventListener('submit', function(event) {
+                    syncQuantities();
+                    if (selectedCount() === 0) {
+                        event.preventDefault();
+                        window.alert('Sélectionnez au moins une ligne.');
                         return;
                     }
                     const total = totalEls.length ? totalEls[0].textContent : '';

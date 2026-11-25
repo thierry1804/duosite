@@ -545,7 +545,11 @@ class TrackingController extends AbstractController
             }
 
             $quantity = $selection['quantities'][$proposalId];
-            $proposal->getQuoteItem()?->setQuantity($quantity);
+            $quoteItem = $proposal->getQuoteItem();
+            if ($quoteItem !== null) {
+                $quoteItem->setQuantity($quantity);
+                $this->entityManager->persist($quoteItem);
+            }
             $unit = $this->unitPriceRmb($proposal);
             $keptLabels[] = sprintf('%s × %d (%s RMB)', $label, $quantity, $unit ?? '—');
         }
@@ -553,7 +557,7 @@ class TrackingController extends AbstractController
         $totalRmb = 0.0;
         foreach ($offer->getProductProposals() as $proposal) {
             $unit = $this->unitPriceRmb($proposal);
-            $quantity = $proposal->getQuoteItem()?->getQuantity() ?: 1;
+            $quantity = $selection['quantities'][$proposal->getId()] ?? 1;
             if ($unit !== null) {
                 $totalRmb += (float) $unit * $quantity;
             }
@@ -562,7 +566,7 @@ class TrackingController extends AbstractController
         $offer->setStatus('accepted');
 
         try {
-            $offer->setPdfFilePath($this->pdfGenerator->generateQuoteOfferPdf($offer));
+            $offer->setPdfFilePath($this->pdfGenerator->generateQuoteOfferPdf($offer, $selection['quantities']));
         } catch (\Throwable $e) {
             $this->addFlash('warning', 'Offre acceptée, mais le PDF n\'a pas pu être régénéré.');
         }
