@@ -123,12 +123,24 @@
                                     <span class="badge bg-info">En cours</span>
                                 {% elseif quote.status == 'completed' %}
                                     <span class="badge bg-success">Complété</span>
+                                {% elseif quote.status == 'waiting_customer' %}
+                                    <span class="badge bg-warning text-dark">En attente du client</span>
+                                {% elseif quote.status == 'accepted' %}
+                                    <span class="badge bg-success">Accepté</span>
                                 {% elseif quote.status == 'rejected' %}
                                     <span class="badge bg-danger">Rejeté</span>
                                 {% endif %}
                             </div>
                         </div>
                         <div class="admin-card-body">
+                            {% set acceptedOffer = null %}
+                            {% for offer in offers %}
+                                {% if offer.status == 'accepted' %}
+                                    {% set acceptedOffer = offer %}
+                                {% endif %}
+                            {% endfor %}
+                            {% set retainedCount = acceptedOffer ? acceptedOffer.productProposals|length : quote.items|length %}
+                            {% set keptItemIds = [] %}
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <div class="d-flex align-items-center">
                                     <div class="me-4">
@@ -141,7 +153,7 @@
                                     </div>
                                     <div>
                                         <i class="fas fa-box fa-2x text-info me-2"></i>
-                                        <span>{{ quote.items|length }} produit{{ quote.items|length > 1 ? 's' : '' }}</span>
+                                        <span>{{ retainedCount }} produit{{ retainedCount > 1 ? 's' : '' }}{% if acceptedOffer %} retenu{{ retainedCount > 1 ? 's' : '' }}{% endif %}</span>
                                     </div>
                                 </div>
                             </div>
@@ -172,7 +184,7 @@
                             </div>
                             {% endif %}
                             
-                            <h6 class="mb-3">Produits demandés</h6>
+                            <h6 class="mb-3">{{ acceptedOffer ? 'Produits retenus par le client' : 'Produits demandés' }}</h6>
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead>
@@ -182,10 +194,73 @@
                                             <th>Image</th>
                                             <th>Description</th>
                                             <th>Quantité</th>
-                                            <th>Budget unitaire</th>
+                                            {% if acceptedOffer %}
+                                                <th>Prix unitaire</th>
+                                                <th>Montant</th>
+                                            {% else %}
+                                                <th>Budget unitaire</th>
+                                            {% endif %}
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        {% if acceptedOffer %}
+                                            {% set keptItemIds = [] %}
+                                            {% for proposal in acceptedOffer.productProposals %}
+                                                {% set item = proposal.quoteItem %}
+                                                {% set keptItemIds = keptItemIds|merge([item.id]) %}
+                                                {% set quantity = item.quantity ?: 1 %}
+                                                {% set unitRmb = proposal.maxPrice is not null ? proposal.maxPrice : proposal.minPrice %}
+                                                {% set unitMga = (unitRmb is not null and acceptedOffer.rmbMgaExchangeRate) ? (unitRmb * acceptedOffer.rmbMgaExchangeRate)|round : null %}
+                                                {% set lineMga = unitMga is not null ? (unitMga * quantity)|round : null %}
+                                                <tr>
+                                                    <td>{{ loop.index }}</td>
+                                                    <td>{{ item.otherProductType ?: item.productType }}</td>
+                                                    <td>
+                                                        {% if proposal.images|length > 0 %}
+                                                            <a href="{{ asset('uploads/product_proposals/' ~ proposal.images[0]) }}" target="_blank">
+                                                                <img src="{{ asset('uploads/product_proposals/' ~ proposal.images[0]) }}" alt="" style="width: 48px; height: 48px; object-fit: contain;">
+                                                            </a>
+                                                        {% elseif item.photoFilename %}
+                                                            <a href="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" target="_blank">
+                                                                <img src="{{ asset('uploads/quote_photos/' ~ item.photoFilename) }}" alt="" style="width: 48px; height: 48px; object-fit: contain;">
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-muted"><i data-lucide="image-off" class="icon-sm"></i></span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% set description = item.description %}
+                                                        {% if description|length > 100 %}
+                                                            <div class="description-preview d-flex align-items-center gap-2">
+                                                                <span class="description-short">{{ description|slice(0, 100)|nl2br|autolink|raw }}... <a href="#" class="text-primary description-expand-btn fw-medium">voir plus</a></span>
+                                                                <span class="description-full d-none">{{ description|nl2br|autolink|raw }} <a href="#" class="text-primary description-expand-btn fw-medium">voir moins</a></span>
+                                                            </div>
+                                                        {% else %}
+                                                            {{ description|nl2br|autolink|raw }}
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ quantity }}</td>
+                                                    <td>
+                                                        {% if unitMga is not null %}
+                                                            {{ unitMga|number_format(0, ',', ' ') }} MGA
+                                                        {% elseif unitRmb is not null %}
+                                                            {{ unitRmb|number_format(2, ',', ' ') }} RMB
+                                                        {% else %}
+                                                            <span class="text-muted">Non défini</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if lineMga is not null %}
+                                                            {{ lineMga|number_format(0, ',', ' ') }} MGA
+                                                        {% elseif unitRmb is not null %}
+                                                            {{ (unitRmb * quantity)|number_format(2, ',', ' ') }} RMB
+                                                        {% else %}
+                                                            <span class="text-muted">—</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
                                         {% for item in quote.items %}
                                             <tr>
                                                 <td>{{ loop.index }}</td>
@@ -241,9 +316,27 @@
                                                 </td>
                                             </tr>
                                         {% endfor %}
+                                        {% endif %}
                                     </tbody>
                                 </table>
                             </div>
+                            {% if acceptedOffer %}
+                                {% set droppedItems = [] %}
+                                {% for item in quote.items %}
+                                    {% if item.id not in keptItemIds %}
+                                        {% set droppedItems = droppedItems|merge([item]) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if droppedItems|length > 0 %}
+                                    <p class="text-muted mb-2">Non retenus par le client</p>
+                                    <ul class="mb-0">
+                                        {% for item in droppedItems %}
+                                            <li>{{ item.otherProductType ?: item.productType }} — {{ item.description|slice(0, 80) }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                                <p class="text-muted small mt-3 mb-0">Quantités et prix de l'offre acceptée{% if acceptedOffer.rmbMgaExchangeRate %}, au taux {{ acceptedOffer.rmbMgaExchangeRate|number_format(2, ',', ' ') }}{% endif %}.</p>
+                            {% endif %}
                             
                             {% if quote.additionalInfo %}
                                 <h6 class="mt-4 mb-3">Informations complémentaires</h6>
