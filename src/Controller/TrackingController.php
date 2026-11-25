@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\ProductProposal;
 use App\Entity\Quote;
 use App\Entity\QuoteOffer;
 use App\Repository\QuoteRepository;
@@ -464,25 +465,142 @@ class TrackingController extends AbstractController
             throw $this->createNotFoundException('Aucune offre disponible pour ce devis.');
         }
 
+        if (!$this->isCsrfTokenValid('accept'.$offer->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'La page a expiré. Rechargez-la puis réessayez.');
+
+            return $this->redirectToRoute('app_tracking_respond', ['token' => $token]);
+        }
+
+        $selection = $this->readAcceptedLines($offer, $request);
+        if ($selection['error'] !== null) {
+            $this->addFlash('error', $selection['error']);
+
+            return $this->redirectToRoute('app_tracking_respond', ['token' => $token]);
+        }
+
+        $keptLabels = [];
+        $removedLabels = [];
+        foreach ($offer->getProductProposals()->toArray() as $proposal) {
+            $label = $this->proposalLabel($proposal);
+            $proposalId = $proposal->getId();
+            if (!isset($selection['quantities'][$proposalId])) {
+                $removedLabels[] = $label;
+                $offer->getProductProposals()->removeElement($proposal);
+                $this->entityManager->remove($proposal);
+                continue;
+            }
+
+            $quantity = $selection['quantities'][$proposalId];
+            $proposal->getQuoteItem()?->setQuantity($quantity);
+            $unit = $this->unitPriceRmb($proposal);
+            $keptLabels[] = sprintf('%s × %d (%s RMB)', $label, $quantity, $unit ?? '—');
+        }
+
+        $totalRmb = 0.0;
+        foreach ($offer->getProductProposals() as $proposal) {
+            $unit = $this->unitPriceRmb($proposal);
+            $quantity = $proposal->getQuoteItem()?->getQuantity() ?: 1;
+            if ($unit !== null) {
+                $totalRmb += (float) $unit * $quantity;
+            }
+        }
+        $offer->setTotalPrice(number_format($totalRmb, 2, '.', ''));
+        $offer->setStatus('accepted');
+
         try {
-            // Mettre à jour le statut de l'offre
-            $offer->setStatus('accepted');
-            
-            // Utiliser le service de tracking pour changer le statut du devis
+            $offer->setPdfFilePath($this->pdfGenerator->generateQuoteOfferPdf($offer));
+        } catch (\Throwable $e) {
+            $this->addFlash('warning', 'Offre acceptée, mais le PDF n\'a pas pu être régénéré.');
+        }
+
+        $comment = 'Offre acceptée par le client. Lignes retenues : '.implode(' ; ', $keptLabels).'.';
+        if ($removedLabels !== []) {
+            $comment .= ' Lignes retirées : '.implode(' ; ', $removedLabels).'.';
+        }
+        $comment .= ' Total : '.number_format($totalRmb, 2, ',', ' ').' RMB.';
+
+        try {
             $this->quoteTrackerService->changeStatus(
-                $quote, 
-                'accepted', 
-                'Offre acceptée par le client via le système de suivi public', 
+                $quote,
+                'accepted',
+                $comment,
                 'client_tracking'
             );
-            
+
             $this->addFlash('success', 'Vous avez accepté l\'offre avec succès. Nous vous contacterons bientôt pour finaliser votre commande.');
-            
         } catch (\InvalidArgumentException $e) {
-            $this->addFlash('error', 'Erreur lors de l\'acceptation de l\'offre : ' . $e->getMessage());
+            $this->addFlash('error', 'Erreur lors de l\'acceptation de l\'offre : '.$e->getMessage());
         }
 
         return $this->redirectToRoute('app_tracking_show', ['token' => $token]);
+    }
+
+    /**
+     * @return array{quantities: array<int, int>, error: ?string}
+     */
+    private function readAcceptedLines(QuoteOffer $offer, Request $request): array
+    {
+        $postedLines = $request->request->all('lines');
+        $knownIds = [];
+        foreach ($offer->getProductProposals() as $proposal) {
+            if ($proposal->getId() !== null) {
+                $knownIds[$proposal->getId()] = true;
+            }
+        }
+
+        $quantities = [];
+        foreach ($postedLines as $id => $payload) {
+            if (!is_array($payload) || empty($payload['selected'])) {
+                continue;
+            }
+            $proposalId = (int) $id;
+            if (!isset($knownIds[$proposalId])) {
+                continue;
+            }
+            $rawQuantity = $payload['quantity'] ?? null;
+            if (!is_scalar($rawQuantity) || !preg_match('/^\d+$/', (string) $rawQuantity)) {
+                return ['quantities' => [], 'error' => 'Chaque ligne incluse doit avoir une quantité entière.'];
+            }
+            $quantity = (int) $rawQuantity;
+            if ($quantity < 1 || $quantity > 10000) {
+                return ['quantities' => [], 'error' => 'La quantité doit être comprise entre 1 et 10 000.'];
+            }
+            $quantities[$proposalId] = $quantity;
+        }
+
+        if ($quantities === []) {
+            return ['quantities' => [], 'error' => 'Sélectionnez au moins une ligne avant d\'accepter l\'offre.'];
+        }
+
+        return ['quantities' => $quantities, 'error' => null];
+    }
+
+    private function unitPriceRmb(ProductProposal $proposal): ?string
+    {
+        $unit = $proposal->getMaxPrice();
+        if ($unit === null || $unit === '') {
+            $unit = $proposal->getMinPrice();
+        }
+
+        return ($unit === null || $unit === '') ? null : $unit;
+    }
+
+    private function proposalLabel(ProductProposal $proposal): string
+    {
+        $item = $proposal->getQuoteItem();
+        if ($item === null) {
+            return 'Produit';
+        }
+        $name = $item->getOtherProductType() ?: $item->getProductType() ?: 'Produit';
+        $description = trim((string) $item->getDescription());
+        if ($description === '') {
+            return $name;
+        }
+        if (mb_strlen($description) > 60) {
+            $description = mb_substr($description, 0, 60).'…';
+        }
+
+        return $name.' — '.$description;
     }
 
     /**

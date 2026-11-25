@@ -26,6 +26,124 @@
             font-size: 0.9em;
             padding: 8px 16px;
         }
+        .offer-line {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            container-type: inline-size;
+        }
+        .offer-line-main {
+            display: grid;
+            grid-template-columns: 72px minmax(0, 1fr);
+            gap: 12px;
+            align-items: start;
+        }
+        .offer-line-visual {
+            width: 72px;
+            height: 72px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+        .offer-line-visual img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+        }
+        .offer-line-title {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .offer-line-title .form-check-input {
+            margin: 3px 0 0;
+            flex: 0 0 auto;
+            width: 1.15rem;
+            height: 1.15rem;
+        }
+        .offer-line-title label {
+            flex: 1;
+            min-width: 0;
+        }
+        .offer-line-name {
+            font-weight: 600;
+            line-height: 1.3;
+            color: #212529;
+        }
+        .offer-line-category {
+            margin: 4px 0 0 1.65rem;
+            font-size: 0.8125rem;
+            color: #495057;
+        }
+        .offer-line-details {
+            margin: 8px 0 0 1.65rem;
+        }
+        .offer-line-details summary {
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: #0d6efd;
+        }
+        .offer-line-details p {
+            margin: 8px 0 0;
+            font-size: 0.875rem;
+            line-height: 1.45;
+            color: #212529;
+        }
+        .offer-line-source {
+            display: block;
+            max-width: 100%;
+            margin: 8px 0 0 1.65rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+        .offer-line-figures {
+            display: grid;
+            grid-template-columns: 6.5rem minmax(0, 1fr) minmax(0, 1fr);
+            gap: 8px 16px;
+            align-items: end;
+            padding-top: 12px;
+            border-top: 1px solid #e9ecef;
+        }
+        .offer-line-qty {
+            width: 100%;
+            max-width: 6.5rem;
+        }
+        .offer-line-figure-label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+            color: #495057;
+        }
+        .offer-line-figure-value {
+            display: block;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+            white-space: nowrap;
+            color: #212529;
+        }
+        .offer-line-amount {
+            color: #0d6efd;
+        }
+        @media (max-width: 575.98px) {
+            .offer-line-main {
+                grid-template-columns: 56px minmax(0, 1fr);
+            }
+            .offer-line-visual,
+            .offer-line-visual img {
+                width: 56px;
+                height: 56px;
+            }
+        }
+        @container (max-width: 420px) {
+            .offer-line-figures {
+                grid-template-columns: 1fr 1fr;
+            }
+            .offer-line-qty-field {
+                grid-column: 1 / -1;
+            }
+        }
     </style>
 {% endblock %}
 
@@ -105,9 +223,29 @@
                                     </h6>
                                     {% for proposal in offer.productProposals %}
                                         {% set quantity = proposal.quoteItem.quantity ?: 1 %}
-                                        {% set unitRmb = proposal.minPrice %}
-                                        {% if proposal.maxPrice is not null and (unitRmb is null or proposal.maxPrice > unitRmb) %}
-                                            {% set unitRmb = proposal.maxPrice %}
+                                        {% set unitRmb = proposal.maxPrice is not null ? proposal.maxPrice : proposal.minPrice %}
+                                        {% set category = proposal.quoteItem.otherProductType ?: proposal.quoteItem.productType %}
+                                        {% set rawDescription = proposal.quoteItem.description|default('') %}
+                                        {% set descriptionBody = rawDescription %}
+                                        {% set productUrl = null %}
+                                        {% if 'https://' in rawDescription or 'http://' in rawDescription %}
+                                            {% set urlMarker = 'https://' in rawDescription ? 'https://' : 'http://' %}
+                                            {% set urlChunks = rawDescription|split(urlMarker) %}
+                                            {% set descriptionBody = urlChunks|first|trim %}
+                                            {% set urlTail = urlMarker ~ (urlChunks[1]|default('')) %}
+                                            {% set productUrl = urlTail|split(' ')|first %}
+                                            {% set afterUrl = urlTail|replace({(productUrl): ''})|trim %}
+                                            {% if afterUrl %}
+                                                {% set descriptionBody = (descriptionBody ~ ' ' ~ afterUrl)|trim %}
+                                            {% endif %}
+                                        {% endif %}
+                                        {% set productName = descriptionBody != '' ? descriptionBody : category %}
+                                        {% if ' - ' in descriptionBody %}
+                                            {% set nameParts = descriptionBody|split(' - ', 2) %}
+                                            {% set productName = nameParts|first|trim %}
+                                            {% set descriptionBody = nameParts[1]|default('')|trim %}
+                                        {% else %}
+                                            {% set descriptionBody = '' %}
                                         {% endif %}
                                         {% if unitRmb is not null %}
                                             {% set totalRmb = totalRmb + (unitRmb * quantity) %}
@@ -117,41 +255,70 @@
                                         {% if lineMga is not null %}
                                             {% set totalMga = totalMga + lineMga %}
                                         {% endif %}
-                                        <div class="border rounded p-3 mb-3">
-                                            <div class="row">
-                                                <div class="col-md-3">
+                                        <div class="border rounded p-3 mb-3 offer-line" data-unit-rmb="{{ unitRmb }}" data-rate="{{ offer.rmbMgaExchangeRate }}">
+                                            <div class="offer-line-main">
+                                                <div class="offer-line-visual">
                                                     {% if proposal.images|length > 0 %}
-                                                        <img src="{{ asset('uploads/product_proposals/' ~ proposal.images[0]) }}" 
-                                                             alt="Produit" class="img-fluid rounded">
+                                                        <img src="{{ asset('uploads/product_proposals/' ~ proposal.images[0]) }}" alt="">
                                                     {% endif %}
                                                 </div>
-                                                <div class="col-md-9">
-                                                    <h6 class="mb-1">{{ proposal.quoteItem.otherProductType ?: proposal.quoteItem.productType }}</h6>
-                                                    {% if proposal.quoteItem.description %}
-                                                        <p class="text-muted small mb-2">{{ proposal.quoteItem.description }}</p>
-                                                    {% endif %}
-                                                    <div class="row">
-                                                        <div class="col-6">
-                                                            <small class="text-muted">Quantité : {{ quantity }}</small>
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <small class="text-muted">
-                                                                Prix unitaire :
-                                                                {% if unitMga is not null %}
-                                                                    {{ unitMga|number_format(0, ',', ' ') }} MGA
-                                                                {% elseif unitRmb is not null %}
-                                                                    {{ unitRmb|number_format(2, ',', ' ') }} RMB
-                                                                {% else %}
-                                                                    Non défini
-                                                                {% endif %}
-                                                            </small>
-                                                        </div>
+                                                <div class="offer-line-copy">
+                                                    <div class="offer-line-title">
+                                                        <input class="form-check-input offer-line-selected" type="checkbox" value="1" checked
+                                                               id="line-selected-{{ proposal.id }}"
+                                                               name="lines[{{ proposal.id }}][selected]"
+                                                               form="accept-offer-form">
+                                                        <label for="line-selected-{{ proposal.id }}">
+                                                            <span class="offer-line-name">{{ productName }}</span>
+                                                        </label>
                                                     </div>
-                                                    {% if lineMga is not null %}
-                                                        <small class="text-muted">Montant : {{ lineMga|number_format(0, ',', ' ') }} MGA</small>
-                                                    {% elseif unitRmb is not null %}
-                                                        <small class="text-muted">Montant : {{ (unitRmb * quantity)|number_format(2, ',', ' ') }} RMB</small>
+                                                    {% if category and category != productName %}
+                                                        <p class="offer-line-category">{{ category }}</p>
                                                     {% endif %}
+                                                    {% if descriptionBody %}
+                                                        <details class="offer-line-details">
+                                                            <summary>Détail</summary>
+                                                            <p>{{ descriptionBody }}</p>
+                                                        </details>
+                                                    {% endif %}
+                                                    {% if productUrl %}
+                                                        <a class="offer-line-source" href="{{ productUrl }}" target="_blank" rel="noopener noreferrer">Fiche fournisseur</a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="offer-line-figures">
+                                                <div class="offer-line-qty-field">
+                                                    <label class="offer-line-figure-label" for="line-qty-{{ proposal.id }}">Quantité</label>
+                                                    <input type="number" class="form-control form-control-sm offer-line-qty"
+                                                           id="line-qty-{{ proposal.id }}"
+                                                           name="lines[{{ proposal.id }}][quantity]"
+                                                           form="accept-offer-form"
+                                                           value="{{ quantity }}"
+                                                           min="1" max="10000" step="1" required>
+                                                </div>
+                                                <div>
+                                                    <span class="offer-line-figure-label">Prix unitaire</span>
+                                                    <span class="offer-line-figure-value">
+                                                        {% if unitMga is not null %}
+                                                            {{ unitMga|number_format(0, ',', ' ') }} MGA
+                                                        {% elseif unitRmb is not null %}
+                                                            {{ unitRmb|number_format(2, ',', ' ') }} RMB
+                                                        {% else %}
+                                                            Non défini
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <span class="offer-line-figure-label">Montant</span>
+                                                    <span class="offer-line-figure-value offer-line-amount">
+                                                        {% if lineMga is not null %}
+                                                            {{ lineMga|number_format(0, ',', ' ') }} MGA
+                                                        {% elseif unitRmb is not null %}
+                                                            {{ (unitRmb * quantity)|number_format(2, ',', ' ') }} RMB
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -164,17 +331,15 @@
                                         <i class="fas fa-calculator me-2"></i>
                                         Récapitulatif
                                     </h6>
-                                    <div class="d-flex justify-content-between align-items-baseline gap-2">
-                                        <span class="fw-bold">Total :</span>
-                                        <strong class="text-primary fs-5 text-nowrap">
-                                            {% if offer.rmbMgaExchangeRate %}
-                                                {{ totalMga|number_format(0, ',', ' ') }} MGA
-                                            {% else %}
-                                                {{ totalRmb|number_format(2, ',', ' ') }} RMB
-                                            {% endif %}
-                                        </strong>
-                                    </div>
-                                    <p class="text-muted small mb-0 mt-2">Hors frais d'expédition. Les prix sont convertis du RMB au taux de l'offre{% if offer.rmbMgaExchangeRate %} ({{ offer.rmbMgaExchangeRate|number_format(2, ',', ' ') }}){% endif %}.</p>
+                                    <div class="fw-bold">Total</div>
+                                    <strong class="text-primary fs-5" id="offer-total">
+                                        {% if offer.rmbMgaExchangeRate %}
+                                            {{ totalMga|number_format(0, ',', ' ') }} MGA
+                                        {% else %}
+                                            {{ totalRmb|number_format(2, ',', ' ') }} RMB
+                                        {% endif %}
+                                    </strong>
+                                    <p class="text-muted small mb-0 mt-2">Hors frais d'expédition. Le total suit les lignes cochées et les quantités saisies, au taux du devis{% if offer.rmbMgaExchangeRate %} ({{ offer.rmbMgaExchangeRate|number_format(2, ',', ' ') }}){% endif %}.</p>
                                 </div>
                                 
                                 <!-- PDF de l'offre -->
@@ -207,7 +372,7 @@
                 </h6>
                 <p class="mb-2">Veuillez examiner attentivement cette offre avant de prendre votre décision :</p>
                 <ul class="mb-0">
-                    <li><strong>Accepter :</strong> Vous confirmez votre commande et nous procéderons à l'achat et à l'expédition</li>
+                    <li><strong>Accepter :</strong> Cochez les lignes à commander, ajustez les quantités, puis confirmez. Seul ce choix est enregistré.</li>
                     <li><strong>Refuser :</strong> Notre équipe vous proposera une nouvelle offre adaptée à vos besoins</li>
                 </ul>
             </div>
@@ -215,9 +380,9 @@
             <!-- Boutons d'action -->
             <div class="action-buttons">
                 <div class="d-flex gap-3 justify-content-center">
-                    <form method="post" action="{{ path('app_tracking_accept', {'token': trackingToken}) }}" class="d-inline">
-                        <button type="submit" class="btn btn-success btn-lg px-5" 
-                                onclick="return confirm('Êtes-vous sûr de vouloir accepter cette offre ? Cette action est définitive.')">
+                    <form method="post" id="accept-offer-form" action="{{ path('app_tracking_accept', {'token': trackingToken}) }}" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ offer.id) }}">
+                        <button type="submit" id="accept-offer-button" class="btn btn-success btn-lg px-5">
                             <i class="fas fa-check me-2"></i>
                             Accepter l'offre
                         </button>
@@ -247,16 +412,106 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        // Confirmation avant soumission
         document.addEventListener('DOMContentLoaded', function() {
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    const button = this.querySelector('button[type="submit"]');
+            const lines = document.querySelectorAll('.offer-line');
+            const totalEl = document.getElementById('offer-total');
+            const acceptForm = document.getElementById('accept-offer-form');
+            const acceptButton = document.getElementById('accept-offer-button');
+            const hasRate = lines.length > 0 && lines[0].dataset.rate !== '';
+
+            function formatNumber(value, digits) {
+                return value.toLocaleString('fr-FR', {
+                    minimumFractionDigits: digits,
+                    maximumFractionDigits: digits
+                });
+            }
+
+            function selectedCount() {
+                return document.querySelectorAll('.offer-line-selected:checked').length;
+            }
+
+            function recalc() {
+                let totalMga = 0;
+                let totalRmb = 0;
+                lines.forEach(function(line) {
+                    const checked = line.querySelector('.offer-line-selected').checked;
+                    const qtyInput = line.querySelector('.offer-line-qty');
+                    let qty = parseInt(qtyInput.value, 10);
+                    if (!Number.isFinite(qty) || qty < 1) {
+                        qty = 1;
+                    }
+                    if (qty > 10000) {
+                        qty = 10000;
+                    }
+                    const unitRmb = Number(line.dataset.unitRmb);
+                    const rate = Number(line.dataset.rate);
+                    const amountEl = line.querySelector('.offer-line-amount');
+                    line.classList.toggle('opacity-50', !checked);
+                    if (!checked) {
+                        amountEl.textContent = 'Non incluse';
+                        return;
+                    }
+                    if (Number.isFinite(rate) && rate > 0 && Number.isFinite(unitRmb)) {
+                        const lineMga = Math.round(unitRmb * rate * qty);
+                        totalMga += lineMga;
+                        amountEl.textContent = formatNumber(lineMga, 0) + ' MGA';
+                    } else if (Number.isFinite(unitRmb)) {
+                        const lineRmb = unitRmb * qty;
+                        totalRmb += lineRmb;
+                        amountEl.textContent = formatNumber(lineRmb, 2) + ' RMB';
+                    }
+                });
+                if (totalEl) {
+                    totalEl.textContent = hasRate
+                        ? formatNumber(totalMga, 0) + ' MGA'
+                        : formatNumber(totalRmb, 2) + ' RMB';
+                }
+                if (acceptButton) {
+                    acceptButton.disabled = selectedCount() === 0;
+                }
+            }
+
+            lines.forEach(function(line) {
+                line.querySelector('.offer-line-selected').addEventListener('change', recalc);
+                const qtyInput = line.querySelector('.offer-line-qty');
+                qtyInput.addEventListener('input', recalc);
+                qtyInput.addEventListener('change', function() {
+                    let qty = parseInt(qtyInput.value, 10);
+                    if (!Number.isFinite(qty) || qty < 1) {
+                        qtyInput.value = '1';
+                    } else if (qty > 10000) {
+                        qtyInput.value = '10000';
+                    }
+                    recalc();
+                });
+            });
+            recalc();
+
+            if (acceptForm) {
+                acceptForm.addEventListener('submit', function(event) {
+                    if (selectedCount() === 0) {
+                        event.preventDefault();
+                        window.alert('Sélectionnez au moins une ligne.');
+                        return;
+                    }
+                    const total = totalEl ? totalEl.textContent : '';
+                    if (!window.confirm('Accepter cette offre pour ' + total + ' ? Les quantités et les lignes choisies seront enregistrées. Cette action est définitive.')) {
+                        event.preventDefault();
+                        return;
+                    }
+                    acceptButton.disabled = true;
+                    acceptButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Traitement...';
+                });
+            }
+
+            const declineForm = document.querySelector('form[action*="/decline"]');
+            if (declineForm) {
+                declineForm.addEventListener('submit', function() {
+                    const button = declineForm.querySelector('button[type="submit"]');
                     button.disabled = true;
                     button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Traitement...';
                 });
-            });
+            }
         });
     </script>
 {% endblock %}
