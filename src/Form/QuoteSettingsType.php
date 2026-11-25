@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\QuoteSettings;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -15,6 +16,17 @@ class QuoteSettingsType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('quotesEnabled', CheckboxType::class, [
+                'label' => 'Demandes de devis activées',
+                'required' => false,
+                'help' => 'Décochez pour masquer le formulaire public et bloquer l’envoi des demandes de devis.',
+                'attr' => [
+                    'class' => 'form-check-input',
+                ],
+                'label_attr' => [
+                    'class' => 'form-check-label',
+                ],
+            ])
             ->add('itemPrice', IntegerType::class, [
                 'label' => 'Prix par article (en Ariary)',
                 'constraints' => [

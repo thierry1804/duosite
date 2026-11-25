@@ -8,13 +8,31 @@
 
 {% block body %}
     <h1 class="mb-4">Paramètres des devis</h1>
-    
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
     <div class="admin-card">
         <div class="admin-card-header">
             <h5 class="mb-0">Configuration des devis</h5>
         </div>
         <div class="admin-card-body">
             {{ form_start(form) }}
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        {{ form_widget(form.quotesEnabled) }}
+                        {{ form_label(form.quotesEnabled) }}
+                    </div>
+                    <div class="form-text">{{ form_help(form.quotesEnabled) }}</div>
+                    {{ form_errors(form.quotesEnabled) }}
+                    {% if not form.quotesEnabled.vars.checked %}
+                        <div class="alert alert-warning mt-3 mb-0 py-2">
+                            Les demandes de devis sont actuellement désactivées sur le site public.
+                        </div>
+                    {% endif %}
+                </div>
+
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="mb-3">
@@ -25,15 +43,15 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="alert alert-info">
                     <h5>Règles de gestion actuelles :</h5>
-                    <ul>
+                    <ul class="mb-0">
                         <li>Les 2 premiers articles d'une demande sont gratuits.</li>
                         <li>A partir du 3e article, chaque article supplémentaire est facturé {{ form.vars.value.itemPrice|number_format(0, ' ', '.') }} Ariary.</li>
                     </ul>
                 </div>
-                
+
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save me-2"></i> Enregistrer les modifications
@@ -42,4 +60,4 @@
             {{ form_end(form) }}
         </div>
     </div>
-{% endblock %} 
+{% endblock %}

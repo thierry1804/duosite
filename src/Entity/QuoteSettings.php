@@ -20,6 +20,9 @@ class QuoteSettings
     #[ORM\Column]
     private int $itemPrice = 2000;
 
+    #[ORM\Column]
+    private bool $quotesEnabled = true;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -44,6 +47,18 @@ class QuoteSettings
     public function setItemPrice(int $itemPrice): self
     {
         $this->itemPrice = $itemPrice;
+        return $this;
+    }
+
+    public function isQuotesEnabled(): bool
+    {
+        return $this->quotesEnabled;
+    }
+
+    public function setQuotesEnabled(bool $quotesEnabled): self
+    {
+        $this->quotesEnabled = $quotesEnabled;
+
         return $this;
     }
 } 

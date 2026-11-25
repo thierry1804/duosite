@@ -82,8 +82,11 @@ class QuoteController extends AbstractController
         $item = new QuoteItem();
         $quote->addItem($item);
         
+        $quoteSettings = $quoteSettingsRepository->getSettings();
+        $quotesSuspended = $quoteAndOrderSuspended || !$quoteSettings->isQuotesEnabled();
+
         $form = $this->createForm(QuoteType::class, $quote);
-        if ($request->isMethod('POST') && $quoteAndOrderSuspended) {
+        if ($request->isMethod('POST') && $quotesSuspended) {
             $this->addFlash(
                 'warning',
                 'L\'envoi de demandes de devis est momentanément indisponible. Merci de contacter le service commercial.'
@@ -93,7 +96,6 @@ class QuoteController extends AbstractController
         }
         $form->handleRequest($request);
 
-        $quoteSettings = $quoteSettingsRepository->getSettings();
         $freeItemsLimit = 2;
         $itemPrice = $quoteSettings->getItemPrice();
 
@@ -323,6 +325,7 @@ class QuoteController extends AbstractController
             'freeItemsLimit' => $freeItemsLimit,
             'itemPrice' => $itemPrice,
             'primaryContactPhone' => $siteContactProvider->getPrimaryPhone()?->getNumber() ?? '',
+            'quotesSuspended' => $quotesSuspended,
         ]);
     }
     
