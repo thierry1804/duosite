@@ -19,7 +19,7 @@ class QuoteSettingsType extends AbstractType
             ->add('quotesEnabled', CheckboxType::class, [
                 'label' => 'Demandes de devis activées',
                 'required' => false,
-                'help' => 'Décochez pour masquer le formulaire public et bloquer l’envoi des demandes de devis.',
+                'help' => 'Décochez pour bloquer l’envoi des demandes de devis sur le site public (le formulaire reste visible avec un message).',
                 'attr' => [
                     'class' => 'form-check-input',
                 ],
