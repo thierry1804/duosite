@@ -21,6 +21,39 @@
             border-top: 1px solid #e9ecef;
             padding: 20px;
             margin: 0 -20px -20px -20px;
+            z-index: 30;
+        }
+        .offer-recap {
+            position: sticky;
+            top: 16px;
+            align-self: flex-start;
+            z-index: 20;
+        }
+        .offer-products {
+            display: flex;
+            flex-direction: column;
+        }
+        .offer-total-mobile {
+            display: none;
+            order: -1;
+        }
+        @media (max-width: 767.98px) {
+            .offer-recap {
+                position: static;
+            }
+            .offer-total-mobile {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                gap: 12px;
+                position: sticky;
+                top: 0;
+                z-index: 20;
+                margin: 0 0 16px;
+                padding: 12px 0;
+                background: #fff;
+                border-bottom: 1px solid #e9ecef;
+            }
         }
         .status-badge {
             font-size: 0.9em;
@@ -207,7 +240,7 @@
                 <div class="card-body">
                     {% if offer %}
                         <div class="row">
-                            <div class="col-md-8">
+                            <div class="col-md-8 offer-products">
                                 <h6 class="text-primary">{{ offer.title }}</h6>
                                 {% if offer.description %}
                                     <p class="text-muted">{{ offer.description }}</p>
@@ -324,15 +357,25 @@
                                         </div>
                                     {% endfor %}
                                 {% endif %}
+                                <div class="offer-total-mobile">
+                                    <span class="fw-bold">Total</span>
+                                    <strong class="text-primary offer-total">
+                                        {% if offer.rmbMgaExchangeRate %}
+                                            {{ totalMga|number_format(0, ',', ' ') }} MGA
+                                        {% else %}
+                                            {{ totalRmb|number_format(2, ',', ' ') }} RMB
+                                        {% endif %}
+                                    </strong>
+                                </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4 offer-recap">
                                 <div class="bg-light rounded p-3">
                                     <h6 class="text-primary mb-3">
                                         <i class="fas fa-calculator me-2"></i>
                                         Récapitulatif
                                     </h6>
                                     <div class="fw-bold">Total</div>
-                                    <strong class="text-primary fs-5" id="offer-total">
+                                    <strong class="text-primary fs-5 offer-total" id="offer-total">
                                         {% if offer.rmbMgaExchangeRate %}
                                             {{ totalMga|number_format(0, ',', ' ') }} MGA
                                         {% else %}
@@ -343,16 +386,17 @@
                                 </div>
                                 
                                 <!-- PDF de l'offre -->
-                                {% if offer.pdfFilePath %}
-                                    <div class="mt-3">
-                                        <a href="{{ asset(offer.pdfFilePath) }}" 
-                                           class="btn btn-outline-primary w-100" 
-                                           target="_blank">
-                                            <i class="fas fa-file-pdf me-2"></i>
-                                            Télécharger l'offre PDF
-                                        </a>
-                                    </div>
-                                {% endif %}
+                                <div class="mt-3">
+                                    <button type="submit"
+                                            id="download-offer-pdf"
+                                            class="btn btn-outline-primary w-100"
+                                            form="accept-offer-form"
+                                            formaction="{{ path('app_tracking_respond_pdf', {token: trackingToken}) }}"
+                                            formtarget="_blank">
+                                        <i class="fas fa-file-pdf me-2"></i>
+                                        Télécharger l'offre PDF
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     {% else %}
@@ -414,7 +458,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const lines = document.querySelectorAll('.offer-line');
-            const totalEl = document.getElementById('offer-total');
+            const totalEls = document.querySelectorAll('.offer-total');
             const acceptForm = document.getElementById('accept-offer-form');
             const acceptButton = document.getElementById('accept-offer-button');
             const hasRate = lines.length > 0 && lines[0].dataset.rate !== '';
@@ -461,11 +505,12 @@
                         amountEl.textContent = formatNumber(lineRmb, 2) + ' RMB';
                     }
                 });
-                if (totalEl) {
-                    totalEl.textContent = hasRate
-                        ? formatNumber(totalMga, 0) + ' MGA'
-                        : formatNumber(totalRmb, 2) + ' RMB';
-                }
+                const totalText = hasRate
+                    ? formatNumber(totalMga, 0) + ' MGA'
+                    : formatNumber(totalRmb, 2) + ' RMB';
+                totalEls.forEach(function(totalEl) {
+                    totalEl.textContent = totalText;
+                });
                 if (acceptButton) {
                     acceptButton.disabled = selectedCount() === 0;
                 }
@@ -494,7 +539,10 @@
                         window.alert('Sélectionnez au moins une ligne.');
                         return;
                     }
-                    const total = totalEl ? totalEl.textContent : '';
+                    if (event.submitter && event.submitter.id === 'download-offer-pdf') {
+                        return;
+                    }
+                    const total = totalEls.length ? totalEls[0].textContent : '';
                     if (!window.confirm('Accepter cette offre pour ' + total + ' ? Les quantités et les lignes choisies seront enregistrées. Cette action est définitive.')) {
                         event.preventDefault();
                         return;

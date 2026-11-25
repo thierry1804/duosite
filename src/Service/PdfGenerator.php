@@ -30,7 +30,29 @@ class PdfGenerator
         $this->legalPageRepository = $legalPageRepository;
     }
 
-    public function generateQuoteOfferPdf(QuoteOffer $offer): string
+    /**
+     * @param array<int, int>|null $quantities Identifiants de propositions à inclure et leur quantité. Null conserve toutes les lignes enregistrées.
+     */
+    public function generateQuoteOfferPdf(QuoteOffer $offer, ?array $quantities = null): string
+    {
+        $pdfDirectory = $this->publicDir . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'quote_offers' . DIRECTORY_SEPARATOR . 'pdf';
+        if (!is_dir($pdfDirectory) && !mkdir($pdfDirectory, 0755, true) && !is_dir($pdfDirectory)) {
+            throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $pdfDirectory));
+        }
+
+        $filename = 'offer-' . $offer->getQuote()->getQuoteNumber() . '-' . $offer->getId() . '.pdf';
+        $filePath = '/uploads/quote_offers/pdf/' . $filename;
+        $fullPath = $this->publicDir . str_replace('/', DIRECTORY_SEPARATOR, $filePath);
+
+        file_put_contents($fullPath, $this->buildQuoteOfferPdf($offer, $quantities));
+
+        return $filePath;
+    }
+
+    /**
+     * @param array<int, int>|null $quantities
+     */
+    public function buildQuoteOfferPdf(QuoteOffer $offer, ?array $quantities = null): string
     {
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
@@ -54,23 +76,13 @@ class PdfGenerator
             'catalog_images' => $this->buildCatalogImages($offer),
             'cgv_html' => $cgvPage?->getContent() ?? '',
             'cgv_title' => $cgvPage?->getTitle() ?? 'CONDITIONS GÉNÉRALES DE VENTE',
+            'selected_quantities' => $quantities,
         ]);
 
         $dompdf->loadHtml($html);
         $dompdf->render();
 
-        $pdfDirectory = $this->publicDir . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'quote_offers' . DIRECTORY_SEPARATOR . 'pdf';
-        if (!is_dir($pdfDirectory) && !mkdir($pdfDirectory, 0755, true) && !is_dir($pdfDirectory)) {
-            throw new \RuntimeException(sprintf('Le répertoire "%s" n\'a pas pu être créé', $pdfDirectory));
-        }
-
-        $filename = 'offer-' . $offer->getQuote()->getQuoteNumber() . '-' . $offer->getId() . '.pdf';
-        $filePath = '/uploads/quote_offers/pdf/' . $filename;
-        $fullPath = $this->publicDir . str_replace('/', DIRECTORY_SEPARATOR, $filePath);
-
-        file_put_contents($fullPath, $dompdf->output());
-
-        return $filePath;
+        return $dompdf->output();
     }
 
     /**

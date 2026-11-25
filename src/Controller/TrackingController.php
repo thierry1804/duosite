@@ -443,6 +443,60 @@ class TrackingController extends AbstractController
     }
 
     /**
+     * PDF de l'offre limité aux lignes et quantités choisies sur la page de réponse.
+     */
+    #[Route('/tracking/{token}/respond/pdf', name: 'app_tracking_respond_pdf', methods: ['POST'])]
+    public function downloadRespondPdf(string $token, Request $request): Response
+    {
+        $quote = $this->quoteRepository->findOneBy(['trackingToken' => $token]);
+
+        if (!$quote) {
+            throw $this->createNotFoundException('Token de suivi invalide ou devis introuvable.');
+        }
+
+        if ($quote->getStatus() !== 'waiting_customer') {
+            $this->addFlash('error', 'Cette offre n\'est plus en attente de réponse.');
+
+            return $this->redirectToRoute('app_tracking_show', ['token' => $token]);
+        }
+
+        $offer = $quote->getOffers()->last();
+        if (!$offer) {
+            throw $this->createNotFoundException('Aucune offre disponible pour ce devis.');
+        }
+
+        if (!$this->isCsrfTokenValid('accept'.$offer->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'La page a expiré. Rechargez-la puis réessayez.');
+
+            return $this->redirectToRoute('app_tracking_respond', ['token' => $token]);
+        }
+
+        $selection = $this->readAcceptedLines($offer, $request);
+        if ($selection['error'] !== null) {
+            $this->addFlash('error', $selection['error']);
+
+            return $this->redirectToRoute('app_tracking_respond', ['token' => $token]);
+        }
+
+        try {
+            $binary = $this->pdfGenerator->buildQuoteOfferPdf($offer, $selection['quantities']);
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Le PDF n\'a pas pu être généré.');
+
+            return $this->redirectToRoute('app_tracking_respond', ['token' => $token]);
+        }
+
+        $response = new Response($binary);
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set(
+            'Content-Disposition',
+            'attachment; filename="offre-'.$quote->getQuoteNumber().'.pdf"'
+        );
+
+        return $response;
+    }
+
+    /**
      * Accepter l'offre via token de tracking
      */
     #[Route('/tracking/{token}/accept', name: 'app_tracking_accept', methods: ['POST'])]

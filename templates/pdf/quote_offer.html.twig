@@ -219,11 +219,20 @@
                 </thead>
                 <tbody>
                     {% set totalMaxPrice = 0 %}
+                    {% set includedIndex = 0 %}
                     {% for proposal in offer.productProposals %}
+                    {% set lineQuantity = null %}
+                    {% if selected_quantities is null %}
+                        {% set lineQuantity = proposal.quoteItem ? (proposal.quoteItem.quantity ?: 1) : 1 %}
+                    {% elseif selected_quantities[proposal.id] is defined %}
+                        {% set lineQuantity = selected_quantities[proposal.id] %}
+                    {% endif %}
+                    {% if lineQuantity is not null %}
+                    {% set includedIndex = includedIndex + 1 %}
                     <tr>
                         <td>
                             {% if proposal.quoteItem %}
-                                #{{ loop.index }} - 
+                                #{{ includedIndex }} - 
                                 {{ proposal.quoteItem.productType }} - 
                                 {{ proposal.quoteItem.description|length > 50 ? proposal.quoteItem.description|slice(0, 50) ~ '...' : proposal.quoteItem.description }}
                             {% else %}
@@ -238,18 +247,13 @@
                             {% endif %}
                         </td>
                         <td style="text-align: center;">
-                            {% if proposal.quoteItem %}
-                                {{ proposal.quoteItem.quantity }}
-                            {% else %}
-                                1
-                            {% endif %}
+                            {{ lineQuantity }}
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
                             {% if proposal.maxPrice %}
                                 {% set avgPrice = proposal.maxPrice %}
-                                {% set quantity = proposal.quoteItem ? (proposal.quoteItem.quantity ?: 1) : 1 %}
-                                {{ (avgPrice * quantity)|number_format(2, ',', ' ') }} RMB
-                                {% set totalMaxPrice = totalMaxPrice + (avgPrice * quantity) %}
+                                {{ (avgPrice * lineQuantity)|number_format(2, ',', ' ') }} RMB
+                                {% set totalMaxPrice = totalMaxPrice + (avgPrice * lineQuantity) %}
                             {% else %}
                                 Non défini
                             {% endif %}
@@ -265,6 +269,7 @@
                             {% if proposal.comments %}<strong>Commentaires :</strong> {{ proposal.comments|nl2br }}{% endif %}
                         </td>
                     </tr>
+                    {% endif %}
                     {% endif %}
                     {% endfor %}
                 </tbody>
@@ -344,10 +349,20 @@
         <div style="page-break-before: always;" class="info-section">
             <h3>Catalogue des produits proposés</h3>
             {% if offer.productProposals|length > 0 %}
+                {% set catalogIndex = 0 %}
                 {% for proposal in offer.productProposals %}
-                    <div style="margin-bottom: 30px;{% if loop.index > 1 %} page-break-before: always;{% endif %}">
+                    {% set lineQuantity = null %}
+                    {% if selected_quantities is null %}
+                        {% set lineQuantity = proposal.quoteItem ? (proposal.quoteItem.quantity ?: 1) : 1 %}
+                    {% elseif selected_quantities[proposal.id] is defined %}
+                        {% set lineQuantity = selected_quantities[proposal.id] %}
+                    {% endif %}
+                    {% if lineQuantity is not null %}
+                    {% set catalogIndex = catalogIndex + 1 %}
+                    <div style="margin-bottom: 30px;{% if catalogIndex > 1 %} page-break-before: always;{% endif %}">
                         <h4 style="margin-bottom: 8px; font-size: 14px; color: #0d6efd;">
-                            #{{ loop.index }} - {{ proposal.quoteItem ? proposal.quoteItem.productType : 'Produit' }}
+                            #{{ catalogIndex }} - {{ proposal.quoteItem ? proposal.quoteItem.productType : 'Produit' }}
+                            — Quantité : {{ lineQuantity }}
                         </h4>
                         {% if proposal.dimensions or proposal.weight %}
                         <p style="font-size: 11px; color: #555; margin: 0 0 12px 0;">
@@ -378,6 +393,7 @@
                             <p style="font-style: italic; color: #666; text-align: center;">Aucune image disponible</p>
                         {% endif %}
                     </div>
+                    {% endif %}
                 {% endfor %}
             {% else %}
                 <p>Aucun catalogue de produits proposé pour cette offre.</p>
