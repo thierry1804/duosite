@@ -96,12 +96,27 @@
                                 {% endif %}
                                 
                                 <!-- Produits proposés -->
+                                {% set totalRmb = 0 %}
+                                {% set totalMga = 0 %}
                                 {% if offer.productProposals|length > 0 %}
                                     <h6 class="mt-4 mb-3">
                                         <i class="fas fa-box me-2"></i>
                                         Produits proposés
                                     </h6>
                                     {% for proposal in offer.productProposals %}
+                                        {% set quantity = proposal.quoteItem.quantity ?: 1 %}
+                                        {% set unitRmb = proposal.minPrice %}
+                                        {% if proposal.maxPrice is not null and (unitRmb is null or proposal.maxPrice > unitRmb) %}
+                                            {% set unitRmb = proposal.maxPrice %}
+                                        {% endif %}
+                                        {% if unitRmb is not null %}
+                                            {% set totalRmb = totalRmb + (unitRmb * quantity) %}
+                                        {% endif %}
+                                        {% set unitMga = (unitRmb is not null and offer.rmbMgaExchangeRate) ? unitRmb * offer.rmbMgaExchangeRate : null %}
+                                        {% set lineMga = unitMga is not null ? (unitMga * quantity)|round : null %}
+                                        {% if lineMga is not null %}
+                                            {% set totalMga = totalMga + lineMga %}
+                                        {% endif %}
                                         <div class="border rounded p-3 mb-3">
                                             <div class="row">
                                                 <div class="col-md-3">
@@ -111,18 +126,32 @@
                                                     {% endif %}
                                                 </div>
                                                 <div class="col-md-9">
-                                                    <h6>{{ proposal.name }}</h6>
-                                                    {% if proposal.description %}
-                                                        <p class="text-muted small">{{ proposal.description }}</p>
+                                                    <h6 class="mb-1">{{ proposal.quoteItem.otherProductType ?: proposal.quoteItem.productType }}</h6>
+                                                    {% if proposal.quoteItem.description %}
+                                                        <p class="text-muted small mb-2">{{ proposal.quoteItem.description }}</p>
                                                     {% endif %}
                                                     <div class="row">
                                                         <div class="col-6">
-                                                            <small class="text-muted">Quantité : {{ proposal.quantity }}</small>
+                                                            <small class="text-muted">Quantité : {{ quantity }}</small>
                                                         </div>
                                                         <div class="col-6">
-                                                            <small class="text-muted">Prix unitaire : {{ proposal.unitPrice }} MGA</small>
+                                                            <small class="text-muted">
+                                                                Prix unitaire :
+                                                                {% if unitMga is not null %}
+                                                                    {{ unitMga|number_format(0, ',', ' ') }} MGA
+                                                                {% elseif unitRmb is not null %}
+                                                                    {{ unitRmb|number_format(2, ',', ' ') }} RMB
+                                                                {% else %}
+                                                                    Non défini
+                                                                {% endif %}
+                                                            </small>
                                                         </div>
                                                     </div>
+                                                    {% if lineMga is not null %}
+                                                        <small class="text-muted">Montant : {{ lineMga|number_format(0, ',', ' ') }} MGA</small>
+                                                    {% elseif unitRmb is not null %}
+                                                        <small class="text-muted">Montant : {{ (unitRmb * quantity)|number_format(2, ',', ' ') }} RMB</small>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>
@@ -135,10 +164,17 @@
                                         <i class="fas fa-calculator me-2"></i>
                                         Récapitulatif
                                     </h6>
-                                    <div class="d-flex justify-content-between">
+                                    <div class="d-flex justify-content-between align-items-baseline gap-2">
                                         <span class="fw-bold">Total :</span>
-                                        <strong class="text-primary fs-5">{{ offer.totalPrice|number_format(0, ',', ' ') }} MGA</strong>
+                                        <strong class="text-primary fs-5 text-nowrap">
+                                            {% if offer.rmbMgaExchangeRate %}
+                                                {{ totalMga|number_format(0, ',', ' ') }} MGA
+                                            {% else %}
+                                                {{ totalRmb|number_format(2, ',', ' ') }} RMB
+                                            {% endif %}
+                                        </strong>
                                     </div>
+                                    <p class="text-muted small mb-0 mt-2">Hors frais d'expédition. Les prix sont convertis du RMB au taux de l'offre{% if offer.rmbMgaExchangeRate %} ({{ offer.rmbMgaExchangeRate|number_format(2, ',', ' ') }}){% endif %}.</p>
                                 </div>
                                 
                                 <!-- PDF de l'offre -->
