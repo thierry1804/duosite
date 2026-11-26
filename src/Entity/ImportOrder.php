@@ -423,10 +423,27 @@ class ImportOrder
         };
     }
 
+    /**
+     * Total de la commande (somme des lignes), en MGA, chaîne décimale à 2 décimales.
+     * Utilisé notamment pour créer le lien de paiement Papi (mobile money).
+     *
+     * Calculé en float plutôt qu'avec getLineTotal()/bcmath : l'extension bcmath n'est
+     * pas garantie installée sur tous les environnements et les montants MGA n'ont pas
+     * de décimales significatives en pratique.
+     */
+    public function getTotalAmount(): string
+    {
+        $total = 0.0;
+        foreach ($this->items as $item) {
+            $total += (float) $item->getProductPrice() * $item->getQuantity();
+        }
+
+        return number_format($total, 2, '.', '');
+    }
+
     public static function validateBusinessRules(self $order, ExecutionContextInterface $context): void
     {
         self::validatePhone($order, $context);
-        self::validatePaymentReference($order, $context);
     }
 
     private static function validatePhone(self $order, ExecutionContextInterface $context): void
@@ -451,19 +468,5 @@ class ImportOrder
         $context->buildViolation('Numéro invalide. Format attendu : 020 XX XXX XX (fixe) ou 03X XX XXX XX (mobile).')
             ->atPath('phone')
             ->addViolation();
-    }
-
-    private static function validatePaymentReference(self $order, ExecutionContextInterface $context): void
-    {
-        if ($order->getPaymentMethod() === 'cash') {
-            return;
-        }
-
-        $reference = trim((string) $order->getPaymentReference());
-        if ($reference === '') {
-            $context->buildViolation('La référence du paiement est obligatoire pour ce mode de paiement.')
-                ->atPath('paymentReference')
-                ->addViolation();
-        }
     }
 }

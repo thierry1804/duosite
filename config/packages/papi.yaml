@@ -1,0 +1,6 @@
+# Papi - passerelle de paiement mobile money Madagascar (MVola, Orange Money, Airtel Money)
+# https://docs.papi.mg
+parameters:
+    papi.api_key: '%env(PAPI_API_KEY)%'
+    papi.webhook_secret: '%env(PAPI_WEBHOOK_SECRET)%'
+    papi.api_base_url: '%env(PAPI_API_BASE_URL)%'

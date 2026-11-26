@@ -111,5 +111,13 @@ services:
         arguments:
             $notifierSecret: '%notifier_secret%'
 
+    # Passerelle de paiement mobile money Papi (MVola, Orange Money, Airtel Money)
+    App\Service\PapiPaymentService:
+        public: true
+        arguments:
+            $apiKey: '%papi.api_key%'
+            $webhookSecret: '%papi.webhook_secret%'
+            $apiBaseUrl: '%papi.api_base_url%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

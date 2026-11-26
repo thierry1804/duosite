@@ -7,19 +7,30 @@ use App\Entity\ImportOrderItem;
 use App\Form\ImportOrderType;
 use App\Repository\ImportOrderRepository;
 use App\Repository\ImportProductRepository;
+use App\Service\PapiPaymentService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class ImportOrderController extends AbstractController
 {
+    /** Méthodes de paiement réglées en ligne via Papi (mobile money). */
+    private const PAPI_PROVIDERS = [
+        'mvola' => 'MVOLA',
+        'orange_money' => 'ORANGE_MONEY',
+        'airtel_money' => 'AIRTEL_MONEY',
+    ];
+
     #[Route('/api/import-product/{code}', name: 'api_import_product_by_code', methods: ['GET'])]
     public function apiProductByCode(Request $request, string $code, ImportProductRepository $productRepository): JsonResponse
     {
@@ -45,7 +56,9 @@ class ImportOrderController extends AbstractController
         bool $quoteAndOrderSuspended,
         EntityManagerInterface $entityManager,
         ImportProductRepository $productRepository,
-        MailerInterface $mailer
+        MailerInterface $mailer,
+        PapiPaymentService $papiPaymentService,
+        LoggerInterface $logger,
     ): Response {
         $order = new ImportOrder();
         if ($order->getItems()->count() === 0) {
@@ -174,6 +187,13 @@ class ImportOrderController extends AbstractController
                 // Log but do not block
             }
 
+            // Pour les paiements mobile money (pas en espèces), créer un lien de paiement Papi
+            // et rediriger le client vers la page de paiement sécurisée.
+            $redirect = $this->createPapiPaymentRedirect($order, $papiPaymentService, $logger);
+            if ($redirect !== null) {
+                return $redirect;
+            }
+
             return $this->redirectToRoute('app_import_order_confirmation', ['token' => $order->getTrackingToken()]);
         }
 
@@ -181,6 +201,59 @@ class ImportOrderController extends AbstractController
             'form' => $form->createView(),
             'hashPayload' => $hashPayload,
         ]);
+    }
+
+    /**
+     * Crée un lien de paiement Papi pour une commande payée en mobile money et renvoie
+     * la redirection vers ce lien, ou null si la commande est en espèces ou si la création
+     * échoue (dans ce cas un flash warning est ajouté et l'appelant doit continuer normalement).
+     */
+    private function createPapiPaymentRedirect(
+        ImportOrder $order,
+        PapiPaymentService $papiPaymentService,
+        LoggerInterface $logger
+    ): ?RedirectResponse {
+        $provider = self::PAPI_PROVIDERS[$order->getPaymentMethod()] ?? null;
+        if ($provider === null) {
+            return null;
+        }
+
+        $confirmationUrl = $this->generateUrl(
+            'app_import_order_confirmation',
+            ['token' => $order->getTrackingToken()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+        $notificationUrl = $this->generateUrl(
+            'app_papi_notification',
+            [],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        try {
+            $paymentLink = $papiPaymentService->createPaymentLink(
+                (float) $order->getTotalAmount(),
+                $order->getFullName(),
+                $order->getOrderNumber(),
+                'Commande ' . $order->getOrderNumber() . ' - Duo Import MDG',
+                $notificationUrl,
+                $confirmationUrl,
+                $confirmationUrl,
+                $provider
+            );
+
+            return new RedirectResponse($paymentLink['paymentLink']);
+        } catch (\Throwable $e) {
+            $logger->error('Papi: impossible de créer le lien de paiement pour la commande', [
+                'order_number' => $order->getOrderNumber(),
+                'error' => $e->getMessage(),
+            ]);
+            $this->addFlash(
+                'warning',
+                'Le paiement en ligne est momentanément indisponible. Merci de réessayer dans quelques instants ou de nous contacter.'
+            );
+
+            return null;
+        }
     }
 
     private function resolveHashProductCode(array $data): string
@@ -240,7 +313,33 @@ class ImportOrderController extends AbstractController
         }
         return $this->render('import_order/confirmation.html.twig', [
             'order' => $order,
+            'isMobileMoneyPending' => $order->getStatus() === 'registered'
+                && array_key_exists($order->getPaymentMethod(), self::PAPI_PROVIDERS),
         ]);
+    }
+
+    /**
+     * Relance un paiement mobile money pour une commande déjà créée mais pas encore payée
+     * (ex. après un échec temporaire de la passerelle au moment de la commande).
+     */
+    #[Route('/commande-import/confirmation/{token}/payer', name: 'app_import_order_pay', methods: ['GET'])]
+    public function pay(
+        string $token,
+        ImportOrderRepository $orderRepository,
+        PapiPaymentService $papiPaymentService,
+        LoggerInterface $logger
+    ): Response {
+        $order = $orderRepository->findOneByTrackingToken($token);
+        if (!$order) {
+            throw $this->createNotFoundException('Lien de confirmation invalide.');
+        }
+        if ($order->getStatus() !== 'registered' || !array_key_exists($order->getPaymentMethod(), self::PAPI_PROVIDERS)) {
+            return $this->redirectToRoute('app_import_order_confirmation', ['token' => $token]);
+        }
+
+        $redirect = $this->createPapiPaymentRedirect($order, $papiPaymentService, $logger);
+
+        return $redirect ?? $this->redirectToRoute('app_import_order_confirmation', ['token' => $token]);
     }
 
     #[Route('/suivi-commande/{token}', name: 'app_import_order_tracking_show', methods: ['GET'])]

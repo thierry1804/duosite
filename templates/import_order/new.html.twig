@@ -611,9 +611,7 @@
                         <div id="tour-payment-section">
                         <h2 class="order-panel-title">Paiement</h2>
                         {{ form_row(form.paymentMethod, {'attr': {'class': 'form-select', 'id': 'paymentMethodSelect'}}) }}
-                        <div id="paymentReferenceWrapper" class="mb-3">
-                            {{ form_row(form.paymentReference, {'attr': {'class': 'form-control'}}) }}
-                        </div>
+                        <p class="import-products-hint" id="paymentMethodHint" style="margin-top:-0.25rem;"></p>
                         </div>
 
                         <div id="tour-shipping-section" class="mb-3">
@@ -650,29 +648,19 @@
         var form = document.getElementById('importOrderForm');
         var phoneInput = document.getElementById('phoneInput') || (form && form.querySelector('input[name*="[phone]"]'));
         var paymentMethodSelect = document.getElementById('paymentMethodSelect') || (form && form.querySelector('select[name*="[paymentMethod]"]'));
-        var paymentReferenceWrapper = document.getElementById('paymentReferenceWrapper');
+        var paymentMethodHint = document.getElementById('paymentMethodHint');
 
-        function togglePaymentReference() {
-            if (!paymentReferenceWrapper || !paymentMethodSelect) return;
-            var refInput = paymentReferenceWrapper.querySelector('input');
+        function updatePaymentMethodHint() {
+            if (!paymentMethodHint || !paymentMethodSelect) return;
             if (paymentMethodSelect.value === 'cash') {
-                paymentReferenceWrapper.style.display = 'none';
-                if (refInput) {
-                    refInput.removeAttribute('required');
-                    refInput.disabled = true;
-                    refInput.value = '';
-                }
+                paymentMethodHint.textContent = 'Vous réglerez en espèces dans notre local lors du retrait.';
             } else {
-                paymentReferenceWrapper.style.display = 'block';
-                if (refInput) {
-                    refInput.required = true;
-                    refInput.disabled = false;
-                }
+                paymentMethodHint.textContent = 'Après validation, vous serez redirigé vers une page de paiement sécurisée pour régler en ligne.';
             }
         }
         if (paymentMethodSelect) {
-            paymentMethodSelect.addEventListener('change', togglePaymentReference);
-            togglePaymentReference();
+            paymentMethodSelect.addEventListener('change', updatePaymentMethodHint);
+            updatePaymentMethodHint();
         }
 
         if (phoneInput) {
@@ -1211,7 +1199,7 @@
                     element: "#tour-payment-section",
                     popover: {
                         title: "Paiement",
-                        description: "Choisissez votre mode de paiement. Pour MVola, Orange Money ou Airtel Money, indiquez la référence de la transaction.",
+                        description: "Choisissez votre mode de paiement. Pour MVola, Orange Money ou Airtel Money, vous serez redirigé vers une page sécurisée pour payer en ligne après validation.",
                         side: "left"
                     }
                 },

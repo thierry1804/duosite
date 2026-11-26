@@ -53,11 +53,6 @@ class ImportOrderType extends AbstractType
                 ],
                 'attr' => ['class' => 'form-control form-select'],
             ])
-            ->add('paymentReference', TextType::class, [
-                'label' => 'Référence du paiement',
-                'required' => false,
-                'attr' => ['class' => 'form-control'],
-            ])
             ->add('shippingType', ChoiceType::class, [
                 'label' => 'Type d\'envoi',
                 'choices' => [
