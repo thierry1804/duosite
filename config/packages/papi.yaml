@@ -1,6 +1,15 @@
 # Papi - passerelle de paiement mobile money Madagascar (MVola, Orange Money, Airtel Money)
 # https://docs.papi.mg
+#
+# Valeurs par défaut explicites : PAPI_API_KEY/PAPI_WEBHOOK_SECRET ne sont pas forcément
+# définies dans l'environnement (CI, ou tant que l'admin n'a pas configuré le serveur).
+# Sans ce défaut, Symfony lève EnvNotFoundException dès que PapiPaymentService est
+# instancié (y compris sur un simple GET du formulaire de commande) -> erreur 500.
 parameters:
+    env(PAPI_API_KEY): ''
+    env(PAPI_WEBHOOK_SECRET): ''
+    env(PAPI_API_BASE_URL): 'https://app.papi.mg/engine/api'
+
     papi.api_key: '%env(PAPI_API_KEY)%'
     papi.webhook_secret: '%env(PAPI_WEBHOOK_SECRET)%'
     papi.api_base_url: '%env(PAPI_API_BASE_URL)%'
