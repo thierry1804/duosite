@@ -34,12 +34,16 @@ use App\Service\QuoteOfferClientPdfMailService;
 use App\Service\SiteContactProvider;
 use App\Service\UserIdentityTracker;
 use App\Service\QuoteTrackerService;
+use App\Service\PapiPaymentService;
 use App\Event\QuoteCreatedEvent;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Psr\Log\LoggerInterface;
 
 class QuoteController extends AbstractController
 {
@@ -59,7 +63,9 @@ class QuoteController extends AbstractController
         UserIdentityTracker $identityTracker,
         QuoteTrackerService $quoteTrackerService,
         EventDispatcherInterface $eventDispatcher,
-        SiteContactProvider $siteContactProvider
+        SiteContactProvider $siteContactProvider,
+        PapiPaymentService $papiPaymentService,
+        LoggerInterface $logger
     ): Response
     {
         $quote = new Quote();
@@ -102,7 +108,6 @@ class QuoteController extends AbstractController
         if ($form->isSubmitted()) {
             // Vérifier que chaque item a les champs obligatoires remplis
             $itemsValid = true;
-            $paymentReferenceValid = true;
             foreach ($quote->getItems() as $item) {
                 if (empty($item->getProductType()) || empty($item->getDescription()) || empty($item->getQuantity())) {
                     $itemsValid = false;
@@ -118,18 +123,16 @@ class QuoteController extends AbstractController
 
             $itemCount = count($quote->getItems());
             if ($itemCount > $freeItemsLimit) {
-                $transactionReference = trim((string) $quote->getTransactionReference());
-                if ($transactionReference === '') {
-                    $paymentReferenceValid = false;
-                }
-                // Sur une nouvelle demande publique, le paiement ne peut pas être auto-confirmé côté client.
+                // Le paiement n'est plus déclaré par le client : il sera réglé en ligne via Papi
+                // après la création du devis, et confirmé automatiquement par le webhook de paiement.
                 $quote->setPaymentStatus('pending');
+                $quote->setTransactionReference(null);
             } else {
                 $quote->setPaymentStatus('not_required');
                 $quote->setTransactionReference(null);
             }
             
-            if ($form->isValid() && $itemsValid && $paymentReferenceValid) {
+            if ($form->isValid() && $itemsValid) {
                 try {
                     // Définir le statut initial
                     $quote->setStatus('pending');
@@ -298,7 +301,18 @@ class QuoteController extends AbstractController
                     }
                     
                     $this->addFlash('success', 'Votre demande de devis a été envoyée avec succès !');
-                    
+
+                    // Si des frais sont dus (plus de 2 articles), rediriger vers le paiement en ligne
+                    // Papi (MVola/Orange Money/Airtel Money) au lieu de demander une référence déclarée.
+                    if ($feeDetails['paymentRequired']) {
+                        $redirect = $this->createQuotePapiPaymentRedirect($quote, $feeDetails, $papiPaymentService, $logger);
+                        if ($redirect !== null) {
+                            return $redirect;
+                        }
+                        // Échec de création du lien : le client est averti et peut réessayer
+                        // depuis la page de suivi ("Payer maintenant").
+                    }
+
                     // Rediriger vers la liste des devis si l'utilisateur est connecté
                     if ($user) {
                         return $this->redirectToRoute('app_user_quotes');
@@ -314,9 +328,6 @@ class QuoteController extends AbstractController
                 if (!$itemsValid) {
                     $this->addFlash('error', 'Veuillez remplir tous les champs obligatoires pour chaque produit (type, description et quantité).');
                 }
-                if (!$paymentReferenceValid) {
-                    $this->addFlash('error', 'Le paiement est requis à partir du 3e article. Veuillez renseigner la référence de paiement pour continuer.');
-                }
             }
         }
         
@@ -327,6 +338,56 @@ class QuoteController extends AbstractController
             'primaryContactPhone' => $siteContactProvider->getPrimaryPhone()?->getNumber() ?? '',
             'quotesSuspended' => $quotesSuspended,
         ]);
+    }
+
+    /**
+     * Crée un lien de paiement Papi pour les frais d'un devis (>2 articles) et renvoie
+     * la redirection vers ce lien, ou null si la création échoue (un flash warning est
+     * ajouté dans ce cas et l'appelant doit continuer normalement).
+     *
+     * @param array{totalFee: int} $feeDetails
+     */
+    private function createQuotePapiPaymentRedirect(
+        Quote $quote,
+        array $feeDetails,
+        PapiPaymentService $papiPaymentService,
+        LoggerInterface $logger
+    ): ?RedirectResponse {
+        $trackingUrl = $this->generateUrl(
+            'app_tracking_show',
+            ['token' => $quote->getTrackingToken()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+        $notificationUrl = $this->generateUrl(
+            'app_papi_notification',
+            [],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        try {
+            $paymentLink = $papiPaymentService->createPaymentLink(
+                (float) $feeDetails['totalFee'],
+                $quote->getFullName(),
+                $quote->getQuoteNumber(),
+                'Frais de devis ' . $quote->getQuoteNumber() . ' - Duo Import MDG',
+                $notificationUrl,
+                $trackingUrl,
+                $trackingUrl
+            );
+
+            return new RedirectResponse($paymentLink['paymentLink']);
+        } catch (\Throwable $e) {
+            $logger->error('Papi: impossible de créer le lien de paiement pour le devis', [
+                'quote_number' => $quote->getQuoteNumber(),
+                'error' => $e->getMessage(),
+            ]);
+            $this->addFlash(
+                'warning',
+                'Votre devis est enregistré, mais le paiement en ligne des frais est momentanément indisponible. Vous pouvez réessayer depuis la page de suivi de votre devis.'
+            );
+
+            return null;
+        }
     }
     
     #[Route('/admin/quote/create-manual', name: 'app_admin_quote_create_manual', methods: ['GET', 'POST'])]

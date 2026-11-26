@@ -259,6 +259,19 @@
             </h3>
         </div>
         <div class="tracking-card-body">
+            {% if quote.paymentStatus == 'pending' %}
+                <div class="alert alert-warning">
+                    <p class="mb-2"><strong>Des frais de {{ feeDetails.totalFee|number_format(0, ',', ' ') }} Ar sont dus pour ce devis</strong> (au-delà des {{ feeDetails.freeItemsLimit }} premiers articles gratuits).</p>
+                    <p class="mb-0">
+                        Si vous n'avez pas encore payé ou si le paiement a échoué,
+                        <a href="{{ path('app_tracking_pay', { token: trackingToken }) }}" class="btn btn-sm btn-primary">Payer maintenant</a>
+                    </p>
+                </div>
+            {% elseif quote.paymentStatus == 'completed' %}
+                <div class="alert alert-success mb-3">
+                    <i class="fas fa-check-circle me-2"></i>Paiement des frais confirmé.
+                </div>
+            {% endif %}
             <div class="quote-info">
                 <div class="info-row">
                     <span class="info-label">Numéro de devis :</span>

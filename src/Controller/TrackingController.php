@@ -7,15 +7,20 @@ use App\Entity\Quote;
 use App\Entity\QuoteOffer;
 use App\Repository\QuoteRepository;
 use App\Service\PdfGenerator;
+use App\Service\QuoteFeeCalculator;
 use App\Service\QuoteTrackerService;
+use App\Service\PapiPaymentService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class TrackingController extends AbstractController
 {
@@ -24,6 +29,9 @@ class TrackingController extends AbstractController
         private QuoteTrackerService $quoteTrackerService,
         private PdfGenerator $pdfGenerator,
         private EntityManagerInterface $entityManager,
+        private QuoteFeeCalculator $feeCalculator,
+        private PapiPaymentService $papiPaymentService,
+        private LoggerInterface $logger,
     ) {}
 
     /**
@@ -54,7 +62,56 @@ class TrackingController extends AbstractController
             'quoteTrackerService' => $this->quoteTrackerService,
             'downloadableOffer' => $downloadableOffer,
             'offerIdsWithPdf' => $offerIdsWithPdf,
+            'feeDetails' => $this->feeCalculator->calculateFee($quote),
         ]);
+    }
+
+    /**
+     * Relance le paiement en ligne des frais de devis (ex. après un échec temporaire
+     * de la passerelle Papi au moment de la soumission).
+     */
+    #[Route('/tracking/{token}/payer', name: 'app_tracking_pay', methods: ['GET'])]
+    public function pay(string $token): Response
+    {
+        $quote = $this->quoteRepository->findOneBy(['trackingToken' => $token]);
+
+        if (!$quote) {
+            throw $this->createNotFoundException('Token de suivi invalide ou devis introuvable.');
+        }
+
+        if ($quote->getPaymentStatus() !== 'pending') {
+            return $this->redirectToRoute('app_tracking_show', ['token' => $token]);
+        }
+
+        $feeDetails = $this->feeCalculator->calculateFee($quote);
+        if (!$feeDetails['paymentRequired']) {
+            return $this->redirectToRoute('app_tracking_show', ['token' => $token]);
+        }
+
+        $trackingUrl = $this->generateUrl('app_tracking_show', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+        $notificationUrl = $this->generateUrl('app_papi_notification', [], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        try {
+            $paymentLink = $this->papiPaymentService->createPaymentLink(
+                (float) $feeDetails['totalFee'],
+                $quote->getFullName(),
+                $quote->getQuoteNumber(),
+                'Frais de devis ' . $quote->getQuoteNumber() . ' - Duo Import MDG',
+                $notificationUrl,
+                $trackingUrl,
+                $trackingUrl
+            );
+
+            return new RedirectResponse($paymentLink['paymentLink']);
+        } catch (\Throwable $e) {
+            $this->logger->error('Papi: impossible de créer le lien de paiement pour le devis (retry)', [
+                'quote_number' => $quote->getQuoteNumber(),
+                'error' => $e->getMessage(),
+            ]);
+            $this->addFlash('warning', 'Le paiement en ligne est momentanément indisponible. Merci de réessayer dans quelques instants ou de nous contacter.');
+
+            return $this->redirectToRoute('app_tracking_show', ['token' => $token]);
+        }
     }
 
     /**

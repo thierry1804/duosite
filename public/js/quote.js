@@ -13,9 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitButton = document.querySelector('#submitButton');
     const inlinePayment = document.querySelector('#quoteInlinePayment');
     const inlinePaymentTotal = document.querySelector('#quoteInlinePaymentTotal');
-    const paymentReferenceInput = document.querySelector('#quotePaymentReferenceInput');
-    const paymentReferenceError = document.querySelector('#quotePaymentReferenceError');
-    const transactionReferenceInput = document.querySelector('#quote_transactionReference');
 
     const freeItemsLimit = form ? (parseInt(form.dataset.freeItemsLimit, 10) || 2) : 2;
     const itemPrice = form ? (parseInt(form.dataset.itemPrice, 10) || 0) : 0;
@@ -159,28 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 inlinePayment.classList.add('d-none');
-                if (paymentReferenceInput) {
-                    paymentReferenceInput.value = '';
-                }
-                if (transactionReferenceInput) {
-                    transactionReferenceInput.value = '';
-                }
-                if (paymentReferenceError) {
-                    paymentReferenceError.classList.add('d-none');
-                }
             }
         }
-    }
-
-    if (paymentReferenceInput) {
-        paymentReferenceInput.addEventListener('input', function() {
-            if (transactionReferenceInput) {
-                transactionReferenceInput.value = this.value.trim();
-            }
-            if (this.value.trim() && paymentReferenceError) {
-                paymentReferenceError.classList.add('d-none');
-            }
-        });
     }
 
     if (itemsWrapper) {
@@ -338,24 +315,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ---- Soumission du formulaire ----
     if (form) {
         form.addEventListener('submit', function(event) {
-            const currentItemsCount = document.querySelectorAll('.quote-item').length;
-            const extra = Math.max(0, currentItemsCount - freeItemsLimit);
-            const currentReference = transactionReferenceInput ? transactionReferenceInput.value.trim() : '';
-
-            if (extra > 0 && !currentReference) {
-                event.preventDefault();
-                if (paymentReferenceError) {
-                    paymentReferenceError.classList.remove('d-none');
-                }
-                if (inlinePayment) {
-                    inlinePayment.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                if (paymentReferenceInput) {
-                    paymentReferenceInput.focus();
-                }
-                return false;
-            }
-
             const shippingMethodSelected = document.querySelectorAll('input[name="quote[shippingMethod][]"]:checked').length > 0;
             if (!shippingMethodSelected) {
                 event.preventDefault();

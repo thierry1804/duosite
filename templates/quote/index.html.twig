@@ -767,9 +767,7 @@
 
                     <div class="quote-cart-payment {{ extraCount > 0 ? '' : 'd-none' }}" id="quoteInlinePayment">
                         <div class="quote-cart-payment-box">
-                            <p class="mb-0">Réglez <strong id="quoteInlinePaymentTotal">{{ totalAr|number_format(0, ',', ' ') }} Ar</strong> par Mobile Money au <strong>{{ primaryContactPhone }}</strong> (frais de retrait à votre charge), puis indiquez la référence. Le devis sera traité 24 à 72 h après confirmation du paiement.</p>
-                            <input type="text" id="quotePaymentReferenceInput" placeholder="Référence de paiement (ex: TXN-123456)" value="{{ form.transactionReference.vars.value }}">
-                            <div id="quotePaymentReferenceError" class="text-danger small mt-2 d-none">Veuillez renseigner la référence de paiement.</div>
+                            <p class="mb-0">Des frais de <strong id="quoteInlinePaymentTotal">{{ totalAr|number_format(0, ',', ' ') }} Ar</strong> s'appliquent au-delà des {{ freeItemsLimit }} premiers articles gratuits. Après validation, vous serez redirigé vers une page de paiement sécurisée (MVola, Orange Money ou Airtel Money) pour les régler en ligne.</p>
                         </div>
                     </div>
 
