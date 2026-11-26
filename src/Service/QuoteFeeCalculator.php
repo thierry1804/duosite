@@ -19,7 +19,9 @@ class QuoteFeeCalculator
     }
 
     /**
-     * @param array<int, int>|null $userQuotesCountMap [user_id => nombre de devis] pour éviter N+1 (optionnel)
+     * @param array<int, int>|null $userQuotesCountMap [user_id => nombre de devis du client] pour déterminer
+     *        s'il s'agit de son premier devis sans requête N+1 (optionnel). Si absent, on considère le devis
+     *        comme un premier devis par défaut (comportement historique, cas d'appel sans ce contexte).
      */
     public function calculateFee(Quote $quote, ?array $userQuotesCountMap = null): array
     {
@@ -32,6 +34,7 @@ class QuoteFeeCalculator
         $freeItemsLimit = 2;
         $itemPrice = $settings ? $settings->getItemPrice() : 2000;
         $itemCount = count($quote->getItems());
+        $isFirstQuote = $this->isFirstQuote($quote, $userQuotesCountMap);
 
         if ($itemCount <= $freeItemsLimit) {
             $quote->setPaymentStatus('not_required');
@@ -42,7 +45,7 @@ class QuoteFeeCalculator
                 'freeItems' => $itemCount,
                 'paidItems' => 0,
                 'itemPrice' => $itemPrice,
-                'isFirstQuote' => true,
+                'isFirstQuote' => $isFirstQuote,
                 'freeItemsLimit' => $freeItemsLimit,
                 'paymentRequired' => false
             ];
@@ -63,9 +66,22 @@ class QuoteFeeCalculator
             'freeItems' => $freeItemsLimit,
             'paidItems' => $paidItems,
             'itemPrice' => $itemPrice,
-            'isFirstQuote' => true,
+            'isFirstQuote' => $isFirstQuote,
             'freeItemsLimit' => $freeItemsLimit,
             'paymentRequired' => true
         ];
+    }
+
+    /**
+     * @param array<int, int>|null $userQuotesCountMap [user_id => nombre de devis du client]
+     */
+    private function isFirstQuote(Quote $quote, ?array $userQuotesCountMap): bool
+    {
+        $user = $quote->getUser();
+        if ($user === null || $userQuotesCountMap === null) {
+            return true;
+        }
+
+        return ($userQuotesCountMap[$user->getId()] ?? 0) <= 1;
     }
 } 

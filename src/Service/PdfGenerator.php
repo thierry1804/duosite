@@ -2,9 +2,6 @@
 
 namespace App\Service;
 
-ini_set('memory_limit', '512M');
-set_time_limit(120);
-
 use App\Entity\LegalPage;
 use App\Entity\ProductProposal;
 use App\Entity\QuoteOffer;
@@ -54,6 +51,12 @@ class PdfGenerator
      */
     public function buildQuoteOfferPdf(QuoteOffer $offer, ?array $quantities = null): string
     {
+        // La génération PDF (rendu HTML + rasterisation Dompdf) peut être lente et
+        // gourmande en mémoire sur les offres avec beaucoup d'images ; ces limites ne
+        // doivent s'appliquer qu'à cet appel, pas à chaque autoload de la classe.
+        ini_set('memory_limit', '512M');
+        set_time_limit(120);
+
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isRemoteEnabled', true);
